@@ -54,6 +54,20 @@ honest disclosure of the walker's relationship to the author).
 A `not in source` field whose value sits on a line another field already cites is not caught
 mechanically. Disclosed in `README.md` and `TEST_METHOD.md` rather than hidden.
 
+## Hardening pass (2026-09-18, after two cross-brain reviews)
+
+Perplexity and ChatGPT, run independently, converged on one weakness: the checker proved lexical
+provenance (the value is on the cited line) but not semantic mapping (it is the right value, from
+the right kind of line, in the right field). Both reproduced the correct rideshare output and
+confirmed the shipped outputs were clean, so the instructions held; the gap was in the checker's
+strength claim. Response: line-kind trace (category/tax label-scoped, amount not from a subtotal/tax
+line, date must be date-shaped), single-line containment, a closed envelope (no stray keys,
+conversion pinned to the schema id, field order enforced), block-scoped citations, controlled
+`unmapped_input_lines` reason codes, and per-fixture intended-gate assertion. Fixtures grew 8 -> 16.
+The reviewers' own exploit outputs now fail. This deepens the #12-winning move: the mechanical gate
+now engineers out semantic mis-mapping, not just invention. `vendor` semantic correctness remains a
+disclosed reading-only limit (a vendor name is free text).
+
 ## Done (one sentence)
 
 One translator folder plus a forked checker that proves the output shape holds across three

@@ -64,3 +64,28 @@ run with `node verify/check.mjs`.
 
 This is the standing gate that catches a verify command which only works with local state (it cost
 an entrant a tier in Comp #12, and caught a CRLF bug in ours the same cycle).
+
+---
+
+## Hardening run — 2026-09-18 (v2, after the TEST_METHOD hardening addendum)
+
+Ran `node verify/check.mjs` after the semantic-mapping hardening. Exit 0.
+
+- 3 outputs traced clean.
+- 16 fixtures each failed **through the gate it declares** (`_expect_gate`): 9 via `[trace]`, 3 via
+  `[shape]`, 2 via `[coverage]`, 2 via `[block]`.
+- Fresh clone (no local state) of the hardened repo: `node verify/check.mjs` exited 0.
+
+### The two reviewer exploits, run directly against the hardened checker
+
+Both were constructed by the reviewers as outputs that passed the old checker. Both now fail:
+
+- **ChatGPT Break-A** (subtotal `20.00` used as `amount` while `Total 21.00` exists; `date: "Total"`):
+  fails with `[shape]` conversion, `[trace]` date-not-date-shaped, `[trace]` amount-from-forbidden-line,
+  and `[coverage]` dropped lines.
+- **Perplexity Bypass-1** (line item into `category`, loyalty points into `tax`, extra keys, bad
+  conversion): fails with `[trace]` category-not-labeled, `[trace]` tax-not-labeled, and three
+  `[shape]` errors (conversion, extra top-level key, extra line key).
+
+Both reviewers also ran the live cross-brain test (translate the unseen rideshare receipt using only
+the contract) and independently produced the correct, invention-free output.
