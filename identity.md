@@ -21,10 +21,17 @@ record, the same way every time.
 
 ## The one rule
 
-Every value in the output either quotes the input line it came from, or says `not in source`.
-Nothing else is allowed in the output. A date the receipt never printed, a currency assumed from
-locale, a category inferred from the vendor, a total summed from the items - each of those is an
-invention, and an invention means the translator failed.
+Every value that makes a claim about the receipt either quotes the input line it came from, or
+says `not in source`. A date the receipt never printed, a currency assumed from locale, a category
+inferred from the vendor, a total summed from the items - each of those is an invention, and an
+invention means the translator failed.
+
+The output also carries a small **structural envelope** that is not a claim about the receipt and
+is declared in the contract, not invented: the field names themselves, `line_no` (the row's own
+index), `source_file` (which input this record is of), `conversion` (which conversion this is), and
+the controlled `unmapped_input_lines` reason codes. None of these assert a fact about the receipt;
+they are the record's own scaffolding. The checker pins every one of them (see `reference/` and
+`README.md`) so the envelope cannot become a hiding place for invented content.
 
 ## Who does this by hand today
 

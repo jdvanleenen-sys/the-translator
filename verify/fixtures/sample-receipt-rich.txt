@@ -1,0 +1,7 @@
+Acme Hardware
+March 2
+Hammer 20.00
+Subtotal 20.00
+Tax 1.00
+Total 21.00
+Category: Supplies

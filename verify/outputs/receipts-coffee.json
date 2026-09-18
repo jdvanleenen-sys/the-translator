@@ -13,8 +13,8 @@
     }
   ],
   "unmapped_input_lines": [
-    { "line": 3, "reason": "line item (1 Large Latte); schema has no per-item field" },
-    { "line": 5, "reason": "card mask, no schema field" },
-    { "line": 6, "reason": "loyalty points balance, no schema field" }
+    { "line": 3, "code": "line_item", "note": "1 Large Latte" },
+    { "line": 5, "code": "card_mask", "note": "Card ****1234" },
+    { "line": 6, "code": "loyalty", "note": "Earn 65 loyalty points" }
   ]
 }

@@ -1,8 +1,8 @@
 {
-  "_fixture": "vendor expanded to Company; input printed Co",
-  "_expect_gate": "trace",
+  "_fixture": "two receipt blocks but only one output line (a receipt dropped)",
+  "_expect_gate": "block",
   "conversion": "expense-report",
-  "source_file": "verify/fixtures/sample-receipt.txt",
+  "source_file": "verify/fixtures/sample-receipt-blocks.txt",
   "lines": [
     {
       "line_no": 1,
@@ -13,16 +13,13 @@
         ]
       },
       "vendor": {
-        "value": "Blue Ridge Coffee Company",
+        "value": "Cafe One",
         "cite": [
           1
         ]
       },
       "amount": {
-        "value": "6.50",
-        "cite": [
-          4
-        ]
+        "value": "not in source"
       },
       "currency": {
         "value": "not in source"
@@ -37,14 +34,14 @@
   ],
   "unmapped_input_lines": [
     {
-      "line": 3,
-      "code": "line_item",
-      "note": "1 Large Latte"
+      "line": 4,
+      "code": "other",
+      "note": "Jan 4"
     },
     {
       "line": 5,
-      "code": "card_mask",
-      "note": "Card ****1234"
+      "code": "other",
+      "note": "Total 5.00"
     }
   ]
 }

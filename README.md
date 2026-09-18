@@ -1,8 +1,9 @@
 # The Translator — receipt text to expense report
 
 A folder-based AI translator. Feed it the text of one or more receipts; it returns a fixed-shape
-expense-report record, one line per receipt, the same way every time. Every value in the output
-either quotes the input line it came from or says `not in source`. Nothing is invented.
+expense-report record, one line per receipt, the same way every time. Every value that makes a claim
+about the receipt either quotes the input line it came from or says `not in source`. Nothing is
+invented.
 
 Who does this by hand today: bookkeepers, admins, freelancers, and small-business owners turning a
 pile of receipts into an expense report at month end.
@@ -12,16 +13,25 @@ pile of receipts into an expense report at month end.
 1. Create a Claude project and add this folder to it (or paste `identity.md`, `rules.md`, and
    `reference/expense-report/` into the context).
 2. Paste the text of a receipt (or several, separated by a line with only `---`).
-3. Claude returns one JSON object plus a rendered table. That is your expense-report record.
+3. Claude returns one JSON object (the record) plus, for reading, a rendered table beneath it. The
+   JSON is what you save and check.
 
 ## What you feed it, what comes back
 
-- **In:** plain text describing receipts. Messy is fine - typed, dictated, or pulled off a photo.
+- **In:** plain text describing receipts. Messy is fine.
 - **Out:** a JSON object with one `line` per receipt and seven fixed fields per line:
   `line_no, date, vendor, amount, currency, category, tax`. Empty fields say `not in source`.
-  A readable table is rendered beneath the JSON.
 
 See `examples.md` for three worked pairs.
+
+## The structural envelope (nothing hides here)
+
+Besides the receipt values, the output carries a small envelope that is not a claim about the
+receipt: the field names, `line_no` (row index), `source_file`, `conversion`, and the controlled
+`unmapped_input_lines` reason codes. These are declared in `reference/` and each is pinned by the
+checker (conversion must equal the schema id, no stray keys are allowed, line_no must equal its row
+index, reason codes must come from the fixed vocabulary), so the envelope cannot become a place for
+invented content to hide.
 
 ## The promise, and how to check it
 
@@ -34,15 +44,19 @@ node verify/check.mjs
 
 This reads every output in `verify/outputs/`, opens the input file it names, and runs four gates:
 
-- **shape** - every line has all seven fields, in order; empty ones marked `not in source`.
-- **trace** - every filled value is found on the specific input line it cites (not merely
-  somewhere in the input).
-- **coverage** - every non-blank input line is either cited by a field or listed as unmapped, so
-  nothing is dropped silently.
-- **fixtures** - eight planted inventions in `verify/fixtures/fail_*.json` (a computed total, an
-  inferred category, an assumed currency, an invented year, an expanded vendor name, a dropped
-  line, a missing field, a hollow `not in source`) that MUST fail. If any passes, the gate it
-  tests is dead.
+- **shape** - every line has all seven fields, in order; no stray keys; empty ones `not in source`;
+  `conversion` pinned to the schema id; `line_no` equal to its row index.
+- **trace** - every filled value sits in a single cited input line (not merely somewhere, not
+  fabricated across lines), **and of the right kind for its field**: a tax on a tax line, a category
+  on a category-labeled line, an amount not on a subtotal/tax line, a date that is date-shaped.
+- **coverage** - every non-blank input line is either cited by a field or listed as unmapped with a
+  controlled reason code (and any note must quote its line), so nothing is dropped silently.
+- **fixtures** - sixteen planted flaws in `verify/fixtures/fail_*.json` (computed total, inferred
+  category, assumed currency, invented year, expanded vendor, dropped line, missing field, hollow
+  `not in source`, extra field, wrong conversion, cross-line value, subtotal-as-amount, tax from a
+  non-tax line, item-as-category, number-as-date, cross-block citation, dropped receipt) that MUST
+  fail - and each must fail **through the gate it declares**, so a fixture cannot pass by failing for
+  the wrong reason.
 
 To check a single output: `node verify/check.mjs --output verify/outputs/receipts-coffee.json`.
 
@@ -52,35 +66,20 @@ then run `node verify/check.mjs --output <your-file>.json`.
 ## The contract
 
 `reference/expense-report/` is the contract, written down so a reader can check it:
+`schema.json` (fields, order, reason codes, per-field constraints), `field-definitions.md`, and
+`format-spec.md`.
 
-- `schema.json` - the fields, their order, and which is structural.
-- `field-definitions.md` - what each field means and its rule.
-- `format-spec.md` - the input and output formats.
+## Honest limits
 
-## Honest limit
+Stated plainly rather than hidden:
 
-The trace and coverage gates catch an invented value, a mis-cited value, a dropped line, and a
-`not in source` that skips a value sitting on its own line. The one case they do **not** fully
-catch mechanically: a field marked `not in source` whose value is sitting on a line that a
-*different* field already cites (so coverage still sees the line as accounted for). That case is
-caught by reading, not by the checker. It is disclosed here rather than hidden.
-
-## Repo layout
-
-```
-identity.md            what it converts, from what, to what
-rules.md               how it maps; the three laws; the tie-breakers
-examples.md            three worked input/output pairs
-reference/
-  expense-report/      the contract: schema.json, field-definitions.md, format-spec.md
-inputs/                three real (pseudonymized) receipt-text inputs
-verify/
-  check.mjs            the offline checker (four gates)
-  outputs/             the checked outputs for the three inputs
-  fixtures/            kept-red inventions that must fail, plus the sample receipt
-TEST_METHOD.md         the frozen test method (what is tested, the pass bars)
-RESULTS.md             the recorded run of the method
-```
+- **Vendor semantics.** A vendor name is free text, so the checker confirms the vendor value sits on
+  its cited line but cannot prove that line is "the merchant line" rather than some other text. This
+  one field is verified by reading, not mechanically. Every other field is line-kind constrained.
+- **`not in source` on a shared line.** A field marked `not in source` whose value sits on a line
+  that a *different* field already cites is not caught mechanically (coverage still sees the line as
+  accounted for). Caught by reading. The common case - the skipped value on its own line - is caught
+  by coverage.
 
 ## What it does not do
 

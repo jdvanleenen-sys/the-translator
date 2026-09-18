@@ -1,60 +1,78 @@
 {
   "id": "expense-report",
   "name": "Expense report line items",
-  "version": "1.0.0",
-  "description": "One expense-report line per receipt. Fixed field set, fixed order. Every filled field cites the input line(s) its value came from. Anything the receipt does not state is 'not in source', never guessed.",
+  "version": "2.0.0",
+  "description": "One expense-report line per receipt. Fixed field set, fixed order. Every filled field cites the input line(s) its value came from, and must be sourced from the right KIND of line. Anything the receipt does not state is 'not in source', never guessed.",
   "record_key": "lines",
   "unmapped_key": "unmapped_input_lines",
   "not_in_source_marker": "not in source",
+  "top_level_keys": ["conversion", "source_file", "lines", "unmapped_input_lines"],
+  "unmapped_reason_codes": [
+    "line_item",
+    "subtotal",
+    "tax_additional",
+    "discount",
+    "payment_method",
+    "card_mask",
+    "loyalty",
+    "location",
+    "header",
+    "greeting_footer",
+    "other"
+  ],
   "fields": [
     {
       "name": "line_no",
       "order": 1,
       "role": "structural",
       "traceable": false,
-      "description": "The 1-based row index of this line in the output. The record's own address, not a claim about the receipt. Must equal its position in the lines array. Never carries a citation."
+      "description": "The 1-based row index of this line in the output. Part of the record's structural envelope, not a claim about the receipt. Must equal its position in the lines array. Never carries a citation."
     },
     {
       "name": "date",
       "order": 2,
       "role": "source",
       "traceable": true,
-      "description": "The transaction date exactly as printed on the receipt. Not normalized. A receipt that says 'Jan 3' with no year stays 'Jan 3'; the year is not invented."
+      "constraints": { "shape": "date" },
+      "description": "The transaction date exactly as printed. Not normalized. 'Jan 3' with no year stays 'Jan 3'; the year is not invented. The value must look like a date, so a bare amount cannot be dropped into this field."
     },
     {
       "name": "vendor",
       "order": 3,
       "role": "source",
       "traceable": true,
-      "description": "The merchant/vendor name exactly as it appeared. Not expanded, not corrected to its usual spelling."
+      "description": "The merchant name exactly as it appeared. Not expanded, not corrected to its usual spelling. (Vendor is free text, so semantic correctness of which line is the merchant is a documented checker limit; see README.)"
     },
     {
       "name": "amount",
       "order": 4,
       "role": "source",
       "traceable": true,
-      "description": "The transaction total exactly as printed. Never computed. If no total is printed, 'not in source' - item prices are not summed."
+      "constraints": { "forbid_label": ["subtotal", "sub-total", "sub total", "gst", "hst", "pst", "qst", "vat"] },
+      "description": "The transaction total exactly as printed on the total line. Never computed, never the subtotal, never a tax line. If no total is printed, 'not in source'."
     },
     {
       "name": "currency",
       "order": 5,
       "role": "source",
       "traceable": true,
-      "description": "The currency symbol or code as printed ($, USD, CAD, EUR...). Never assumed from locale or amount format."
+      "description": "The currency symbol or code as printed. Never assumed from locale or amount format."
     },
     {
       "name": "category",
       "order": 6,
       "role": "source",
       "traceable": true,
-      "description": "The expense category ONLY if the receipt literally states one (e.g. a printed 'Category: Meals' line). Never inferred from the vendor or items. Almost always 'not in source' - that is correct behavior, not a gap."
+      "constraints": { "require_label": ["category", "expense type", "expense category"] },
+      "description": "The expense category ONLY if the receipt literally prints one on a category-labeled line. Never inferred from the vendor or items. Almost always 'not in source' - that is correct behavior, not a gap."
     },
     {
       "name": "tax",
       "order": 7,
       "role": "source",
       "traceable": true,
-      "description": "The tax amount exactly as printed on a tax line (GST, VAT, Sales Tax...). Never computed as total minus subtotal."
+      "constraints": { "require_label": ["tax", "gst", "hst", "pst", "qst", "vat", "duty", "levy"] },
+      "description": "The tax amount exactly as printed on a tax-labeled line. Never computed as total minus subtotal, never pulled from a non-tax line."
     }
   ]
 }

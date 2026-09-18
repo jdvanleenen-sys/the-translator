@@ -1,25 +1,25 @@
 {
-  "_fixture": "vendor expanded to Company; input printed Co",
+  "_fixture": "amount sourced from the Subtotal line (20.00) instead of the Total (21.00)",
   "_expect_gate": "trace",
   "conversion": "expense-report",
-  "source_file": "verify/fixtures/sample-receipt.txt",
+  "source_file": "verify/fixtures/sample-receipt-rich.txt",
   "lines": [
     {
       "line_no": 1,
       "date": {
-        "value": "Jan 3",
+        "value": "March 2",
         "cite": [
           2
         ]
       },
       "vendor": {
-        "value": "Blue Ridge Coffee Company",
+        "value": "Acme Hardware",
         "cite": [
           1
         ]
       },
       "amount": {
-        "value": "6.50",
+        "value": "20.00",
         "cite": [
           4
         ]
@@ -28,10 +28,16 @@
         "value": "not in source"
       },
       "category": {
-        "value": "not in source"
+        "value": "Supplies",
+        "cite": [
+          7
+        ]
       },
       "tax": {
-        "value": "not in source"
+        "value": "1.00",
+        "cite": [
+          5
+        ]
       }
     }
   ],
@@ -39,12 +45,12 @@
     {
       "line": 3,
       "code": "line_item",
-      "note": "1 Large Latte"
+      "note": "Hammer 20.00"
     },
     {
-      "line": 5,
-      "code": "card_mask",
-      "note": "Card ****1234"
+      "line": 6,
+      "code": "other",
+      "note": "Total 21.00"
     }
   ]
 }

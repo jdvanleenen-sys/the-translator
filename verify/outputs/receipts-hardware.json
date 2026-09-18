@@ -22,10 +22,10 @@
     }
   ],
   "unmapped_input_lines": [
-    { "line": 3, "reason": "line item (Garden hose); schema has no per-item field" },
-    { "line": 4, "reason": "line item (Work gloves); schema has no per-item field" },
-    { "line": 5, "reason": "subtotal line; schema records the printed total, not the subtotal" },
-    { "line": 11, "reason": "line item (2x4 stud x10); schema has no per-item field" },
-    { "line": 13, "reason": "payment method line, no schema field" }
+    { "line": 3, "code": "line_item", "note": "Garden hose 24.99" },
+    { "line": 4, "code": "line_item", "note": "Work gloves 12.50" },
+    { "line": 5, "code": "subtotal", "note": "Subtotal $37.49" },
+    { "line": 11, "code": "line_item", "note": "2x4 stud x10" },
+    { "line": 13, "code": "payment_method", "note": "VISA approved" }
   ]
 }

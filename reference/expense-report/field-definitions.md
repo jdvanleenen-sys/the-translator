@@ -1,8 +1,7 @@
 # Field definitions — expense-report record
 
-This is the contract. The output is a JSON object with a fixed shape. A reader can open this
-file and `schema.json` next to it and check, field by field, whether the translator kept its
-promise. If a value in the output is not accounted for here, the translator broke the contract.
+This is the contract. The output is a JSON object with a fixed shape. A reader can open this file
+and `schema.json` next to it and check, field by field, whether the translator kept its promise.
 
 ## Record shape
 
@@ -22,46 +21,58 @@ promise. If a value in the output is not accounted for here, the translator brok
     }
   ],
   "unmapped_input_lines": [
-    { "line": 5, "reason": "card mask, no schema field" }
+    { "line": 5, "code": "card_mask", "note": "Card ****1234" }
   ]
 }
 ```
 
-- **`source_file`** — repo-relative path to the input text this record was produced from. The
-  checker reads that file, numbers its physical lines 1..N, and validates every citation against
-  those line numbers.
-- **`lines`** — one object per receipt (per transaction). N receipts in the input produce N lines.
-- Each field is either `{ "value": "<text>", "cite": [<line numbers>] }` (a value found in the
-  input) or `{ "value": "not in source" }` (the receipt did not state it). There is no third form.
+- **`source_file`** — repo-relative path to the input text. The checker numbers its physical lines
+  1..N and validates every citation against those numbers.
+- **`lines`** — one object per receipt. N receipts → N lines. No extra keys; the shape is closed.
+- Each field is `{ "value": "<text>", "cite": [<lines>] }` or `{ "value": "not in source" }`.
+
+## The structural envelope (declared, not invented)
+
+Some content in the output is not a claim about the receipt; it is the record's own scaffolding.
+It is listed here so it is transparent and so the checker can pin it - it is never a place for
+invented content to hide:
+
+| Envelope item | What it is | How the checker pins it |
+|---|---|---|
+| field names | the fixed schema keys | rejects any key not in the schema (and any stray top-level key) |
+| `line_no` | the row's 1-based index | must equal the row's position in `lines` |
+| `source_file` | which input this record is of | must name a file that exists; all cites trace to it |
+| `conversion` | which conversion this is | must equal the schema `id` (`expense-report`) |
+| `unmapped_input_lines[].code` | why a line maps to no field | must be one of the controlled reason codes |
 
 ## The seven fields (fixed set, fixed order)
 
-| # | Field | Role | Cited? | Rule |
-|---|-------|------|--------|------|
-| 1 | `line_no` | structural | no | The row's 1-based index. Must equal its position in `lines`. It is the record's own address, not a claim about the receipt, so it carries no citation and is the only field the trace gate skips. |
-| 2 | `date` | source | yes | The date **exactly as printed**. Not normalized. `Jan 3` stays `Jan 3`; a year that is not on the receipt is never added. |
-| 3 | `vendor` | source | yes | The vendor name **exactly as it appeared**. `Blue Ridge Coffee Co` is not expanded to `...Company` and a misspelling is not corrected. |
-| 4 | `amount` | source | yes | The transaction total **exactly as printed**. Never summed from item prices. No printed total → `not in source`. |
-| 5 | `currency` | source | yes | The symbol or code **as printed** (`$`, `USD`, `CAD`, `€`). Never assumed from the amount format or the locale. |
-| 6 | `category` | source | yes | Filled **only if the receipt literally prints a category**. Never inferred from the vendor or the items. On a normal receipt this is `not in source`, and that is the correct, contract-honoring answer. |
-| 7 | `tax` | source | yes | The tax amount **as printed on a tax line**. Never computed as `total − subtotal`. |
+| # | Field | Cited? | Rule | Extra constraint the checker enforces |
+|---|-------|--------|------|----------------------------------------|
+| 1 | `line_no` | no | The row's 1-based index. Envelope, not a receipt claim. | equals its position in `lines` |
+| 2 | `date` | yes | Exactly as printed; no year added; not normalized. | value must be **date-shaped** |
+| 3 | `vendor` | yes | Exactly as it appeared; not expanded or corrected. | (free text; see limit in README) |
+| 4 | `amount` | yes | The printed **total**; never summed; no total → `not in source`. | sourcing line must **not** be a subtotal/tax line |
+| 5 | `currency` | yes | Symbol/code as printed; never assumed. | — |
+| 6 | `category` | yes | Only if the receipt prints a category; never inferred. | sourcing line must be **category-labeled** |
+| 7 | `tax` | yes | As printed on a tax line; never computed. | sourcing line must be **tax-labeled** |
 
 ## `not in source`
 
-The exact string `not in source` (lowercase, no punctuation) is the only marker for a field the
-receipt did not state. A field is never dropped, never left blank, never filled with a plausible
-guess. A `not in source` field carries no `cite`.
+The exact string `not in source` is the only marker for a field the receipt did not state. A field
+is never dropped, blank, or guessed. A `not in source` field carries no `cite`.
 
 ## `unmapped_input_lines`
 
-Every non-blank input line must be accounted for: either it is cited by at least one field, or it
-appears here with a short reason it maps to no field (a card mask, a loyalty-points line, a
-"thank you" footer). This is how the record proves it dropped nothing silently. Blank or
-whitespace-only lines are exempt.
+Every non-blank input line must be accounted for: cited by a field, or listed here. Each entry has
+`line` (the number), `code` (one of the controlled reason codes in `schema.json`), and an optional
+`note` that, if present, must quote the line it describes. Blank and `---` lines are exempt.
 
 ## The trace rule (what "cite" means)
 
-A citation is checkable, and it is checked at the **line level, not the file level**. For a filled
-field, the value (after light normalization: lowercase, collapse whitespace, fold smart quotes and
-dashes) must be a substring of the **cited line(s) only** — not merely present somewhere in the
-input. Proving a value exists *somewhere* is not enough; it must sit inside the line it names.
+Checked at the **line level**, and now at the **line-kind level**. For a filled field, the value
+(after light normalization) must be a substring of a **single cited line** - not merely present
+somewhere in the input, and not assembled across two lines. On top of that, the sourcing line must
+be the right kind of line for the field (a tax on a tax line, a category on a category line, an
+amount not on a subtotal/tax line, a date that is date-shaped). Proving a value exists is not
+enough; it must be the right value, from the right line, in the right field.

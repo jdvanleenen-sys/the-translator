@@ -13,8 +13,8 @@
     }
   ],
   "unmapped_input_lines": [
-    { "line": 4, "reason": "line item (Room, 2 nights); schema has no per-item field" },
-    { "line": 6, "reason": "second printed tax line (VAT); schema records one tax and never sums tax lines" },
-    { "line": 8, "reason": "payment method line, no schema field" }
+    { "line": 4, "code": "line_item", "note": "Room (2 nights) 240.00" },
+    { "line": 6, "code": "tax_additional", "note": "VAT 24.44" },
+    { "line": 8, "code": "payment_method", "note": "Paid by card" }
   ]
 }

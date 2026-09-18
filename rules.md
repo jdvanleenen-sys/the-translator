@@ -1,70 +1,79 @@
 # rules — how the translator maps receipt text to the expense-report record
 
 Read `reference/expense-report/schema.json` and `field-definitions.md` first: they define the
-output shape. This file defines the mapping - which input parts feed which fields, what to do when
-a field has no source, and what to never add.
+output shape. This file defines the mapping - which input parts feed which output fields, what to do
+when a field has no source, and what to never add.
 
 ## The output, every time
 
 - One JSON object. One `line` per receipt (per transaction). N receipts in, N lines out.
 - Every line has all seven fields, in schema order: `line_no, date, vendor, amount, currency,
-  category, tax`.
+  category, tax`. No extra fields; the record shape is closed.
 - Each field is either `{ "value": "<text>", "cite": [<input line numbers>] }` or
   `{ "value": "not in source" }`. No blanks, no dropped fields, no third form.
-- Below the JSON, render the same data as a table for humans. The table says `not in source`
-  wherever the JSON does.
+- The JSON is the record and the checked artifact. When you translate in chat, also render the same
+  data as a table beneath the JSON for humans; the table is a view, not a separate file, and it says
+  `not in source` wherever the JSON does. What you save and check is the JSON.
 
 ## Line numbering (how citations work)
 
 The input is numbered by physical line, starting at 1, counting every line including blanks.
 A `cite` is the line number(s) the value is printed on. The value you put in a field must appear
-**on the line(s) you cite** - not merely somewhere in the receipt. Cite the narrowest line(s)
-that contain the value.
+**on a single one of the line(s) you cite** - not merely somewhere in the receipt, and not
+assembled across two lines. Cite the narrowest line that contains the value.
 
 ## Field-by-field mapping
 
-- **`line_no`** - the row's 1-based index (1, 2, 3...). Not from the receipt. No citation.
+- **`line_no`** - the row's 1-based index (1, 2, 3...). Structural envelope, not from the receipt. No citation.
 - **`date`** - the transaction date, copied **exactly as printed**. `Jan 3` stays `Jan 3`.
-  `03/14/2026` stays `03/14/2026`. Never reformat, never add a missing year, never convert.
+  `03/14/2026` stays `03/14/2026`. Never reformat, never add a missing year. The value must look
+  like a date; a bare number is not a date.
 - **`vendor`** - the merchant name **exactly as it appeared**. Do not expand `Co` to `Company`,
   do not fix a misspelling, do not drop a store number.
-- **`amount`** - the transaction **total** exactly as printed on the total line. If no total is
-  printed, `not in source`. Never add up the item prices to make one.
+- **`amount`** - the transaction **total** exactly as printed on the total line. It must **not** be
+  taken from a subtotal line or a tax line. If no total is printed, `not in source`. Never sum the items.
 - **`currency`** - the symbol or code as printed (`$`, `USD`, `CAD`, `EUR`, `£`). If none is
-  printed, `not in source`. Never assume it from the number format or the country.
-- **`category`** - filled **only if the receipt literally prints a category** (for example a line
-  like `Category: Lodging`). Otherwise `not in source`. Never infer the category from the vendor
-  or the items. A coffee shop is not automatically "Meals".
-- **`tax`** - the tax amount as printed on a tax line (GST, VAT, Sales Tax, City tax). Never
-  compute it as total minus subtotal.
+  printed, `not in source`. Never assume it. When the total line prints the code and the number
+  together (e.g. `Total CAD 16.42`), `amount` is the numeric portion (`16.42`) and `currency` is the
+  code (`CAD`), each cited to that line.
+- **`category`** - filled **only if the receipt literally prints a category on a category-labeled
+  line** (e.g. `Category: Lodging`). Otherwise `not in source`. Never infer it from the vendor or
+  items. A coffee shop is not automatically "Meals".
+- **`tax`** - the tax amount as printed **on a tax-labeled line** (GST, VAT, HST, PST, Sales Tax,
+  City tax, duty, levy). Never compute it as total minus subtotal, never pull it from a non-tax line.
 
 ## The three laws (this is what makes it a translator, not a writer)
 
-1. **Never derive.** No summed totals, no computed tax, no math of any kind. If the number is not
-   printed, it is `not in source`.
-2. **Never assume.** No currency from locale, no year added to a bare month/day, no category from
-   the vendor. If it is not on the receipt, it is `not in source`.
+1. **Never derive.** No summed totals, no computed tax, no math. If the number is not printed, it is `not in source`.
+2. **Never assume.** No currency from locale, no year added to a bare month/day, no category from the vendor.
 3. **Never drop.** Every non-blank input line is either cited by a field or listed in
-   `unmapped_input_lines` with a short reason. You may not silently ignore a line.
+   `unmapped_input_lines`. You may not silently ignore a line.
+
+## Sourced from the right kind of line
+
+Fidelity is not only "the value is on the cited line," it is "the value came from the right kind of
+line." A number that appears on the subtotal line is not the amount; loyalty points that happen to
+be a number are not tax; a line item is not a category. The checker enforces this for `amount`
+(not a subtotal/tax line), `tax` (must be a tax-labeled line), `category` (must be a
+category-labeled line), and `date` (must be date-shaped).
 
 ## Deterministic tie-breakers (so the mapping is repeatable, never a judgment call)
 
 - **Multiple tax lines, no printed combined tax:** put the **first** printed tax line in `tax` and
-  list every further tax line in `unmapped_input_lines` with the reason. Tax lines are never
-  summed. (See `verify/outputs/receipts-hotel.json`: City tax fills `tax`, VAT is disclosed as
-  unmapped.)
-- **Subtotal and total both printed:** `amount` is the **total**. The subtotal goes to
-  `unmapped_input_lines`.
-- **A field's value would need two non-adjacent lines:** cite both line numbers.
+  list every further tax line in `unmapped_input_lines` (code `tax_additional`). Tax lines are never summed.
+- **Subtotal and total both printed:** `amount` is the **total**. The subtotal goes to `unmapped_input_lines` (code `subtotal`).
+- **A field's value would need two non-adjacent lines:** it does not. Each field's value is a single printed token/phrase on one line.
 
-## What goes in `unmapped_input_lines`
+## `unmapped_input_lines` (a controlled vocabulary, not free prose)
 
-Lines the schema has no field for, disclosed so nothing is dropped silently: line items, subtotals,
-second tax lines, payment methods, card masks, loyalty balances, greetings and footers. Each entry
-is `{ "line": <n>, "reason": "<short reason>" }`. Blank lines and bare `---` separators are exempt
-and need no entry.
+Lines the schema has no field for, disclosed so nothing is dropped silently. Each entry is
+`{ "line": <n>, "code": "<reason code>", "note": "<optional quote of the line>" }`. The `code` must
+be one of the codes declared in `schema.json` (`line_item, subtotal, tax_additional, discount,
+payment_method, card_mask, loyalty, location, header, greeting_footer, other`) - a fixed vocabulary,
+so the disclosure layer classifies with declared codes rather than invented prose. The optional
+`note`, if present, must itself quote the line it describes (the checker traces it). Blank lines and
+bare `---` separators are exempt and need no entry.
 
 ## When in doubt
 
-Prefer `not in source` over a guess. The translator is rewarded for refusing to invent, never for
-filling a field it could not source. A correct `not in source` is a feature, not a gap.
+Prefer `not in source` over a guess. A correct `not in source` is a feature, not a gap.

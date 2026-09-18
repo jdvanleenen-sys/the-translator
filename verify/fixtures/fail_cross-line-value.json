@@ -1,5 +1,5 @@
 {
-  "_fixture": "vendor expanded to Company; input printed Co",
+  "_fixture": "vendor fabricated across lines 1 and 2; on no single line",
   "_expect_gate": "trace",
   "conversion": "expense-report",
   "source_file": "verify/fixtures/sample-receipt.txt",
@@ -13,9 +13,10 @@
         ]
       },
       "vendor": {
-        "value": "Blue Ridge Coffee Company",
+        "value": "Blue Ridge Coffee Co Jan 3",
         "cite": [
-          1
+          1,
+          2
         ]
       },
       "amount": {

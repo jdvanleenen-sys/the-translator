@@ -1,6 +1,6 @@
 {
-  "_fixture": "vendor expanded to Company; input printed Co",
-  "_expect_gate": "trace",
+  "_fixture": "invented extra field approved on the line object",
+  "_expect_gate": "shape",
   "conversion": "expense-report",
   "source_file": "verify/fixtures/sample-receipt.txt",
   "lines": [
@@ -13,7 +13,7 @@
         ]
       },
       "vendor": {
-        "value": "Blue Ridge Coffee Company",
+        "value": "Blue Ridge Coffee Co",
         "cite": [
           1
         ]
@@ -32,7 +32,8 @@
       },
       "tax": {
         "value": "not in source"
-      }
+      },
+      "approved": true
     }
   ],
   "unmapped_input_lines": [

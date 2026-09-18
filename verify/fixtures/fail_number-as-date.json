@@ -1,0 +1,56 @@
+{
+  "_fixture": "a bare amount (20.00) parked in the date field",
+  "_expect_gate": "trace",
+  "conversion": "expense-report",
+  "source_file": "verify/fixtures/sample-receipt-rich.txt",
+  "lines": [
+    {
+      "line_no": 1,
+      "date": {
+        "value": "20.00",
+        "cite": [
+          3
+        ]
+      },
+      "vendor": {
+        "value": "Acme Hardware",
+        "cite": [
+          1
+        ]
+      },
+      "amount": {
+        "value": "21.00",
+        "cite": [
+          6
+        ]
+      },
+      "currency": {
+        "value": "not in source"
+      },
+      "category": {
+        "value": "Supplies",
+        "cite": [
+          7
+        ]
+      },
+      "tax": {
+        "value": "1.00",
+        "cite": [
+          5
+        ]
+      }
+    }
+  ],
+  "unmapped_input_lines": [
+    {
+      "line": 2,
+      "code": "other",
+      "note": "March 2"
+    },
+    {
+      "line": 4,
+      "code": "subtotal",
+      "note": "Subtotal 20.00"
+    }
+  ]
+}

@@ -1,19 +1,45 @@
 {
-  "_fixture": "line 3 (a line item) is silently dropped: neither cited by any field nor listed in unmapped_input_lines. MUST fail the coverage gate (nothing dropped).",
+  "_fixture": "line 3 line item silently dropped",
+  "_expect_gate": "coverage",
   "conversion": "expense-report",
   "source_file": "verify/fixtures/sample-receipt.txt",
   "lines": [
     {
       "line_no": 1,
-      "date":     { "value": "Jan 3", "cite": [2] },
-      "vendor":   { "value": "Blue Ridge Coffee Co", "cite": [1] },
-      "amount":   { "value": "6.50", "cite": [4] },
-      "currency": { "value": "not in source" },
-      "category": { "value": "not in source" },
-      "tax":      { "value": "not in source" }
+      "date": {
+        "value": "Jan 3",
+        "cite": [
+          2
+        ]
+      },
+      "vendor": {
+        "value": "Blue Ridge Coffee Co",
+        "cite": [
+          1
+        ]
+      },
+      "amount": {
+        "value": "6.50",
+        "cite": [
+          4
+        ]
+      },
+      "currency": {
+        "value": "not in source"
+      },
+      "category": {
+        "value": "not in source"
+      },
+      "tax": {
+        "value": "not in source"
+      }
     }
   ],
   "unmapped_input_lines": [
-    { "line": 5, "reason": "card mask" }
+    {
+      "line": 5,
+      "code": "card_mask",
+      "note": "Card ****1234"
+    }
   ]
 }

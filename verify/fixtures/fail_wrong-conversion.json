@@ -1,7 +1,7 @@
 {
-  "_fixture": "vendor expanded to Company; input printed Co",
-  "_expect_gate": "trace",
-  "conversion": "expense-report",
+  "_fixture": "conversion is not the schema id",
+  "_expect_gate": "shape",
+  "conversion": "anything-i-like",
   "source_file": "verify/fixtures/sample-receipt.txt",
   "lines": [
     {
@@ -13,7 +13,7 @@
         ]
       },
       "vendor": {
-        "value": "Blue Ridge Coffee Company",
+        "value": "Blue Ridge Coffee Co",
         "cite": [
           1
         ]

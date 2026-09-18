@@ -39,10 +39,21 @@ Input lines are shown numbered so you can trace each `cite` by eye.
 |---|-------|----------------------|--------|---------------|---------------|---------------|
 | 1 | Jan 3 | Blue Ridge Coffee Co | 6.50   | not in source | not in source | not in source |
 
+Lines 3, 5 and 6 map to no field and are disclosed with controlled reason codes:
+
+```json
+"unmapped_input_lines": [
+  { "line": 3, "code": "line_item", "note": "1 Large Latte" },
+  { "line": 5, "code": "card_mask", "note": "Card ****1234" },
+  { "line": 6, "code": "loyalty",   "note": "Earn 65 loyalty points" }
+]
+```
+
 **What it teaches:** the receipt has no currency symbol, no printed category, no tax line, and no
 year on the date. A writer would fill those - `$`, `Meals`, a computed tax, `2026`. The translator
-says `not in source` four times and keeps the date as the bare `Jan 3` that was printed. Lines 3, 5
-and 6 map to no field and are disclosed in `unmapped_input_lines`.
+says `not in source` four times and keeps the date as the bare `Jan 3` that was printed. Nothing is
+dropped: every unused line is disclosed with a code from the fixed vocabulary and a note that quotes
+the line.
 
 ---
 

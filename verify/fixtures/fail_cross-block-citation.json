@@ -1,0 +1,63 @@
+{
+  "_fixture": "receipt 1 cites line 5 (Total 5.00) from receipt 2 block",
+  "_expect_gate": "block",
+  "conversion": "expense-report",
+  "source_file": "verify/fixtures/sample-receipt-blocks.txt",
+  "lines": [
+    {
+      "line_no": 1,
+      "date": {
+        "value": "Jan 3",
+        "cite": [
+          2
+        ]
+      },
+      "vendor": {
+        "value": "Cafe One",
+        "cite": [
+          1
+        ]
+      },
+      "amount": {
+        "value": "5.00",
+        "cite": [
+          5
+        ]
+      },
+      "currency": {
+        "value": "not in source"
+      },
+      "category": {
+        "value": "not in source"
+      },
+      "tax": {
+        "value": "not in source"
+      }
+    },
+    {
+      "line_no": 2,
+      "date": {
+        "value": "Jan 4",
+        "cite": [
+          4
+        ]
+      },
+      "vendor": {
+        "value": "not in source"
+      },
+      "amount": {
+        "value": "not in source"
+      },
+      "currency": {
+        "value": "not in source"
+      },
+      "category": {
+        "value": "not in source"
+      },
+      "tax": {
+        "value": "not in source"
+      }
+    }
+  ],
+  "unmapped_input_lines": []
+}
