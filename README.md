@@ -48,19 +48,21 @@ This reads every output in `verify/outputs/`, opens the input file it names, and
 
 - **shape** - every line has all seven fields, in order; no stray keys; empty ones `not in source`;
   `conversion` pinned to the schema id; `line_no` equal to its row index.
-- **trace** - every filled value sits in a single cited input line (not merely somewhere, not
-  fabricated across lines), **and of the right kind for its field**: a tax on a tax line, a category
-  on a category-labeled line, an amount on a total-labeled line (never a subtotal/tax line or a
-  fare), a date that is date-shaped.
+- **trace** - every filled value sits in a single cited input line as a **complete token** (not
+  merely somewhere, not a truncation like `8` of `8.25`, not fabricated across lines, not empty),
+  **and of the right kind for its field**: a numeric amount on a total-labeled line (never a
+  subtotal/tax line or a fare), a numeric tax on a tax line, a category on a category-labeled line, a
+  date that is date-shaped. The `source_file` must resolve **inside the repo** - an output cannot
+  point its evidence at a `../` traversal or absolute path.
 - **coverage** - every non-blank input line is either cited by a field or listed as unmapped with a
   controlled reason code (and any note must quote its line), so nothing is dropped silently.
-- **fixtures** - nineteen planted flaws in `verify/fixtures/fail_*.json` (computed total, inferred
-  category, assumed currency, invented year, expanded vendor, dropped line, missing field, hollow
-  `not in source`, extra field, wrong conversion, cross-line value, subtotal-as-amount,
+- **fixtures** - twenty-three planted flaws in `verify/fixtures/fail_*.json` (computed total,
+  inferred category, assumed currency, invented year, expanded vendor, dropped line, missing field,
+  hollow `not in source`, extra field, wrong conversion, cross-line value, subtotal-as-amount,
   line-item-as-amount, tax from a non-tax line, item-as-category, number-as-date, cross-block
-  citation, dropped receipt, invented key inside a cell, underscore-key injection) that MUST fail -
-  and each must fail **through the gate it declares**, so a fixture cannot pass by failing for the
-  wrong reason.
+  citation, dropped receipt, invented key inside a cell, underscore-key injection, truncated amount,
+  truncated date, empty amount, and a `../` traversal source_file) that MUST fail - and each must
+  fail **through the gate it declares**, so a fixture cannot pass by failing for the wrong reason.
 
 To check a single output: `node verify/check.mjs --output verify/outputs/receipts-coffee.json`.
 

@@ -53,12 +53,12 @@ invented content to hide:
 | # | Field | Cited? | Rule | Extra constraint the checker enforces |
 |---|-------|--------|------|----------------------------------------|
 | 1 | `line_no` | no | The row's 1-based index. Envelope, not a receipt claim. | equals its position in `lines` |
-| 2 | `date` | yes | Exactly as printed; no year added; not normalized. | value must be **date-shaped** |
+| 2 | `date` | yes | Exactly and completely as printed; no year added; not normalized. | value must be **date-shaped** and a **complete token** (no truncation) |
 | 3 | `vendor` | yes | Exactly as it appeared; not expanded or corrected. | (free text; see limit in README) |
-| 4 | `amount` | yes | The printed **total**; never summed; no total-labeled line → `not in source`. | sourcing line must be **total-labeled** and **not** a subtotal/tax line |
+| 4 | `amount` | yes | The printed **total**; never summed; no total-labeled line → `not in source`. | must be a **numeric complete token** (no truncation), on a **total-labeled** line, **not** a subtotal/tax line |
 | 5 | `currency` | yes | Symbol/code as printed; never assumed. | — |
 | 6 | `category` | yes | Only if the receipt prints a category; never inferred. | sourcing line must be **category-labeled** |
-| 7 | `tax` | yes | As printed on a tax line; never computed. | sourcing line must be **tax-labeled** |
+| 7 | `tax` | yes | As printed on a tax line; never computed. | must be a **numeric complete token**, on a **tax-labeled** line |
 
 ## `not in source`
 

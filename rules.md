@@ -25,15 +25,16 @@ assembled across two lines. Cite the narrowest line that contains the value.
 ## Field-by-field mapping
 
 - **`line_no`** - the row's 1-based index (1, 2, 3...). Structural envelope, not from the receipt. No citation.
-- **`date`** - the transaction date, copied **exactly as printed**. `Jan 3` stays `Jan 3`.
-  `03/14/2026` stays `03/14/2026`. Never reformat, never add a missing year. The value must look
-  like a date; a bare number is not a date.
+- **`date`** - the transaction date, copied **exactly and completely as printed**. `Jan 3` stays
+  `Jan 3`; `14-03-2026` stays `14-03-2026`, never truncated to `14-03`. Never reformat, never add a
+  missing year. The value must look like a date; a bare number is not a date.
 - **`vendor`** - the merchant name **exactly as it appeared**. Do not expand `Co` to `Company`,
   do not fix a misspelling, do not drop a store number.
 - **`amount`** - the transaction **total** exactly as printed on a **total-labeled line** (`Total`,
   `Amount Due`, `Balance Due`, `Balance`, `Amount Payable`, `Grand Total`). It must **not** be taken
   from a subtotal line, a tax line, or a line item/fare. If no total-labeled line is printed, `not in
-  source` - a bare unlabeled number is not assumed to be the total. Never sum the items.
+  source` - a bare unlabeled number is not assumed to be the total. Never sum the items. It is the
+  **complete printed number** (`8.25`), never a truncation (`8`).
 - **`currency`** - the symbol or code as printed (`$`, `USD`, `CAD`, `EUR`, `£`). If none is
   printed, `not in source`. Never assume it. When the total line prints the code and the number
   together (e.g. `Total CAD 16.42`), `amount` is the numeric portion (`16.42`) and `currency` is the
@@ -42,7 +43,8 @@ assembled across two lines. Cite the narrowest line that contains the value.
   line** (e.g. `Category: Lodging`). Otherwise `not in source`. Never infer it from the vendor or
   items. A coffee shop is not automatically "Meals".
 - **`tax`** - the tax amount as printed **on a tax-labeled line** (GST, VAT, HST, PST, Sales Tax,
-  City tax, duty, levy). Never compute it as total minus subtotal, never pull it from a non-tax line.
+  City tax, duty, levy), the complete printed number. Never compute it as total minus subtotal, never
+  pull it from a non-tax line.
 
 ## The three laws (this is what makes it a translator, not a writer)
 

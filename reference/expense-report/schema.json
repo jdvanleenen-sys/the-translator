@@ -33,7 +33,7 @@
       "order": 2,
       "role": "source",
       "traceable": true,
-      "constraints": { "shape": "date" },
+      "constraints": { "shape": "date", "exact_token": true },
       "description": "The transaction date exactly as printed. Not normalized. 'Jan 3' with no year stays 'Jan 3'; the year is not invented. The value must look like a date, so a bare amount cannot be dropped into this field."
     },
     {
@@ -49,6 +49,8 @@
       "role": "source",
       "traceable": true,
       "constraints": {
+        "numeric": true,
+        "exact_token": true,
         "require_label": ["total", "amount due", "balance due", "balance", "amount payable", "grand total", "amount paid", "total paid"],
         "forbid_label": ["subtotal", "sub-total", "sub total", "gst", "hst", "pst", "qst", "vat"]
       },
@@ -74,7 +76,7 @@
       "order": 7,
       "role": "source",
       "traceable": true,
-      "constraints": { "require_label": ["tax", "gst", "hst", "pst", "qst", "vat", "duty", "levy"] },
+      "constraints": { "numeric": true, "exact_token": true, "require_label": ["tax", "gst", "hst", "pst", "qst", "vat", "duty", "levy"] },
       "description": "The tax amount exactly as printed on a tax-labeled line. Never computed as total minus subtotal, never pulled from a non-tax line."
     }
   ]

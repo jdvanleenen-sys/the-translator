@@ -1,0 +1,30 @@
+{
+  "_fixture": "source_file uses a ../ traversal to prove claims from outside the repo",
+  "_expect_gate": "shape",
+  "conversion": "expense-report",
+  "source_file": "../attacker-receipt.txt",
+  "lines": [
+    {
+      "line_no": 1,
+      "date": {
+        "value": "not in source"
+      },
+      "vendor": {
+        "value": "not in source"
+      },
+      "amount": {
+        "value": "not in source"
+      },
+      "currency": {
+        "value": "not in source"
+      },
+      "category": {
+        "value": "not in source"
+      },
+      "tax": {
+        "value": "not in source"
+      }
+    }
+  ],
+  "unmapped_input_lines": []
+}

@@ -108,6 +108,36 @@ const FARE = 'verify/fixtures/sample-receipt-fare.txt'; // 1 RideNow / 2 March 2
   f._injected_claim = 'approved by manager';
   fixtures['fail_annotation-key'] = f; }
 
+// --- v4 fixtures (substring-truncation + evidence-authority) ---
+const MARKET = 'verify/fixtures/sample-receipt-market.txt'; // 1 Green Grocer / 2 14-03-2026 / 3 Apples 4.20 / 4 Bread 3.10 / 5 Member discount -1.00 / 6 7.30 / 7 HST 0.95 / 8 Balance Due 8.25 / 9 Paid Interac
+const marketBase = () => ({
+  conversion: 'expense-report', source_file: MARKET,
+  lines: [{ line_no: 1,
+    date: { value: '14-03-2026', cite: [2] },
+    vendor: { value: 'Green Grocer', cite: [1] },
+    amount: { value: '8.25', cite: [8] },
+    currency: nis,
+    category: nis,
+    tax: { value: '0.95', cite: [7] } }],
+  unmapped_input_lines: [
+    { line: 3, code: 'line_item', note: 'Apples 4.20' },
+    { line: 4, code: 'line_item', note: 'Bread 3.10' },
+    { line: 5, code: 'discount', note: 'Member discount -1.00' },
+    { line: 6, code: 'other', note: '7.30' },
+    { line: 9, code: 'payment_method', note: 'Paid Interac' },
+  ],
+});
+{ const f = marketBase(); f._expect_gate = 'trace'; f._fixture = 'amount "8" is a truncation of the printed 8.25 (substring, not the whole token)';
+  f.lines[0].amount = { value: '8', cite: [8] }; fixtures['fail_truncated-amount'] = f; }
+{ const f = marketBase(); f._expect_gate = 'trace'; f._fixture = 'date "14-03" is a truncation of the printed 14-03-2026';
+  f.lines[0].date = { value: '14-03', cite: [2] }; fixtures['fail_truncated-date'] = f; }
+{ const f = marketBase(); f._expect_gate = 'trace'; f._fixture = 'amount is an empty string (includes("") would otherwise be trivially true)';
+  f.lines[0].amount = { value: '', cite: [8] }; fixtures['fail_empty-amount'] = f; }
+{ const f = { _expect_gate: 'shape', _fixture: 'source_file uses a ../ traversal to prove claims from outside the repo', conversion: 'expense-report', source_file: '../attacker-receipt.txt',
+    lines: [{ line_no: 1, date: nis, vendor: nis, amount: nis, currency: nis, category: nis, tax: nis }],
+    unmapped_input_lines: [] };
+  fixtures['fail_traversal-source'] = f; }
+
 let count = 0;
 for (const [name, obj] of Object.entries(fixtures)) {
   // key order: annotations first, then conversion/source_file/lines/unmapped

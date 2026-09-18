@@ -26,7 +26,7 @@
 
 import { readFileSync, readdirSync, existsSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
-import { dirname, join, resolve } from 'node:path';
+import { dirname, join, resolve, sep } from 'node:path';
 
 const here = dirname(fileURLToPath(import.meta.url));
 const root = join(here, '..');
@@ -41,6 +41,30 @@ function norm(s) {
 }
 function isExemptLine(text) { const t = (text || '').trim(); return t === '' || t === '---'; }
 const samePath = (a, b) => resolve(root, a).replace(/\\/g, '/').toLowerCase() === resolve(root, b).replace(/\\/g, '/').toLowerCase();
+// The evidence file must live inside the repo - an output may not point its source_file at a
+// traversal path (../) or an absolute path outside the project to prove its claims.
+const insideRepo = (p) => { const abs = resolve(root, p); return abs === resolve(root) || abs.startsWith(resolve(root) + sep); };
+
+// Does the value sit on the line as a COMPLETE token? For numeric/date fields, exactToken rejects a
+// truncation: "8" must not match inside "8.25", "14-03" must not match inside "14-03-2026". A match
+// counts only when it is not flanked by a token-continuation char (digit, decimal, comma, date
+// separator). Text fields (vendor, currency, category) use plain substring so "$" glued to a number
+// and multi-word names still match.
+const CONT = /[0-9.,/\-]/;
+function occursOnLine(lineNorm, valNorm, exactToken) {
+  if (valNorm === '') return false;
+  if (!exactToken) return lineNorm.includes(valNorm);
+  let idx = lineNorm.indexOf(valNorm);
+  while (idx !== -1) {
+    const before = idx > 0 ? lineNorm[idx - 1] : '';
+    const after = idx + valNorm.length < lineNorm.length ? lineNorm[idx + valNorm.length] : '';
+    if ((before === '' || !CONT.test(before)) && (after === '' || !CONT.test(after))) return true;
+    idx = lineNorm.indexOf(valNorm, idx + 1);
+  }
+  return false;
+}
+// A monetary value is digits with optional grouping/decimal - never a word like "Due" or empty.
+const isNumericValue = (v) => /^\d[\d.,]*$/.test(norm(v).replace(/\s+/g, ''));
 
 // A value goes in the date field only if it actually looks like a date. Rejects pure amounts.
 function looksLikeDate(v) {
@@ -80,6 +104,7 @@ function computeBlocks(inputLines) {
 // by the runner before validation, so production validation rejects EVERY unexpected key.
 
 function shapeCheck(out, schema, id, errs) {
+  if (typeof out !== 'object' || out === null || Array.isArray(out)) { errs.push(`[shape] top level: output must be a JSON object, got ${Array.isArray(out) ? 'an array' : JSON.stringify(out)}`); return; }
   if (out.conversion !== id) errs.push(`[shape] top level: "conversion" must be "${id}", got ${JSON.stringify(out.conversion)}`);
   if (typeof out.source_file !== 'string') errs.push('[shape] top level: missing "source_file" string');
   for (const k of Object.keys(out)) if (!schema.top_level_keys.includes(k)) errs.push(`[shape] top level: unexpected key "${k}" - only ${schema.top_level_keys.join(', ')} are allowed`);
@@ -127,11 +152,14 @@ function traceCheck(out, schema, inputLines, errs) {
       const bad = cell.cite.find((n) => n < 1 || n > N);
       if (bad !== undefined) { errs.push(`[trace] ${where}.${f.name}: cites input line ${bad}, which does not exist (input has ${N} lines)`); continue; }
       const c = f.constraints || {};
+      if (norm(cell.value) === '') { errs.push(`[trace] ${where}.${f.name}: value is empty - a filled field must carry a real value`); continue; }
+      if (c.numeric && !isNumericValue(cell.value)) errs.push(`[trace] ${where}.${f.name}: value ${JSON.stringify(cell.value)} is not a numeric amount - this field holds a printed number, nothing else`);
       if (c.shape === 'date' && !looksLikeDate(cell.value)) errs.push(`[trace] ${where}.${f.name}: value ${JSON.stringify(cell.value)} is not date-shaped - a non-date value may not be placed in the date field`);
-      const matchLines = cell.cite.filter((n) => norm(inputLines[n - 1]).includes(norm(cell.value)));
+      // exact_token rejects a truncation of a longer number/date ("8" of "8.25", "14-03" of "14-03-2026")
+      const matchLines = cell.cite.filter((n) => occursOnLine(norm(inputLines[n - 1]), norm(cell.value), !!c.exact_token));
       if (matchLines.length === 0) {
         const span = cell.cite.map((n) => `${n}:${JSON.stringify(inputLines[n - 1])}`).join(', ');
-        errs.push(`[trace] ${where}.${f.name}: value not found on any single cited line - invented, mis-cited, or fabricated across lines\n      value: ${JSON.stringify(cell.value)}\n      cited: ${span}`);
+        errs.push(`[trace] ${where}.${f.name}: value not found as a complete token on any single cited line - invented, mis-cited, truncated, or fabricated across lines\n      value: ${JSON.stringify(cell.value)}\n      cited: ${span}`);
         continue;
       }
       if (Array.isArray(c.require_label)) {
@@ -194,6 +222,10 @@ function validateOutput(out, schema, id, pinnedInput = null) {
       errs.push(`[shape] source_file ${JSON.stringify(out.source_file)} does not match the --input the checker was given (${pinnedInput}) - the output may not choose its own evidence`);
     }
     sourceForTrace = pinnedInput;
+  }
+  if (typeof sourceForTrace !== 'string' || !insideRepo(sourceForTrace)) {
+    errs.push(`[shape] source_file ${JSON.stringify(sourceForTrace)} is outside the project directory - evidence must be a file inside the repo, not a traversal (../) or absolute path`);
+    return errs;
   }
   const inputLines = readInputLines(sourceForTrace);
   if (inputLines === null) { errs.push(`[shape] input "${sourceForTrace}" does not exist - cannot trace citations`); return errs; }

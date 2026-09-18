@@ -1,0 +1,9 @@
+Green Grocer
+14-03-2026
+Apples 4.20
+Bread 3.10
+Member discount -1.00
+7.30
+HST 0.95
+Balance Due 8.25
+Paid Interac
