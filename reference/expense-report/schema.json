@@ -1,0 +1,60 @@
+{
+  "id": "expense-report",
+  "name": "Expense report line items",
+  "version": "1.0.0",
+  "description": "One expense-report line per receipt. Fixed field set, fixed order. Every filled field cites the input line(s) its value came from. Anything the receipt does not state is 'not in source', never guessed.",
+  "record_key": "lines",
+  "unmapped_key": "unmapped_input_lines",
+  "not_in_source_marker": "not in source",
+  "fields": [
+    {
+      "name": "line_no",
+      "order": 1,
+      "role": "structural",
+      "traceable": false,
+      "description": "The 1-based row index of this line in the output. The record's own address, not a claim about the receipt. Must equal its position in the lines array. Never carries a citation."
+    },
+    {
+      "name": "date",
+      "order": 2,
+      "role": "source",
+      "traceable": true,
+      "description": "The transaction date exactly as printed on the receipt. Not normalized. A receipt that says 'Jan 3' with no year stays 'Jan 3'; the year is not invented."
+    },
+    {
+      "name": "vendor",
+      "order": 3,
+      "role": "source",
+      "traceable": true,
+      "description": "The merchant/vendor name exactly as it appeared. Not expanded, not corrected to its usual spelling."
+    },
+    {
+      "name": "amount",
+      "order": 4,
+      "role": "source",
+      "traceable": true,
+      "description": "The transaction total exactly as printed. Never computed. If no total is printed, 'not in source' - item prices are not summed."
+    },
+    {
+      "name": "currency",
+      "order": 5,
+      "role": "source",
+      "traceable": true,
+      "description": "The currency symbol or code as printed ($, USD, CAD, EUR...). Never assumed from locale or amount format."
+    },
+    {
+      "name": "category",
+      "order": 6,
+      "role": "source",
+      "traceable": true,
+      "description": "The expense category ONLY if the receipt literally states one (e.g. a printed 'Category: Meals' line). Never inferred from the vendor or items. Almost always 'not in source' - that is correct behavior, not a gap."
+    },
+    {
+      "name": "tax",
+      "order": 7,
+      "role": "source",
+      "traceable": true,
+      "description": "The tax amount exactly as printed on a tax line (GST, VAT, Sales Tax...). Never computed as total minus subtotal."
+    }
+  ]
+}
