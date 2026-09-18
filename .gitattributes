@@ -1,0 +1,5 @@
+# Force LF line endings on checkout for all text files, on every platform.
+# Without this, a Windows clone with git core.autocrlf=true gets CRLF, which can break
+# newline-sensitive line-number citation logic the checker depends on. The checker is
+# also CRLF-tolerant as defense in depth; this keeps the checkout itself consistent.
+* text=auto eol=lf
