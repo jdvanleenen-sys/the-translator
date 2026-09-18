@@ -91,6 +91,15 @@ Fixtures 19 -> 23. Both reviewers' exploits now fail; one reviewer stated it saw
 structural escape hatch. The residual limits are `vendor` (free text, read-verified), a `not in
 source` sharing a cited line, and duplicate JSON keys (last-wins, no reader-vs-checker gap).
 
+## Self-red-team pass (2026-09-18, three internal rounds)
+
+Between external reviews, three rounds of internal adversarial testing (devise hard pairs -> run ->
+fix -> re-test) found and fixed six bugs: currency/category truncation (extended complete-token to
+text fields with an alpha boundary), a wrongly-rejected refund total (numeric allows a leading minus),
+a `Total Tax` line feeding amount (added `tax` to amount forbid), currency capturing the amount
+(no-digits on currency), and category holding its own label word (require-label value may not be a
+label word). Fixtures 23 -> 28; a passing refund receipt locks negative handling. No regression.
+
 ## Done (one sentence)
 
 One translator folder plus a forked checker that proves the output shape holds across three

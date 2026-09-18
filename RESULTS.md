@@ -137,3 +137,20 @@ Exit 0.
 
 Both reviewers also produced the correct market translation from the contract alone (`amount 8.25`,
 not the bare `7.30`; date kept as `14-03-2026`).
+
+---
+
+## Self-red-team run - 2026-09-18 (v5, three internal adversarial rounds)
+
+Three rounds of internal attack (hard input/output pairs with expected verdicts) surfaced six real
+bugs, all fixed and locked as fixtures; a passing refund receipt locks negative-total handling.
+
+- Round 1: currency/category truncation passed (fixed: alpha-boundary exact-token); refund `-5.00`
+  wrongly failed (fixed: numeric allows leading minus).
+- Round 2: `Total Tax` fed amount (fixed: `tax` added to amount forbid); currency captured the amount
+  (fixed: no-digits on currency).
+- Round 3: category held its own label word `Category` (fixed: require-label value may not be a label word).
+
+Final: 4 outputs traced clean (coffee, hardware, hotel, refund), 28 fixtures each failing through its
+declared gate, fresh-clone green, CI green on GitHub. No regression - the outputs using `$`, `EUR`,
+`Lodging`, and a negative refund all still pass.

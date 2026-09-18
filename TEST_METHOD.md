@@ -138,3 +138,27 @@ Fixtures grew 19 -> 23: `fail_truncated-amount`, `fail_truncated-date`, `fail_em
 `fail_traversal-source`. Verified directly: both reviewers' new exploits (amount `8` from
 `Balance Due 8.25`; a `../` traversal source_file in unpinned mode) now fail, and the correct market
 translation (`amount 8.25`) passes under `--input`.
+
+---
+
+## Self-red-team pass — added 2026-09-18 (three rounds, adversary + fixer)
+
+Between external reviews, ran three rounds of internal adversarial testing: devise hard
+(input, output) pairs with an expected verdict, run them, treat any mismatch as a bug, fix, re-test.
+Six real bugs found and fixed; each is now a permanent kept-red fixture, and a passing refund receipt
+(`inputs/receipts-refund.txt`) locks negative-total handling.
+
+- **Round 1:** currency truncation (`US` of `USD`) and category truncation (`Lodg` of `Lodging`)
+  passed - the complete-token rule was only on numeric/date fields. Fixed by extending exact-token to
+  currency/category with an **alpha boundary** (so `$` glued to digits still traces). Also a
+  legitimate refund total `-5.00` was wrongly rejected; the numeric guard now allows a leading minus.
+- **Round 2:** a `Total Tax 5.00` line fed `amount` (forbid list lacked bare `tax`) - added `tax` to
+  the amount forbid list. `currency` could capture the amount (`$5.00`) - added a no-digits rule to
+  currency.
+- **Round 3:** `category` could hold the label word `Category` itself - a require-label field now
+  rejects a value equal to one of its own label words.
+
+Fixtures grew 23 -> 28: `fail_truncated-currency`, `fail_truncated-category`, `fail_total-tax-as-amount`,
+`fail_currency-has-digits`, `fail_category-is-label`. New disclosed limit: an ambiguous sole-total
+label carrying a tax word (`Total incl. tax`) is read by eye; the common `Total Tax` confusion is caught.
+Confirmed no regression: the real outputs (with `$`, `EUR`, `Lodging`, and a negative refund) all still pass.
