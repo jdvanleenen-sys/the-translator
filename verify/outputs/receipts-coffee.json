@@ -1,0 +1,20 @@
+{
+  "conversion": "expense-report",
+  "source_file": "inputs/receipts-coffee.txt",
+  "lines": [
+    {
+      "line_no": 1,
+      "date":     { "value": "Jan 3", "cite": [2] },
+      "vendor":   { "value": "Blue Ridge Coffee Co", "cite": [1] },
+      "amount":   { "value": "6.50", "cite": [4] },
+      "currency": { "value": "not in source" },
+      "category": { "value": "not in source" },
+      "tax":      { "value": "not in source" }
+    }
+  ],
+  "unmapped_input_lines": [
+    { "line": 3, "reason": "line item (1 Large Latte); schema has no per-item field" },
+    { "line": 5, "reason": "card mask, no schema field" },
+    { "line": 6, "reason": "loyalty points balance, no schema field" }
+  ]
+}

@@ -1,0 +1,31 @@
+{
+  "conversion": "expense-report",
+  "source_file": "inputs/receipts-hardware.txt",
+  "lines": [
+    {
+      "line_no": 1,
+      "date":     { "value": "03/14/2026", "cite": [2] },
+      "vendor":   { "value": "HARDWARE DEPOT #42", "cite": [1] },
+      "amount":   { "value": "39.36", "cite": [7] },
+      "currency": { "value": "$", "cite": [7] },
+      "category": { "value": "not in source" },
+      "tax":      { "value": "1.87", "cite": [6] }
+    },
+    {
+      "line_no": 2,
+      "date":     { "value": "Mar 15 2026", "cite": [10] },
+      "vendor":   { "value": "Corner Lumber", "cite": [9] },
+      "amount":   { "value": "88.00", "cite": [12] },
+      "currency": { "value": "$", "cite": [12] },
+      "category": { "value": "not in source" },
+      "tax":      { "value": "not in source" }
+    }
+  ],
+  "unmapped_input_lines": [
+    { "line": 3, "reason": "line item (Garden hose); schema has no per-item field" },
+    { "line": 4, "reason": "line item (Work gloves); schema has no per-item field" },
+    { "line": 5, "reason": "subtotal line; schema records the printed total, not the subtotal" },
+    { "line": 11, "reason": "line item (2x4 stud x10); schema has no per-item field" },
+    { "line": 13, "reason": "payment method line, no schema field" }
+  ]
+}

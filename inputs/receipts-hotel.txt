@@ -1,0 +1,8 @@
+Hotel Rivoli — Paris
+Invoice 2026-02-08
+Category: Lodging
+Room (2 nights) 240.00
+City tax 4.40
+VAT 24.44
+Total EUR 268.84
+Paid by card

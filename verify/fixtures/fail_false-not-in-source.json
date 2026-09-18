@@ -1,0 +1,20 @@
+{
+  "_fixture": "date is marked 'not in source' even though line 2 ('Jan 3') is a date. Line 2 is left unaccounted (not cited, not unmapped), so a hollow 'not in source' hiding a real value is caught by the coverage gate. MUST fail. (This catches the false-not-in-source case only when the skipped value sits on its own line; a value sharing a line another field cites is the documented limit in README.md.)",
+  "conversion": "expense-report",
+  "source_file": "verify/fixtures/sample-receipt.txt",
+  "lines": [
+    {
+      "line_no": 1,
+      "date":     { "value": "not in source" },
+      "vendor":   { "value": "Blue Ridge Coffee Co", "cite": [1] },
+      "amount":   { "value": "6.50", "cite": [4] },
+      "currency": { "value": "not in source" },
+      "category": { "value": "not in source" },
+      "tax":      { "value": "not in source" }
+    }
+  ],
+  "unmapped_input_lines": [
+    { "line": 3, "reason": "line item" },
+    { "line": 5, "reason": "card mask" }
+  ]
+}

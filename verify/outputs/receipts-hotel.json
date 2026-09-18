@@ -1,0 +1,20 @@
+{
+  "conversion": "expense-report",
+  "source_file": "inputs/receipts-hotel.txt",
+  "lines": [
+    {
+      "line_no": 1,
+      "date":     { "value": "2026-02-08", "cite": [2] },
+      "vendor":   { "value": "Hotel Rivoli — Paris", "cite": [1] },
+      "amount":   { "value": "268.84", "cite": [7] },
+      "currency": { "value": "EUR", "cite": [7] },
+      "category": { "value": "Lodging", "cite": [3] },
+      "tax":      { "value": "4.40", "cite": [5] }
+    }
+  ],
+  "unmapped_input_lines": [
+    { "line": 4, "reason": "line item (Room, 2 nights); schema has no per-item field" },
+    { "line": 6, "reason": "second printed tax line (VAT); schema records one tax and never sums tax lines" },
+    { "line": 8, "reason": "payment method line, no schema field" }
+  ]
+}

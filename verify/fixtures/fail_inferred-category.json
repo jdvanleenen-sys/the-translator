@@ -1,0 +1,20 @@
+{
+  "_fixture": "category 'Meals' inferred from the vendor; the word is not on the cited line. MUST fail the trace gate.",
+  "conversion": "expense-report",
+  "source_file": "verify/fixtures/sample-receipt.txt",
+  "lines": [
+    {
+      "line_no": 1,
+      "date":     { "value": "Jan 3", "cite": [2] },
+      "vendor":   { "value": "Blue Ridge Coffee Co", "cite": [1] },
+      "amount":   { "value": "6.50", "cite": [4] },
+      "currency": { "value": "not in source" },
+      "category": { "value": "Meals", "cite": [1] },
+      "tax":      { "value": "not in source" }
+    }
+  ],
+  "unmapped_input_lines": [
+    { "line": 3, "reason": "line item" },
+    { "line": 5, "reason": "card mask" }
+  ]
+}
