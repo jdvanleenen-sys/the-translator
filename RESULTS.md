@@ -54,5 +54,13 @@ Each fixture was run alone to confirm it fails for the gate it targets, not inci
 
 ## Fresh-clone verification
 
-_To be filled by running a clean clone (see the fresh-clone step). Recorded here with the exit
-code, not asserted._
+Recorded 2026-09-18. A clean `git clone` of the repo into a fresh directory (no local state) was
+run with `node verify/check.mjs`.
+
+- `file` on the checked-out files reports LF text (ASCII / UTF-8), no CRLF - `.gitattributes
+  eol=lf` held on checkout.
+- `node verify/check.mjs` on the fresh clone exited `0`: all three outputs traced clean, all eight
+  fixtures failed as required.
+
+This is the standing gate that catches a verify command which only works with local state (it cost
+an entrant a tier in Comp #12, and caught a CRLF bug in ours the same cycle).
