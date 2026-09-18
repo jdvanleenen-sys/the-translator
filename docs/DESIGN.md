@@ -68,6 +68,18 @@ The reviewers' own exploit outputs now fail. This deepens the #12-winning move: 
 now engineers out semantic mis-mapping, not just invention. `vendor` semantic correctness remains a
 disclosed reading-only limit (a vendor name is free text).
 
+## Hardening pass 2 (2026-09-18, third cross-brain round)
+
+A second review round confirmed round-1 and converged on: `amount` was a blacklist (forbid
+subtotal/tax) without a positive total-label requirement, so a fare could pose as the total; a cell
+object could carry invented keys; underscore keys leaked past validation; and `source_file` was not
+externally pinned. Fixes: `amount` now requires a total-labeled line (unlabeled -> `not in source`);
+cells are closed to `value`/`cite`; the annotation exemption is removed from production (only the two
+harness keys are stripped from fixtures); and `--input` binds the evidence file so an output cannot
+choose its own input. Fixtures 16 -> 19. Both reviewers' new exploits now fail. Disclosed limit:
+duplicate JSON keys resolve last-wins as in any reader, so the single judged artifact has no
+reader-vs-checker gap; not rejected at raw-text level.
+
 ## Done (one sentence)
 
 One translator folder plus a forked checker that proves the output shape holds across three

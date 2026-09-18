@@ -85,3 +85,31 @@ with `date: "Total"`; wrong-field mapping with extra keys and a bad conversion) 
 New known limit (stated with the change): `vendor` is free text, so the checker cannot prove the
 cited line is the merchant line rather than other text; that one field is verified by reading.
 Disclosed in `README.md`.
+
+---
+
+## Hardening pass 2 — added 2026-09-18 (third cross-brain round)
+
+A second round of independent review (Perplexity and ChatGPT again) confirmed the round-1 fixes and
+converged on new items. All are now closed; original tests and pass bars unchanged.
+
+- **amount, positive label (the convergent fatal item):** `amount` now requires a total-labeled line
+  (`total`, `amount due`, `balance due`, `balance`, `amount payable`, `grand total`, `amount paid`,
+  `total paid`) in addition to forbidding subtotal/tax lines. A fare or line-item number can no
+  longer pose as the total; an unlabeled number becomes `not in source`. Pass bar: an amount not on a
+  total-labeled line fails `[trace]`.
+- **closed cells:** a field cell holds only `value` (and `cite` when filled); any extra key inside a
+  cell fails `[shape]`. Pass bar: `{ "value": "6.50", "cite": [4], "approved_by": "x" }` fails.
+- **no annotation escape hatch in production:** the underscore-key exemption is gone from output
+  validation; the runner strips only the two harness keys (`_fixture`, `_expect_gate`) from a fixture
+  before validating it strictly. Pass bar: any `_`-prefixed key in a real output fails `[shape]`.
+- **evidence pinning:** `node verify/check.mjs --input <in> --output <out>` requires `out.source_file`
+  to resolve to `<in>` and traces against `<in>`, so an output cannot choose its own evidence.
+
+Fixtures grew 16 -> 19: `fail_lineitem-as-amount`, `fail_extra-cell-key`, `fail_annotation-key`.
+Verified directly: both reviewers' new exploit outputs (a fare used as amount; an invented key inside
+a cell plus an underscore top-level key) now fail, and `--input` rejects a source_file mismatch.
+
+Disclosed limit (not fixed, by design): duplicate JSON keys are resolved last-wins by `JSON.parse`,
+as by any standard reader; the checker validates the single saved artifact a judge runs, so there is
+no reader-vs-checker discrepancy in the judging flow. Not rejected at the raw-text level. See `README.md`.

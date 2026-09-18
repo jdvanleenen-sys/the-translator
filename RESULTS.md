@@ -89,3 +89,26 @@ Both were constructed by the reviewers as outputs that passed the old checker. B
 
 Both reviewers also ran the live cross-brain test (translate the unseen rideshare receipt using only
 the contract) and independently produced the correct, invention-free output.
+
+---
+
+## Hardening run — 2026-09-18 (v3, after the second cross-brain round)
+
+A second review round confirmed the round-1 fixes and found new items (amount blacklist-not-whitelist,
+invented key inside a cell, underscore-key leak, source_file not externally pinned). All closed. Ran
+`node verify/check.mjs` after the fixes. Exit 0.
+
+- 3 outputs traced clean.
+- 19 fixtures each failed through its declared gate (10 `[trace]`, 5 `[shape]`, 2 `[coverage]`, 2 `[block]`).
+- Fresh clone of the hardened repo: exit 0.
+
+### The new reviewer exploits, run directly against the v3 checker
+
+- **Perplexity fare-as-amount** (`amount: 18.40` from `Fare 18.40` while `Total CAD 16.42` exists):
+  fails `[trace]` - amount not on a total-labeled line.
+- **ChatGPT cell-key + underscore injection** (`amount: {value, cite, approved_by_manager}` plus a
+  top-level `_invented` key): fails `[shape]` on both the nested cell key and the underscore key.
+- **Evidence pinning:** `--input inputs/receipts-coffee.txt --output <hotel output>` fails `[shape]`
+  (source_file mismatch); `--input` matching the output passes. An output cannot choose its own input.
+
+Both reviewers again produced the correct rideshare translation from the contract alone.
