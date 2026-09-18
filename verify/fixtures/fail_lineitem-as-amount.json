@@ -1,0 +1,42 @@
+{
+  "_fixture": "amount taken from a line item (Fare 18.40) not the printed Total",
+  "_expect_gate": "trace",
+  "conversion": "expense-report",
+  "source_file": "verify/fixtures/sample-receipt-fare.txt",
+  "lines": [
+    {
+      "line_no": 1,
+      "date": {
+        "value": "March 2",
+        "cite": [
+          2
+        ]
+      },
+      "vendor": {
+        "value": "RideNow",
+        "cite": [
+          1
+        ]
+      },
+      "amount": {
+        "value": "18.40",
+        "cite": [
+          3
+        ]
+      },
+      "currency": {
+        "value": "CAD",
+        "cite": [
+          4
+        ]
+      },
+      "category": {
+        "value": "not in source"
+      },
+      "tax": {
+        "value": "not in source"
+      }
+    }
+  ],
+  "unmapped_input_lines": []
+}

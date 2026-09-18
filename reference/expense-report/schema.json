@@ -48,8 +48,11 @@
       "order": 4,
       "role": "source",
       "traceable": true,
-      "constraints": { "forbid_label": ["subtotal", "sub-total", "sub total", "gst", "hst", "pst", "qst", "vat"] },
-      "description": "The transaction total exactly as printed on the total line. Never computed, never the subtotal, never a tax line. If no total is printed, 'not in source'."
+      "constraints": {
+        "require_label": ["total", "amount due", "balance due", "balance", "amount payable", "grand total", "amount paid", "total paid"],
+        "forbid_label": ["subtotal", "sub-total", "sub total", "gst", "hst", "pst", "qst", "vat"]
+      },
+      "description": "The transaction total exactly as printed on a total-labeled line (Total, Amount Due, Balance Due...). Never computed, never the subtotal, never a tax line, never a line-item or fare. If no total-labeled line is printed, 'not in source' - an unlabeled number is not assumed to be the total."
     },
     {
       "name": "currency",

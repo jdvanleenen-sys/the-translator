@@ -46,8 +46,13 @@ cited to that same line. This is a remap into the fixed fields, not an invention
 ## How the contract is checked
 
 `node verify/check.mjs` reads each output in `verify/outputs/`, opens the `source_file` it names,
-and runs four gates: shape (all fields present, in order, no stray keys, envelope pinned), trace
-(each value sits in a single cited line, of the right kind for its field), coverage (every non-blank
-input line cited or listed unmapped with a controlled code), and block (one line per receipt, cites
-stay inside their block). It then confirms every `verify/fixtures/fail_*.json` fails through the gate
-it declares. Any failure exits non-zero and prints the diagnostic.
+and runs four gates: shape (all fields present, in order, no stray keys at any level including inside
+a cell, envelope pinned), trace (each value sits in a single cited line, of the right kind for its
+field - amount on a total line, tax on a tax line, category on a category line, date date-shaped),
+coverage (every non-blank input line cited or listed unmapped with a controlled code), and block (one
+line per receipt, cites stay inside their block). It then confirms every `verify/fixtures/fail_*.json`
+fails through the gate it declares. Any failure exits non-zero and prints the diagnostic.
+
+To check a fresh run and pin the evidence (so the output cannot name a different input than the one
+fed to the translator): `node verify/check.mjs --input <receipt>.txt --output <output>.json`. The
+output's `source_file` must resolve to `<receipt>.txt`, and citations are traced against it.

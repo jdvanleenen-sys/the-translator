@@ -90,6 +90,24 @@ const fixtures = {};
     unmapped_input_lines: [{ line: 4, code: 'other', note: 'Jan 4' }, { line: 5, code: 'other', note: 'Total 5.00' }] };
   fixtures['fail_dropped-receipt'] = f; }
 
+// --- v3 fixtures (third cross-brain round: closed envelope + amount total-label) ---
+const FARE = 'verify/fixtures/sample-receipt-fare.txt'; // 1 RideNow / 2 March 2 / 3 Fare 18.40 / 4 Total CAD 16.42
+{ const f = { _expect_gate: 'trace', _fixture: 'amount taken from a line item (Fare 18.40) not the printed Total', conversion: 'expense-report', source_file: FARE,
+    lines: [{ line_no: 1,
+      date: { value: 'March 2', cite: [2] },
+      vendor: { value: 'RideNow', cite: [1] },
+      amount: { value: '18.40', cite: [3] },
+      currency: { value: 'CAD', cite: [4] },
+      category: nis, tax: nis }],
+    unmapped_input_lines: [] };
+  fixtures['fail_lineitem-as-amount'] = f; }
+{ const f = simple(); f._expect_gate = 'shape'; f._fixture = 'an invented factual claim smuggled inside the amount cell object';
+  f.lines[0].amount = { value: '6.50', cite: [4], approved_by_manager: 'Johannes' };
+  fixtures['fail_extra-cell-key'] = f; }
+{ const f = simple(); f._expect_gate = 'shape'; f._fixture = 'an underscore-prefixed key must NOT be exempt in a production output';
+  f._injected_claim = 'approved by manager';
+  fixtures['fail_annotation-key'] = f; }
+
 let count = 0;
 for (const [name, obj] of Object.entries(fixtures)) {
   // key order: annotations first, then conversion/source_file/lines/unmapped

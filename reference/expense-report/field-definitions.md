@@ -29,7 +29,10 @@ and `schema.json` next to it and check, field by field, whether the translator k
 - **`source_file`** — repo-relative path to the input text. The checker numbers its physical lines
   1..N and validates every citation against those numbers.
 - **`lines`** — one object per receipt. N receipts → N lines. No extra keys; the shape is closed.
-- Each field is `{ "value": "<text>", "cite": [<lines>] }` or `{ "value": "not in source" }`.
+- Each field is `{ "value": "<text>", "cite": [<lines>] }` or `{ "value": "not in source" }`. A cell
+  is **closed**: it holds only `value` (and `cite` when filled). No other key may ride inside it -
+  the checker rejects any extra property, so an invented claim cannot be smuggled into a cell. There
+  is no annotation escape hatch in a real output: every key at every level is checked.
 
 ## The structural envelope (declared, not invented)
 
@@ -52,7 +55,7 @@ invented content to hide:
 | 1 | `line_no` | no | The row's 1-based index. Envelope, not a receipt claim. | equals its position in `lines` |
 | 2 | `date` | yes | Exactly as printed; no year added; not normalized. | value must be **date-shaped** |
 | 3 | `vendor` | yes | Exactly as it appeared; not expanded or corrected. | (free text; see limit in README) |
-| 4 | `amount` | yes | The printed **total**; never summed; no total → `not in source`. | sourcing line must **not** be a subtotal/tax line |
+| 4 | `amount` | yes | The printed **total**; never summed; no total-labeled line → `not in source`. | sourcing line must be **total-labeled** and **not** a subtotal/tax line |
 | 5 | `currency` | yes | Symbol/code as printed; never assumed. | — |
 | 6 | `category` | yes | Only if the receipt prints a category; never inferred. | sourcing line must be **category-labeled** |
 | 7 | `tax` | yes | As printed on a tax line; never computed. | sourcing line must be **tax-labeled** |

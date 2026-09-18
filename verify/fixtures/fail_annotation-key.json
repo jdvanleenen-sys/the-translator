@@ -1,0 +1,51 @@
+{
+  "_fixture": "an underscore-prefixed key must NOT be exempt in a production output",
+  "_expect_gate": "shape",
+  "conversion": "expense-report",
+  "source_file": "verify/fixtures/sample-receipt.txt",
+  "lines": [
+    {
+      "line_no": 1,
+      "date": {
+        "value": "Jan 3",
+        "cite": [
+          2
+        ]
+      },
+      "vendor": {
+        "value": "Blue Ridge Coffee Co",
+        "cite": [
+          1
+        ]
+      },
+      "amount": {
+        "value": "6.50",
+        "cite": [
+          4
+        ]
+      },
+      "currency": {
+        "value": "not in source"
+      },
+      "category": {
+        "value": "not in source"
+      },
+      "tax": {
+        "value": "not in source"
+      }
+    }
+  ],
+  "unmapped_input_lines": [
+    {
+      "line": 3,
+      "code": "line_item",
+      "note": "1 Large Latte"
+    },
+    {
+      "line": 5,
+      "code": "card_mask",
+      "note": "Card ****1234"
+    }
+  ],
+  "_injected_claim": "approved by manager"
+}

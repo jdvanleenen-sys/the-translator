@@ -29,9 +29,11 @@ See `examples.md` for three worked pairs.
 Besides the receipt values, the output carries a small envelope that is not a claim about the
 receipt: the field names, `line_no` (row index), `source_file`, `conversion`, and the controlled
 `unmapped_input_lines` reason codes. These are declared in `reference/` and each is pinned by the
-checker (conversion must equal the schema id, no stray keys are allowed, line_no must equal its row
-index, reason codes must come from the fixed vocabulary), so the envelope cannot become a place for
-invented content to hide.
+checker (conversion must equal the schema id, no stray keys are allowed at any level - including
+inside a field cell and including underscore-prefixed keys, line_no must equal its row index, reason
+codes must come from the fixed vocabulary), so the envelope cannot become a place for invented
+content to hide. `source_file` is confirmed to exist, and is pinned to the input the verifier chose
+when the checker is run with `--input` (see below).
 
 ## The promise, and how to check it
 
@@ -48,20 +50,30 @@ This reads every output in `verify/outputs/`, opens the input file it names, and
   `conversion` pinned to the schema id; `line_no` equal to its row index.
 - **trace** - every filled value sits in a single cited input line (not merely somewhere, not
   fabricated across lines), **and of the right kind for its field**: a tax on a tax line, a category
-  on a category-labeled line, an amount not on a subtotal/tax line, a date that is date-shaped.
+  on a category-labeled line, an amount on a total-labeled line (never a subtotal/tax line or a
+  fare), a date that is date-shaped.
 - **coverage** - every non-blank input line is either cited by a field or listed as unmapped with a
   controlled reason code (and any note must quote its line), so nothing is dropped silently.
-- **fixtures** - sixteen planted flaws in `verify/fixtures/fail_*.json` (computed total, inferred
+- **fixtures** - nineteen planted flaws in `verify/fixtures/fail_*.json` (computed total, inferred
   category, assumed currency, invented year, expanded vendor, dropped line, missing field, hollow
-  `not in source`, extra field, wrong conversion, cross-line value, subtotal-as-amount, tax from a
-  non-tax line, item-as-category, number-as-date, cross-block citation, dropped receipt) that MUST
-  fail - and each must fail **through the gate it declares**, so a fixture cannot pass by failing for
-  the wrong reason.
+  `not in source`, extra field, wrong conversion, cross-line value, subtotal-as-amount,
+  line-item-as-amount, tax from a non-tax line, item-as-category, number-as-date, cross-block
+  citation, dropped receipt, invented key inside a cell, underscore-key injection) that MUST fail -
+  and each must fail **through the gate it declares**, so a fixture cannot pass by failing for the
+  wrong reason.
 
 To check a single output: `node verify/check.mjs --output verify/outputs/receipts-coffee.json`.
 
-To check your own run: save Claude's JSON to a file whose `source_file` points at your input text,
-then run `node verify/check.mjs --output <your-file>.json`.
+To check your own run, pinning the evidence so the output cannot name a different input than the one
+you fed:
+
+```
+node verify/check.mjs --input <your-receipt>.txt --output <your-output>.json
+```
+
+The output's `source_file` must resolve to `<your-receipt>.txt`, and every citation is traced
+against that file. (Without `--input`, the checker trusts the `source_file` the output names - fine
+for the shipped outputs, which name their own inputs.)
 
 ## The contract
 
@@ -80,6 +92,10 @@ Stated plainly rather than hidden:
   that a *different* field already cites is not caught mechanically (coverage still sees the line as
   accounted for). Caught by reading. The common case - the skipped value on its own line - is caught
   by coverage.
+- **Duplicate JSON keys.** The checker validates the parsed object, so if a hand-crafted file
+  contained the same key twice, `JSON.parse` keeps the last (as does any standard JSON reader), and
+  the checker validates that same last value - there is no human-vs-checker discrepancy in the single
+  saved artifact a judge runs. It does not separately reject duplicate keys at the raw-text level.
 
 ## What it does not do
 

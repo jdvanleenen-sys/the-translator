@@ -30,8 +30,10 @@ The output also carries a small **structural envelope** that is not a claim abou
 is declared in the contract, not invented: the field names themselves, `line_no` (the row's own
 index), `source_file` (which input this record is of), `conversion` (which conversion this is), and
 the controlled `unmapped_input_lines` reason codes. None of these assert a fact about the receipt;
-they are the record's own scaffolding. The checker pins every one of them (see `reference/` and
-`README.md`) so the envelope cannot become a hiding place for invented content.
+they are the record's own scaffolding. The checker pins them (see `reference/` and `README.md`):
+`conversion` must equal the schema id, `line_no` its row index, reason codes the fixed vocabulary,
+no stray keys anywhere (including inside a cell), and `source_file` is bound to the verifier's chosen
+input when run with `--input`. So the envelope cannot become a hiding place for invented content.
 
 ## Who does this by hand today
 

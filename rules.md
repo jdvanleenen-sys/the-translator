@@ -30,8 +30,10 @@ assembled across two lines. Cite the narrowest line that contains the value.
   like a date; a bare number is not a date.
 - **`vendor`** - the merchant name **exactly as it appeared**. Do not expand `Co` to `Company`,
   do not fix a misspelling, do not drop a store number.
-- **`amount`** - the transaction **total** exactly as printed on the total line. It must **not** be
-  taken from a subtotal line or a tax line. If no total is printed, `not in source`. Never sum the items.
+- **`amount`** - the transaction **total** exactly as printed on a **total-labeled line** (`Total`,
+  `Amount Due`, `Balance Due`, `Balance`, `Amount Payable`, `Grand Total`). It must **not** be taken
+  from a subtotal line, a tax line, or a line item/fare. If no total-labeled line is printed, `not in
+  source` - a bare unlabeled number is not assumed to be the total. Never sum the items.
 - **`currency`** - the symbol or code as printed (`$`, `USD`, `CAD`, `EUR`, `£`). If none is
   printed, `not in source`. Never assume it. When the total line prints the code and the number
   together (e.g. `Total CAD 16.42`), `amount` is the numeric portion (`16.42`) and `currency` is the
@@ -52,10 +54,10 @@ assembled across two lines. Cite the narrowest line that contains the value.
 ## Sourced from the right kind of line
 
 Fidelity is not only "the value is on the cited line," it is "the value came from the right kind of
-line." A number that appears on the subtotal line is not the amount; loyalty points that happen to
-be a number are not tax; a line item is not a category. The checker enforces this for `amount`
-(not a subtotal/tax line), `tax` (must be a tax-labeled line), `category` (must be a
-category-labeled line), and `date` (must be date-shaped).
+line." A number that appears on the subtotal line is not the amount; a fare is not the total;
+loyalty points that happen to be a number are not tax; a line item is not a category. The checker
+enforces this for `amount` (must be a total-labeled line, never a subtotal/tax line), `tax` (must be
+a tax-labeled line), `category` (must be a category-labeled line), and `date` (must be date-shaped).
 
 ## Deterministic tie-breakers (so the mapping is repeatable, never a judgment call)
 
