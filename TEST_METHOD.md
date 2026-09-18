@@ -53,3 +53,35 @@ mechanically (coverage still sees the line as accounted for). It is caught by re
 The recorded human walk (a non-technical person tracing an output field back to the input by hand,
 on tape) is a separate receipt, added when recorded. Any relationship between the walker and the
 author is disclosed up front.
+
+---
+
+## Hardening pass — added 2026-09-18 (after the original freeze above)
+
+The original method (frozen earlier this day) stands. This section is a dated method change, not an
+edit to it, prompted by two independent cross-brain reviews (Perplexity and ChatGPT) that both named
+the same weakness: the trace gate proved a value sat on its cited line but not that it came from the
+right KIND of line. The following gates and fixtures were added; the original tests and pass bars are
+unchanged.
+
+New gates (all still offline, in `node verify/check.mjs`):
+- **trace, line-kind:** `category` must be sourced from a category-labeled line; `tax` from a
+  tax-labeled line; `amount` must NOT be sourced from a subtotal or tax line; `date` must be
+  date-shaped. Pass bar: a value on the wrong kind of line fails.
+- **trace, single-line:** the value must sit in one cited line, not a synthetic join of several.
+- **shape, closed envelope:** no stray keys at any level; `conversion` must equal the schema id;
+  field order must match the schema; `unmapped_input_lines[].code` must be one of the controlled
+  reason codes; a `note`, if present, must quote its line.
+- **block:** one output line per `---` receipt block, and a line's citations must stay inside its block.
+
+Fixtures grew from 8 to 16, and each now declares an `_expect_gate`; the runner asserts each fixture
+fails **through its intended gate**, not merely for some reason. New fixtures: `fail_subtotal-as-amount`,
+`fail_tax-from-non-tax-line`, `fail_item-as-category`, `fail_number-as-date`, `fail_cross-line-value`,
+`fail_extra-field`, `fail_wrong-conversion`, `fail_cross-block-citation`, `fail_dropped-receipt`.
+
+Also verified directly: the two exact exploit outputs the reviewers constructed (subtotal-as-amount
+with `date: "Total"`; wrong-field mapping with extra keys and a bad conversion) now both fail.
+
+New known limit (stated with the change): `vendor` is free text, so the checker cannot prove the
+cited line is the merchant line rather than other text; that one field is verified by reading.
+Disclosed in `README.md`.
