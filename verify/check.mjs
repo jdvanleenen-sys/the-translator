@@ -71,6 +71,16 @@ function occursOnLine(lineNorm, valNorm, boundaryRe) {
 // word like "Due", never empty.
 const isNumericValue = (v) => /^-?\d[\d.,]*$/.test(norm(v).replace(/\s+/g, ''));
 
+// Does a label word appear on the line as a WHOLE word (bounded by start/end or a non-alphanumeric)?
+// Word-boundary matching, not substring: "total" must not match inside "subtotal", "tax" must not
+// match inside "taxi". lineNorm is already lowercased/whitespace-collapsed.
+function labelOnLine(lineNorm, kw) {
+  const k = (kw || '').trim().toLowerCase();
+  if (!k) return false;
+  const esc = k.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+  return new RegExp('(^|[^a-z0-9])' + esc + '([^a-z0-9]|$)').test(lineNorm);
+}
+
 // Detect a duplicate key within the same JSON object at the raw-text level. JSON.parse keeps the last
 // value, so a file could show a reader one value and hand the checker another; this rejects that.
 // A string immediately followed by ':' is a key; each object frame tracks the keys it has seen.
@@ -197,13 +207,23 @@ function traceCheck(out, schema, inputLines, errs) {
         errs.push(`[trace] ${where}.${f.name}: value not found as a complete token on any single cited line - invented, mis-cited, truncated, or fabricated across lines\n      value: ${JSON.stringify(cell.value)}\n      cited: ${span}`);
         continue;
       }
-      if (Array.isArray(c.require_label)) {
-        const ok = matchLines.some((n) => c.require_label.some((kw) => norm(inputLines[n - 1]).includes(kw)));
-        if (!ok) errs.push(`[trace] ${where}.${f.name}: value is present but not on a ${f.name}-labeled line (expected one of: ${c.require_label.join(', ')}) - wrong field, or an unlabeled value that should be "${marker}"`);
-      }
-      if (Array.isArray(c.forbid_label)) {
-        const clean = matchLines.some((n) => !c.forbid_label.some((kw) => norm(inputLines[n - 1]).includes(kw)));
-        if (!clean) errs.push(`[trace] ${where}.${f.name}: value is sourced from a disallowed line kind - the cited line carries one of: ${c.forbid_label.join(', ')}`);
+      // Right-kind check, on ONE line at a time: a SINGLE cited line must hold the value AND carry a
+      // require-word AND carry no forbid-word. Quantifying require/forbid separately over the whole
+      // citation set let an attacker assemble "right kind" from two lines (a subtotal supplying the
+      // word "total", a line item supplying cleanliness); requiring a single qualifying line kills that.
+      if (Array.isArray(c.require_label) || Array.isArray(c.forbid_label)) {
+        const qualifies = matchLines.some((n) => {
+          const ln = norm(inputLines[n - 1]);
+          const reqOk = !Array.isArray(c.require_label) || c.require_label.some((kw) => labelOnLine(ln, kw));
+          const forbidden = Array.isArray(c.forbid_label) && c.forbid_label.some((kw) => labelOnLine(ln, kw));
+          return reqOk && !forbidden;
+        });
+        if (!qualifies) {
+          const parts = [];
+          if (Array.isArray(c.require_label)) parts.push(`carry a label (one of: ${c.require_label.join(', ')})`);
+          if (Array.isArray(c.forbid_label)) parts.push(`carry none of (${c.forbid_label.join(', ')})`);
+          errs.push(`[trace] ${where}.${f.name}: no single cited line both holds the value and is the right kind - one line must ${parts.join(' and ')}. A value's kind may not be assembled from two different lines.`);
+        }
       }
     }
   });
@@ -244,15 +264,19 @@ function blockCheck(out, schema, inputLines, errs) {
       if (!cell || typeof cell !== 'object' || !Array.isArray(cell.cite)) continue;
       for (const n of cell.cite) if (n < b.start || n > b.end) errs.push(`[block] line ${i + 1}.${k}: cites input line ${n}, outside its own receipt block (lines ${b.start}-${b.end}) - a receipt may not cite another receipt`);
     }
-    // header placement: a field constrained to the header (vendor) must cite the block's first
-    // non-exempt line, so a footer/address/processor line can't pose as the merchant.
+    // header value: a field pinned to the header (vendor) must equal the block's first non-exempt
+    // line VERBATIM (not merely cite it) - so a footer/address/processor line, or a truncation of the
+    // real name, can't pose as the merchant.
     let header = null;
     for (let n = b.start; n <= b.end; n++) if (!isExemptLine(inputLines[n - 1])) { header = n; break; }
     for (const f of schema.fields) {
-      if (!(f.constraints && f.constraints.first_line_of_block)) continue;
+      if (!(f.constraints && f.constraints.header_full_line)) continue;
       const cell = line[f.name];
       if (!cell || cell.value === marker || !Array.isArray(cell.cite)) continue;
-      if (header !== null && !cell.cite.includes(header)) errs.push(`[trace] line ${i + 1}.${f.name}: must be taken from the receipt header (line ${header}, the block's first line), not line ${cell.cite.join(',')} - a footer or address is not the merchant`);
+      if (header === null) continue;
+      if (!cell.cite.includes(header) || norm(cell.value) !== norm(inputLines[header - 1])) {
+        errs.push(`[trace] line ${i + 1}.${f.name}: must be the receipt header verbatim (line ${header}: ${JSON.stringify(inputLines[header - 1])}), not ${JSON.stringify(cell.value)} - a footer, address, or truncated name is not the merchant`);
+      }
     }
   });
 }

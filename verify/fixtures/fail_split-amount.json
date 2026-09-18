@@ -1,0 +1,46 @@
+{
+  "_fixture": "amount laundered: subtotal number cited alongside a clean line so require+forbid pass on different lines",
+  "_expect_gate": "trace",
+  "conversion": "expense-report",
+  "source_file": "verify/fixtures/sample-receipt-split.txt",
+  "lines": [
+    {
+      "line_no": 1,
+      "date": {
+        "value": "Jan 5",
+        "cite": [
+          2
+        ]
+      },
+      "vendor": {
+        "value": "Corner Market",
+        "cite": [
+          1
+        ]
+      },
+      "amount": {
+        "value": "50.00",
+        "cite": [
+          3,
+          4
+        ]
+      },
+      "currency": {
+        "value": "not in source"
+      },
+      "category": {
+        "value": "not in source"
+      },
+      "tax": {
+        "value": "not in source"
+      }
+    }
+  ],
+  "unmapped_input_lines": [
+    {
+      "line": 5,
+      "code": "other",
+      "note": "Total 62.00"
+    }
+  ]
+}

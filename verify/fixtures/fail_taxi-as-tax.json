@@ -1,0 +1,42 @@
+{
+  "_fixture": "a taxi fare becomes tax because \"taxi\" contains \"tax\" (substring label match)",
+  "_expect_gate": "trace",
+  "conversion": "expense-report",
+  "source_file": "verify/fixtures/sample-receipt-taxi.txt",
+  "lines": [
+    {
+      "line_no": 1,
+      "date": {
+        "value": "March 2",
+        "cite": [
+          2
+        ]
+      },
+      "vendor": {
+        "value": "City Cab Co",
+        "cite": [
+          1
+        ]
+      },
+      "amount": {
+        "value": "18.40",
+        "cite": [
+          4
+        ]
+      },
+      "currency": {
+        "value": "not in source"
+      },
+      "category": {
+        "value": "not in source"
+      },
+      "tax": {
+        "value": "18.40",
+        "cite": [
+          3
+        ]
+      }
+    }
+  ],
+  "unmapped_input_lines": []
+}

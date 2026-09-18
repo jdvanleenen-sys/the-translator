@@ -187,3 +187,33 @@ tax word (`Total incl. tax`); two total-labeled lines (`Total` vs `Total Due`); 
 
 Fixtures grew 28 -> 33. Verified directly: the reviewer's five fixable attacks now fail (each through
 its gate) and the three disclosed cases pass as documented. No regression on the four real outputs.
+
+---
+
+## External red-team pass 4 — added 2026-09-18 (root cause: kind assembled across two lines)
+
+A fourth external review (repo cloned, all files read) submitted five new bypasses. Root cause,
+correctly named: the checker validated that a value sits on a right-kind line but not that it is the
+right instance, and it checked "right kind" with independent existential quantifiers over the whole
+citation set plus substring label matching - so kind-membership could be assembled from two different
+lines (a subtotal supplying the word "total", a line item supplying cleanliness), and `subtotal`
+matched `total`, `taxi` matched `tax`. All five fixed with one architectural change plus targeted rules.
+
+- **Split-citation laundering (headline):** amount `50.00` cited to a line item AND a subtotal passed
+  because require/forbid were satisfied on different lines. Fixed: a value's kind is now decided on a
+  **single line** - one cited line must hold the value AND carry a require-word AND carry no
+  forbid-word. Kills the split for every field.
+- **Substring labels:** `"subtotal".includes("total")`, `"taxi".includes("tax")`. Fixed: label
+  matching is now **word-boundary** (`total` is not `subtotal`, `tax` is not `taxi`).
+- **Vendor by co-citing the header / vendor truncation:** the header guard checked cite membership,
+  not source, and vendor had no token rule. Fixed: `vendor` must **equal the header line verbatim**.
+- **Check-in date on a hotel folio:** the date denylist missed booking terms. Extended with
+  check-in/check-out/valid/arrival/departure/delivery/statement/period/due.
+- **Previous-balance-as-amount (torture):** `Previous Balance` carried the require-word `balance`.
+  Fixed by removing bare `balance` from the require list (kept `balance due`) and forbidding
+  previous/prior/opening/forward.
+
+Fixtures grew 33 -> 39. Verified directly: all five bypasses and the previous-balance torture now fail
+(each through its gate); no regression on the four real outputs. Remaining disclosed limits unchanged,
+except that *assembling* a kind across two lines is now closed - only two lines that each genuinely
+carry the same valid label (e.g. `Total` vs `Total Due`) remain read-by-eye.

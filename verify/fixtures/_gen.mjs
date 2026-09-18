@@ -179,6 +179,32 @@ const usdBase = () => ({ conversion: 'expense-report', source_file: USD,
     unmapped_input_lines: [] };
   fixtures['fail_dropped-currency'] = f; }
 
+// --- v7 fixtures (external round 2: kind-membership assembled across two lines; substring labels) ---
+{ const f = { _expect_gate: 'trace', _fixture: 'amount laundered: subtotal number cited alongside a clean line so require+forbid pass on different lines', conversion: 'expense-report', source_file: 'verify/fixtures/sample-receipt-split.txt',
+    lines: [{ line_no: 1, date: { value: 'Jan 5', cite: [2] }, vendor: { value: 'Corner Market', cite: [1] }, amount: { value: '50.00', cite: [3, 4] }, currency: nis, category: nis, tax: nis }],
+    unmapped_input_lines: [{ line: 5, code: 'other', note: 'Total 62.00' }] };
+  fixtures['fail_split-amount'] = f; }
+{ const f = { _expect_gate: 'trace', _fixture: 'a taxi fare becomes tax because "taxi" contains "tax" (substring label match)', conversion: 'expense-report', source_file: 'verify/fixtures/sample-receipt-taxi.txt',
+    lines: [{ line_no: 1, date: { value: 'March 2', cite: [2] }, vendor: { value: 'City Cab Co', cite: [1] }, amount: { value: '18.40', cite: [4] }, currency: nis, category: nis, tax: { value: '18.40', cite: [3] } }],
+    unmapped_input_lines: [] };
+  fixtures['fail_taxi-as-tax'] = f; }
+{ const f = { _expect_gate: 'trace', _fixture: 'processor footer as vendor by co-citing the header (membership, not source)', conversion: 'expense-report', source_file: 'verify/fixtures/sample-receipt-cofooter.txt',
+    lines: [{ line_no: 1, date: nis, vendor: { value: 'Stripe Inc', cite: [1, 2] }, amount: { value: '19.99', cite: [3] }, currency: nis, category: nis, tax: nis }],
+    unmapped_input_lines: [] };
+  fixtures['fail_vendor-cofooter'] = f; }
+{ const f = { _expect_gate: 'trace', _fixture: 'vendor truncated to "WALMART" from the header "WALMART SUPERCENTER"', conversion: 'expense-report', source_file: 'verify/fixtures/sample-receipt-cofooter.txt',
+    lines: [{ line_no: 1, date: nis, vendor: { value: 'WALMART', cite: [1] }, amount: { value: '19.99', cite: [3] }, currency: nis, category: nis, tax: nis }],
+    unmapped_input_lines: [{ line: 2, code: 'payment_method', note: 'Payments processed by Stripe Inc' }] };
+  fixtures['fail_vendor-truncation'] = f; }
+{ const f = { _expect_gate: 'trace', _fixture: 'check-in date promoted to the transaction date on a multi-date hotel folio', conversion: 'expense-report', source_file: 'verify/fixtures/sample-receipt-hoteldates.txt',
+    lines: [{ line_no: 1, date: { value: '2026-01-05', cite: [2] }, vendor: { value: 'Grand Plaza Hotel', cite: [1] }, amount: { value: '400.00', cite: [5] }, currency: { value: 'USD', cite: [5] }, category: nis, tax: nis }],
+    unmapped_input_lines: [{ line: 3, code: 'other', note: 'Check-out 2026-01-09' }, { line: 4, code: 'other', note: 'Invoice date 2026-02-01' }] };
+  fixtures['fail_checkin-as-date'] = f; }
+{ const f = { _expect_gate: 'trace', _fixture: 'a previous balance (900.00) reported as the amount instead of Balance Due (90.00)', conversion: 'expense-report', source_file: 'verify/fixtures/sample-receipt-prevbalance.txt',
+    lines: [{ line_no: 1, date: { value: 'Feb 9', cite: [2] }, vendor: { value: 'Sunset Motel', cite: [1] }, amount: { value: '900.00', cite: [4] }, currency: nis, category: nis, tax: nis }],
+    unmapped_input_lines: [{ line: 3, code: 'line_item', note: 'Room 90.00' }, { line: 5, code: 'other', note: 'Balance Due 90.00' }] };
+  fixtures['fail_previous-balance-as-amount'] = f; }
+
 let count = 0;
 for (const [name, obj] of Object.entries(fixtures)) {
   // key order: annotations first, then conversion/source_file/lines/unmapped

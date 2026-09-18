@@ -110,6 +110,17 @@ duplicate-key rejection. Three disclosed as inherent keyword ambiguity (read by 
 a total and a tax word (`Total incl. tax`), two total-labeled lines, and two printed currencies.
 Fixtures 28 -> 33; no regression.
 
+## External red-team pass 4 (2026-09-18, kind-assembly root cause)
+
+A fourth external review submitted five bypasses whose root cause was that the checker quantified
+require/forbid independently over the citation set (so a kind could be assembled from two lines) and
+matched labels as substrings (`subtotal`⊃`total`, `taxi`⊃`tax`). Fixed with one architectural change -
+a value's kind is decided on a **single cited line** that must hold the value, carry a require-word,
+and carry no forbid-word - plus **word-boundary** label matching, **vendor = header line verbatim**, an
+extended date denylist (check-in/check-out/valid/...), and dropping bare `balance` from amount's
+require list. Fixtures 33 -> 39; all five bypasses and the previous-balance torture now fail; no
+regression. Only genuinely-ambiguous same-label multiples (`Total` vs `Total Due`) remain read-by-eye.
+
 ## Done (one sentence)
 
 One translator folder plus a forked checker that proves the output shape holds across three

@@ -30,9 +30,9 @@ assembled across two lines. Cite the narrowest line that contains the value.
   missing year. The value must look like a date; a bare number is not a date. It is the **transaction
   date**, never a date-shaped token from an auth/reference/card/expiry line. If the receipt prints no
   transaction date, `not in source`.
-- **`vendor`** - the merchant name **exactly as it appeared**, taken from the **receipt header** (the
-  first line of its block). Do not expand `Co` to `Company`, do not fix a misspelling, do not drop a
-  store number, and do not take a footer, address, or payment-processor line as the merchant.
+- **`vendor`** - the merchant name is the **entire receipt header line** (the first line of its block),
+  copied verbatim. Do not expand `Co` to `Company`, do not fix a misspelling, do not drop a store
+  number, do not shorten it, and do not take a footer, address, or payment-processor line as the merchant.
 - **`amount`** - the transaction **total** exactly as printed on a **total-labeled line** (`Total`,
   `Amount Due`, `Balance Due`, `Balance`, `Amount Payable`, `Grand Total`). It must **not** be taken
   from a subtotal line, a tax line, or a line item/fare. If no total-labeled line is printed, `not in

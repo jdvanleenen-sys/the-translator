@@ -174,3 +174,24 @@ receipt. Root cause: keyword-substring label detection. Five fixed, three disclo
   the clear decoys are caught.
 
 Reviewer's own negative controls (OCR garble, cross-block theft) fail correctly, as they did before.
+
+---
+
+## External red-team run - 2026-09-18 (v7, five submitted bypasses, kind-assembly root cause)
+
+A fourth external review submitted five passing-but-wrong outputs whose root cause was kind-membership
+assembled across two cited lines, plus substring label matching. One architectural fix (single-line
+conjunction) plus word-boundary labels, vendor-verbatim-header, an extended date denylist, and a
+require-list tweak closed all of them. Suite re-run green.
+
+- 4 outputs clean; 39 fixtures each through its declared gate; fresh-clone green; CI green.
+
+### The reviewer's five bypasses + the previous-balance torture, run directly against v7
+
+All now fail, each through `[trace]`:
+- split-citation amount (subtotal laundered by a clean line) - no single line is the right kind.
+- taxi fare as tax - `taxi` no longer matches `tax` (word boundary).
+- processor footer as vendor (co-citing the header) - vendor must equal the header verbatim.
+- truncated vendor (`WALMART` of `WALMART SUPERCENTER`) - same.
+- check-in date on a hotel folio - date denylist extended.
+- previous balance (900.00) as amount - `balance` dropped from the require list; `previous` forbidden.
