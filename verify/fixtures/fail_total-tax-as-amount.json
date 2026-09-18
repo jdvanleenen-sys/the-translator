@@ -1,0 +1,48 @@
+{
+  "_fixture": "amount taken from a \"Total Tax\" line (a tax total), not the grand Total",
+  "_expect_gate": "trace",
+  "conversion": "expense-report",
+  "source_file": "verify/fixtures/sample-receipt-totaltax.txt",
+  "lines": [
+    {
+      "line_no": 1,
+      "date": {
+        "value": "Jan 1",
+        "cite": [
+          2
+        ]
+      },
+      "vendor": {
+        "value": "Shop",
+        "cite": [
+          1
+        ]
+      },
+      "amount": {
+        "value": "5.00",
+        "cite": [
+          3
+        ]
+      },
+      "currency": {
+        "value": "not in source"
+      },
+      "category": {
+        "value": "not in source"
+      },
+      "tax": {
+        "value": "5.00",
+        "cite": [
+          3
+        ]
+      }
+    }
+  ],
+  "unmapped_input_lines": [
+    {
+      "line": 4,
+      "code": "other",
+      "note": "Total 105.00"
+    }
+  ]
+}

@@ -50,21 +50,26 @@ const insideRepo = (p) => { const abs = resolve(root, p); return abs === resolve
 // counts only when it is not flanked by a token-continuation char (digit, decimal, comma, date
 // separator). Text fields (vendor, currency, category) use plain substring so "$" glued to a number
 // and multi-word names still match.
-const CONT = /[0-9.,/\-]/;
-function occursOnLine(lineNorm, valNorm, exactToken) {
+// Token-continuation character sets per boundary kind. numeric: a number/date continues through
+// digits, decimals, commas, date separators (so "8" can't match inside "8.25"). alpha: an alpha
+// code/word continues through letters (so "US" can't match inside "USD"), while a symbol like "$"
+// glued to digits still matches because a digit is not a letter.
+const BOUNDARY = { numeric: /[0-9.,/\-]/, alpha: /[a-z]/ };
+function occursOnLine(lineNorm, valNorm, boundaryRe) {
   if (valNorm === '') return false;
-  if (!exactToken) return lineNorm.includes(valNorm);
+  if (!boundaryRe) return lineNorm.includes(valNorm);
   let idx = lineNorm.indexOf(valNorm);
   while (idx !== -1) {
     const before = idx > 0 ? lineNorm[idx - 1] : '';
     const after = idx + valNorm.length < lineNorm.length ? lineNorm[idx + valNorm.length] : '';
-    if ((before === '' || !CONT.test(before)) && (after === '' || !CONT.test(after))) return true;
+    if ((before === '' || !boundaryRe.test(before)) && (after === '' || !boundaryRe.test(after))) return true;
     idx = lineNorm.indexOf(valNorm, idx + 1);
   }
   return false;
 }
-// A monetary value is digits with optional grouping/decimal - never a word like "Due" or empty.
-const isNumericValue = (v) => /^\d[\d.,]*$/.test(norm(v).replace(/\s+/g, ''));
+// A monetary value is digits with optional leading minus (a refund), grouping, and decimal - never a
+// word like "Due", never empty.
+const isNumericValue = (v) => /^-?\d[\d.,]*$/.test(norm(v).replace(/\s+/g, ''));
 
 // A value goes in the date field only if it actually looks like a date. Rejects pure amounts.
 function looksLikeDate(v) {
@@ -154,9 +159,14 @@ function traceCheck(out, schema, inputLines, errs) {
       const c = f.constraints || {};
       if (norm(cell.value) === '') { errs.push(`[trace] ${where}.${f.name}: value is empty - a filled field must carry a real value`); continue; }
       if (c.numeric && !isNumericValue(cell.value)) errs.push(`[trace] ${where}.${f.name}: value ${JSON.stringify(cell.value)} is not a numeric amount - this field holds a printed number, nothing else`);
+      if (c.no_digits && /\d/.test(cell.value)) errs.push(`[trace] ${where}.${f.name}: value ${JSON.stringify(cell.value)} contains digits - currency is a symbol or code, not the amount`);
+      if (Array.isArray(c.require_label) && c.require_label.includes(norm(cell.value))) errs.push(`[trace] ${where}.${f.name}: value ${JSON.stringify(cell.value)} is the field label itself, not the content it labels`);
       if (c.shape === 'date' && !looksLikeDate(cell.value)) errs.push(`[trace] ${where}.${f.name}: value ${JSON.stringify(cell.value)} is not date-shaped - a non-date value may not be placed in the date field`);
-      // exact_token rejects a truncation of a longer number/date ("8" of "8.25", "14-03" of "14-03-2026")
-      const matchLines = cell.cite.filter((n) => occursOnLine(norm(inputLines[n - 1]), norm(cell.value), !!c.exact_token));
+      // exact_token rejects a truncation of a longer token ("8" of "8.25", "US" of "USD"); the
+      // boundary kind (numeric for numbers/dates, alpha for currency/category codes) sets what counts
+      // as a continuation character.
+      const boundaryRe = c.exact_token ? (BOUNDARY[c.token_boundary] || BOUNDARY.numeric) : null;
+      const matchLines = cell.cite.filter((n) => occursOnLine(norm(inputLines[n - 1]), norm(cell.value), boundaryRe));
       if (matchLines.length === 0) {
         const span = cell.cite.map((n) => `${n}:${JSON.stringify(inputLines[n - 1])}`).join(', ');
         errs.push(`[trace] ${where}.${f.name}: value not found as a complete token on any single cited line - invented, mis-cited, truncated, or fabricated across lines\n      value: ${JSON.stringify(cell.value)}\n      cited: ${span}`);

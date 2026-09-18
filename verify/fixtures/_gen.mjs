@@ -138,6 +138,29 @@ const marketBase = () => ({
     unmapped_input_lines: [] };
   fixtures['fail_traversal-source'] = f; }
 
+// --- v5 fixtures (self-red-team, three rounds: token truncation on text fields, tax-total confusion,
+//     currency capturing the amount, label-as-value) ---
+const USD = 'verify/fixtures/sample-receipt-usd.txt';      // 1 Shop / 2 Jan 1 / 3 Total USD 5.00 / 4 Category: Lodging
+const TOTALTAX = 'verify/fixtures/sample-receipt-totaltax.txt'; // 1 Shop / 2 Jan 1 / 3 Total Tax 5.00 / 4 Total 105.00
+const usdBase = () => ({ conversion: 'expense-report', source_file: USD,
+  lines: [{ line_no: 1,
+    date: { value: 'Jan 1', cite: [2] },
+    vendor: { value: 'Shop', cite: [1] },
+    amount: { value: '5.00', cite: [3] },
+    currency: { value: 'USD', cite: [3] },
+    category: { value: 'Lodging', cite: [4] },
+    tax: nis }],
+  unmapped_input_lines: [] });
+{ const f = usdBase(); f._expect_gate = 'trace'; f._fixture = 'currency "US" is a truncation of the printed "USD"'; f.lines[0].currency = { value: 'US', cite: [3] }; fixtures['fail_truncated-currency'] = f; }
+{ const f = usdBase(); f._expect_gate = 'trace'; f._fixture = 'currency captures the amount ("5.00" has digits; currency is a symbol/code)'; f.lines[0].currency = { value: '5.00', cite: [3] }; fixtures['fail_currency-has-digits'] = f; }
+{ const f = usdBase(); f._expect_gate = 'trace'; f._fixture = 'category "Lodg" is a truncation of the printed "Lodging"'; f.lines[0].category = { value: 'Lodg', cite: [4] }; fixtures['fail_truncated-category'] = f; }
+{ const f = usdBase(); f._expect_gate = 'trace'; f._fixture = 'category is the label word "Category", not the content it labels'; f.lines[0].category = { value: 'Category', cite: [4] }; fixtures['fail_category-is-label'] = f; }
+{ const f = { _expect_gate: 'trace', _fixture: 'amount taken from a "Total Tax" line (a tax total), not the grand Total', conversion: 'expense-report', source_file: TOTALTAX,
+    lines: [{ line_no: 1, date: { value: 'Jan 1', cite: [2] }, vendor: { value: 'Shop', cite: [1] },
+      amount: { value: '5.00', cite: [3] }, currency: nis, category: nis, tax: { value: '5.00', cite: [3] } }],
+    unmapped_input_lines: [{ line: 4, code: 'other', note: 'Total 105.00' }] };
+  fixtures['fail_total-tax-as-amount'] = f; }
+
 let count = 0;
 for (const [name, obj] of Object.entries(fixtures)) {
   // key order: annotations first, then conversion/source_file/lines/unmapped

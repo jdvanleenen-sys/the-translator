@@ -1,0 +1,45 @@
+{
+  "_fixture": "category is the label word \"Category\", not the content it labels",
+  "_expect_gate": "trace",
+  "conversion": "expense-report",
+  "source_file": "verify/fixtures/sample-receipt-usd.txt",
+  "lines": [
+    {
+      "line_no": 1,
+      "date": {
+        "value": "Jan 1",
+        "cite": [
+          2
+        ]
+      },
+      "vendor": {
+        "value": "Shop",
+        "cite": [
+          1
+        ]
+      },
+      "amount": {
+        "value": "5.00",
+        "cite": [
+          3
+        ]
+      },
+      "currency": {
+        "value": "USD",
+        "cite": [
+          3
+        ]
+      },
+      "category": {
+        "value": "Category",
+        "cite": [
+          4
+        ]
+      },
+      "tax": {
+        "value": "not in source"
+      }
+    }
+  ],
+  "unmapped_input_lines": []
+}

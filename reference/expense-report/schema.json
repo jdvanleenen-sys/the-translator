@@ -52,7 +52,7 @@
         "numeric": true,
         "exact_token": true,
         "require_label": ["total", "amount due", "balance due", "balance", "amount payable", "grand total", "amount paid", "total paid"],
-        "forbid_label": ["subtotal", "sub-total", "sub total", "gst", "hst", "pst", "qst", "vat"]
+        "forbid_label": ["subtotal", "sub-total", "sub total", "tax", "gst", "hst", "pst", "qst", "vat"]
       },
       "description": "The transaction total exactly as printed on a total-labeled line (Total, Amount Due, Balance Due...). Never computed, never the subtotal, never a tax line, never a line-item or fare. If no total-labeled line is printed, 'not in source' - an unlabeled number is not assumed to be the total."
     },
@@ -61,15 +61,16 @@
       "order": 5,
       "role": "source",
       "traceable": true,
-      "description": "The currency symbol or code as printed. Never assumed from locale or amount format."
+      "constraints": { "exact_token": true, "token_boundary": "alpha", "no_digits": true },
+      "description": "The currency symbol or code as printed, complete (USD, not US), and never containing digits (it is a symbol/code, not the amount). Never assumed from locale or amount format."
     },
     {
       "name": "category",
       "order": 6,
       "role": "source",
       "traceable": true,
-      "constraints": { "require_label": ["category", "expense type", "expense category"] },
-      "description": "The expense category ONLY if the receipt literally prints one on a category-labeled line. Never inferred from the vendor or items. Almost always 'not in source' - that is correct behavior, not a gap."
+      "constraints": { "exact_token": true, "token_boundary": "alpha", "require_label": ["category", "expense type", "expense category"] },
+      "description": "The expense category ONLY if the receipt literally prints one on a category-labeled line, complete (Lodging, not Lodg). Never inferred from the vendor or items. Almost always 'not in source' - that is correct behavior, not a gap."
     },
     {
       "name": "tax",

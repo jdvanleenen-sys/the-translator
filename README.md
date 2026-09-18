@@ -56,13 +56,15 @@ This reads every output in `verify/outputs/`, opens the input file it names, and
   point its evidence at a `../` traversal or absolute path.
 - **coverage** - every non-blank input line is either cited by a field or listed as unmapped with a
   controlled reason code (and any note must quote its line), so nothing is dropped silently.
-- **fixtures** - twenty-three planted flaws in `verify/fixtures/fail_*.json` (computed total,
+- **fixtures** - twenty-eight planted flaws in `verify/fixtures/fail_*.json` (computed total,
   inferred category, assumed currency, invented year, expanded vendor, dropped line, missing field,
   hollow `not in source`, extra field, wrong conversion, cross-line value, subtotal-as-amount,
-  line-item-as-amount, tax from a non-tax line, item-as-category, number-as-date, cross-block
-  citation, dropped receipt, invented key inside a cell, underscore-key injection, truncated amount,
-  truncated date, empty amount, and a `../` traversal source_file) that MUST fail - and each must
-  fail **through the gate it declares**, so a fixture cannot pass by failing for the wrong reason.
+  line-item-as-amount, tax-total-as-amount, tax from a non-tax line, item-as-category, number-as-date,
+  cross-block citation, dropped receipt, invented key inside a cell, underscore-key injection,
+  truncated amount, truncated date, truncated currency, truncated category, empty amount,
+  currency-holding-the-amount, category-holding-its-own-label, and a `../` traversal source_file) that
+  MUST fail - and each must fail **through the gate it declares**, so a fixture cannot pass by failing
+  for the wrong reason.
 
 To check a single output: `node verify/check.mjs --output verify/outputs/receipts-coffee.json`.
 
@@ -94,6 +96,11 @@ Stated plainly rather than hidden:
   that a *different* field already cites is not caught mechanically (coverage still sees the line as
   accounted for). Caught by reading. The common case - the skipped value on its own line - is caught
   by coverage.
+- **Ambiguous total labels.** Line-kind detection is keyword-based. A line that carries both a total
+  word and a tax word (e.g. `Total incl. tax 105.00`) is uncommon on point-of-sale receipts; the
+  amount gate treats a tax word on the cited line as a tax line, so such a sole-total-label case would
+  need the plain total or is read by eye. The common tax-total confusion (`Total Tax 5.00`) is
+  correctly rejected.
 - **Duplicate JSON keys.** The checker validates the parsed object, so if a hand-crafted file
   contained the same key twice, `JSON.parse` keeps the last (as does any standard JSON reader), and
   the checker validates that same last value - there is no human-vs-checker discrepancy in the single
