@@ -1,0 +1,26 @@
+name: verify
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+
+      - name: Translator checker (shape, trace, coverage, kept-red fixtures)
+        run: node verify/check.mjs
+
+      - name: No real-world PII in the pseudonymized sample inputs
+        run: |
+          if grep -REin '[0-9]{3}-[0-9]{3}-[0-9]{4}|@gmail\.com|@fifthaveproperties\.com' inputs/; then
+            echo "::error::inputs/ must stay pseudonymized, no real contact info"
+            exit 1
+          fi
+          echo "ok: inputs/ is clean"
