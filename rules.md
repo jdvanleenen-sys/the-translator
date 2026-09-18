@@ -27,14 +27,19 @@ assembled across two lines. Cite the narrowest line that contains the value.
 - **`line_no`** - the row's 1-based index (1, 2, 3...). Structural envelope, not from the receipt. No citation.
 - **`date`** - the transaction date, copied **exactly and completely as printed**. `Jan 3` stays
   `Jan 3`; `14-03-2026` stays `14-03-2026`, never truncated to `14-03`. Never reformat, never add a
-  missing year. The value must look like a date; a bare number is not a date.
-- **`vendor`** - the merchant name **exactly as it appeared**. Do not expand `Co` to `Company`,
-  do not fix a misspelling, do not drop a store number.
+  missing year. The value must look like a date; a bare number is not a date. It is the **transaction
+  date**, never a date-shaped token from an auth/reference/card/expiry line. If the receipt prints no
+  transaction date, `not in source`.
+- **`vendor`** - the merchant name **exactly as it appeared**, taken from the **receipt header** (the
+  first line of its block). Do not expand `Co` to `Company`, do not fix a misspelling, do not drop a
+  store number, and do not take a footer, address, or payment-processor line as the merchant.
 - **`amount`** - the transaction **total** exactly as printed on a **total-labeled line** (`Total`,
   `Amount Due`, `Balance Due`, `Balance`, `Amount Payable`, `Grand Total`). It must **not** be taken
   from a subtotal line, a tax line, or a line item/fare. If no total-labeled line is printed, `not in
   source` - a bare unlabeled number is not assumed to be the total. Never sum the items. It is the
-  **complete printed number** (`8.25`), never a truncation (`8`).
+  **complete printed number** (`8.25`), never a truncation (`8`). It must come from the grand-total
+  line, **not** a `Total Savings`, `Total Discount`, `Total Items`, tip, change, or rounding line -
+  those carry the word "total" but are not the amount owed.
 - **`currency`** - the symbol or code as printed (`$`, `USD`, `CAD`, `EUR`, `£`). If none is
   printed, `not in source`. Never assume it. When the total line prints the code and the number
   together (e.g. `Total CAD 16.42`), `amount` is the numeric portion (`16.42`) and `currency` is the

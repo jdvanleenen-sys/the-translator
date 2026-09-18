@@ -1,0 +1,36 @@
+{
+  "_fixture": "currency dropped though CAD is printed on the cited total line",
+  "_expect_gate": "trace",
+  "conversion": "expense-report",
+  "source_file": "verify/fixtures/sample-receipt-transit.txt",
+  "lines": [
+    {
+      "line_no": 1,
+      "date": {
+        "value": "not in source"
+      },
+      "vendor": {
+        "value": "Transit Authority",
+        "cite": [
+          1
+        ]
+      },
+      "amount": {
+        "value": "16.42",
+        "cite": [
+          2
+        ]
+      },
+      "currency": {
+        "value": "not in source"
+      },
+      "category": {
+        "value": "not in source"
+      },
+      "tax": {
+        "value": "not in source"
+      }
+    }
+  ],
+  "unmapped_input_lines": []
+}

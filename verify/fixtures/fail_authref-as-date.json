@@ -1,0 +1,39 @@
+{
+  "_fixture": "a date promoted from an \"Auth Ref\" line, not a transaction date",
+  "_expect_gate": "trace",
+  "conversion": "expense-report",
+  "source_file": "verify/fixtures/sample-receipt-authref.txt",
+  "lines": [
+    {
+      "line_no": 1,
+      "date": {
+        "value": "12/05/2023",
+        "cite": [
+          2
+        ]
+      },
+      "vendor": {
+        "value": "QuickMart",
+        "cite": [
+          1
+        ]
+      },
+      "amount": {
+        "value": "8.50",
+        "cite": [
+          3
+        ]
+      },
+      "currency": {
+        "value": "not in source"
+      },
+      "category": {
+        "value": "not in source"
+      },
+      "tax": {
+        "value": "not in source"
+      }
+    }
+  ],
+  "unmapped_input_lines": []
+}

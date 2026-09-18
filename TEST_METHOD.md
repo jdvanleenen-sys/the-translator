@@ -162,3 +162,28 @@ Fixtures grew 23 -> 28: `fail_truncated-currency`, `fail_truncated-category`, `f
 `fail_currency-has-digits`, `fail_category-is-label`. New disclosed limit: an ambiguous sole-total
 label carrying a tax word (`Total incl. tax`) is read by eye; the common `Total Tax` confusion is caught.
 Confirmed no regression: the real outputs (with `$`, `EUR`, `Lodging`, and a negative refund) all still pass.
+
+---
+
+## External red-team pass 3 — added 2026-09-18 (root cause: keyword-substring label detection)
+
+A fresh external review submitted eight passing-but-wrong outputs. Root cause, correctly named:
+`String.includes(keyword)` proves a keyword is *on the cited line*, not that the extracted value is
+*what that keyword labels*. Five were cleanly fixed; three are inherent keyword-ambiguity cases now
+disclosed as read-by-eye limits.
+
+Fixed (each now a kept-red fixture, failing through its gate):
+- **`Total Savings 40.00` as amount** - added decoy words (savings, discount, tip, gratuity, change,
+  rounding, points, loyalty, tender, cash, item(s), qty, quantity, count, unit, coupon) to amount's forbid list.
+- **`Auth Ref 12/05/2023` as date** - `date` now forbids auth/ref/reference/card/acct/account/phone/
+  expiry/order-no/member/invoice-no lines (legitimate unlabeled and `Invoice` dates still pass).
+- **payment-processor footer as vendor** - `vendor` must cite the receipt header (its block's first line).
+- **dropped printed currency** - a `currency` marked `not in source` fails when a currency token
+  ($/€/£/¥ or a known 3-letter code) sits on a line the record cites.
+- **duplicate JSON keys** - rejected at the raw-text level (a repeated key in one object fails `[shape]`).
+
+Disclosed as inherent keyword-ambiguity limits (read by eye): a line with both a grand-total word and a
+tax word (`Total incl. tax`); two total-labeled lines (`Total` vs `Total Due`); two printed currencies.
+
+Fixtures grew 28 -> 33. Verified directly: the reviewer's five fixable attacks now fail (each through
+its gate) and the three disclosed cases pass as documented. No regression on the four real outputs.

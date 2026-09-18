@@ -154,3 +154,23 @@ bugs, all fixed and locked as fixtures; a passing refund receipt locks negative-
 Final: 4 outputs traced clean (coffee, hardware, hotel, refund), 28 fixtures each failing through its
 declared gate, fresh-clone green, CI green on GitHub. No regression - the outputs using `$`, `EUR`,
 `Lodging`, and a negative refund all still pass.
+
+---
+
+## External red-team run - 2026-09-18 (v6, eight submitted passing-but-wrong outputs)
+
+A fresh external review submitted eight outputs that passed the v5 checker while misstating the
+receipt. Root cause: keyword-substring label detection. Five fixed, three disclosed. Suite re-run green.
+
+- 4 outputs clean; 33 fixtures each through its declared gate; fresh-clone green; CI green.
+
+### The reviewer's eight, run directly against v6
+
+- **Fixed, now fail:** `Total Savings` as amount (`[trace]` forbid), `Auth Ref` as date (`[trace]`
+  forbid), payment-processor footer as vendor (`[trace]` header rule), dropped `CAD` currency
+  (`[trace]` currency-drop), duplicate `amount` keys (`[shape]` duplicate-key).
+- **Disclosed as inherent keyword-ambiguity (pass, documented in README):** `Total incl. tax` claimed
+  as tax; two totals (`Total` vs `Total Due`); two currencies collapsed to one. These are read by eye;
+  the clear decoys are caught.
+
+Reviewer's own negative controls (OCR garble, cross-block theft) fail correctly, as they did before.

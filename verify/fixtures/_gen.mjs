@@ -161,6 +161,24 @@ const usdBase = () => ({ conversion: 'expense-report', source_file: USD,
     unmapped_input_lines: [{ line: 4, code: 'other', note: 'Total 105.00' }] };
   fixtures['fail_total-tax-as-amount'] = f; }
 
+// --- v6 fixtures (external red-team: keyword-substring label detection standing in for line-kind) ---
+{ const f = { _expect_gate: 'trace', _fixture: 'amount taken from a "Total Savings" decoy line, not the real Total', conversion: 'expense-report', source_file: 'verify/fixtures/sample-receipt-savings.txt',
+    lines: [{ line_no: 1, date: nis, vendor: { value: 'Bloom Grocery', cite: [1] }, amount: { value: '40.00', cite: [3] }, currency: nis, category: nis, tax: nis }],
+    unmapped_input_lines: [{ line: 2, code: 'subtotal', note: 'Subtotal 124.99' }, { line: 4, code: 'other', note: 'Total 84.99' }] };
+  fixtures['fail_savings-as-amount'] = f; }
+{ const f = { _expect_gate: 'trace', _fixture: 'a date promoted from an "Auth Ref" line, not a transaction date', conversion: 'expense-report', source_file: 'verify/fixtures/sample-receipt-authref.txt',
+    lines: [{ line_no: 1, date: { value: '12/05/2023', cite: [2] }, vendor: { value: 'QuickMart', cite: [1] }, amount: { value: '8.50', cite: [3] }, currency: nis, category: nis, tax: nis }],
+    unmapped_input_lines: [] };
+  fixtures['fail_authref-as-date'] = f; }
+{ const f = { _expect_gate: 'trace', _fixture: 'a payment-processor footer passed off as the merchant, not the header', conversion: 'expense-report', source_file: 'verify/fixtures/sample-receipt-processor.txt',
+    lines: [{ line_no: 1, date: nis, vendor: { value: 'Stripe Inc', cite: [2] }, amount: { value: '19.99', cite: [3] }, currency: nis, category: nis, tax: nis }],
+    unmapped_input_lines: [{ line: 1, code: 'header', note: 'WALMART SUPERCENTER' }] };
+  fixtures['fail_processor-as-vendor'] = f; }
+{ const f = { _expect_gate: 'trace', _fixture: 'currency dropped though CAD is printed on the cited total line', conversion: 'expense-report', source_file: 'verify/fixtures/sample-receipt-transit.txt',
+    lines: [{ line_no: 1, date: nis, vendor: { value: 'Transit Authority', cite: [1] }, amount: { value: '16.42', cite: [2] }, currency: nis, category: nis, tax: nis }],
+    unmapped_input_lines: [] };
+  fixtures['fail_dropped-currency'] = f; }
+
 let count = 0;
 for (const [name, obj] of Object.entries(fixtures)) {
   // key order: annotations first, then conversion/source_file/lines/unmapped

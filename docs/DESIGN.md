@@ -100,6 +100,16 @@ a `Total Tax` line feeding amount (added `tax` to amount forbid), currency captu
 (no-digits on currency), and category holding its own label word (require-label value may not be a
 label word). Fixtures 23 -> 28; a passing refund receipt locks negative handling. No regression.
 
+## External red-team pass 3 (2026-09-18, keyword-substring root cause)
+
+A fresh external review submitted eight passing-but-wrong outputs, correctly diagnosing the root:
+`String.includes(keyword)` proves a keyword is on the cited line, not that the value is what the
+keyword labels. Five fixed - amount decoy-forbid (`Total Savings`), date forbid (`Auth Ref`), vendor
+must be the block header (processor footer), currency-drop detection (dropped `CAD`), and raw-text
+duplicate-key rejection. Three disclosed as inherent keyword ambiguity (read by eye): a line with both
+a total and a tax word (`Total incl. tax`), two total-labeled lines, and two printed currencies.
+Fixtures 28 -> 33; no regression.
+
 ## Done (one sentence)
 
 One translator folder plus a forked checker that proves the output shape holds across three

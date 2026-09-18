@@ -71,6 +71,31 @@ function occursOnLine(lineNorm, valNorm, boundaryRe) {
 // word like "Due", never empty.
 const isNumericValue = (v) => /^-?\d[\d.,]*$/.test(norm(v).replace(/\s+/g, ''));
 
+// Detect a duplicate key within the same JSON object at the raw-text level. JSON.parse keeps the last
+// value, so a file could show a reader one value and hand the checker another; this rejects that.
+// A string immediately followed by ':' is a key; each object frame tracks the keys it has seen.
+function firstDuplicateKey(text) {
+  const stack = [];
+  let i = 0; const n = text.length;
+  while (i < n) {
+    const ch = text[i];
+    if (ch === '"') {
+      let j = i + 1;
+      while (j < n) { if (text[j] === '\\') { j += 2; continue; } if (text[j] === '"') break; j++; }
+      const key = text.slice(i + 1, j);
+      i = j + 1;
+      let k = i; while (k < n && /\s/.test(text[k])) k++;
+      if (text[k] === ':') { const top = stack[stack.length - 1]; if (top && top.set) { if (top.set.has(key)) return key; top.set.add(key); } }
+      continue;
+    }
+    if (ch === '{') stack.push({ set: new Set() });
+    else if (ch === '[') stack.push({ set: null });
+    else if (ch === '}' || ch === ']') stack.pop();
+    i++;
+  }
+  return null;
+}
+
 // A value goes in the date field only if it actually looks like a date. Rejects pure amounts.
 function looksLikeDate(v) {
   const s = norm(v);
@@ -178,7 +203,7 @@ function traceCheck(out, schema, inputLines, errs) {
       }
       if (Array.isArray(c.forbid_label)) {
         const clean = matchLines.some((n) => !c.forbid_label.some((kw) => norm(inputLines[n - 1]).includes(kw)));
-        if (!clean) errs.push(`[trace] ${where}.${f.name}: value is sourced from a forbidden line kind (${c.forbid_label.join('/')}) - amount must be the printed total, not a subtotal or tax line`);
+        if (!clean) errs.push(`[trace] ${where}.${f.name}: value is sourced from a disallowed line kind - the cited line carries one of: ${c.forbid_label.join(', ')}`);
       }
     }
   });
@@ -209,7 +234,8 @@ function coverageCheck(out, schema, inputLines, errs) {
   }
 }
 
-function blockCheck(out, inputLines, errs) {
+function blockCheck(out, schema, inputLines, errs) {
+  const marker = schema.not_in_source_marker;
   const blocks = computeBlocks(inputLines);
   if (out.lines.length !== blocks.length) { errs.push(`[block] output has ${out.lines.length} line(s) but the input has ${blocks.length} receipt block(s) - one output line per receipt`); return; }
   out.lines.forEach((line, i) => {
@@ -217,6 +243,35 @@ function blockCheck(out, inputLines, errs) {
     for (const [k, cell] of Object.entries(line)) {
       if (!cell || typeof cell !== 'object' || !Array.isArray(cell.cite)) continue;
       for (const n of cell.cite) if (n < b.start || n > b.end) errs.push(`[block] line ${i + 1}.${k}: cites input line ${n}, outside its own receipt block (lines ${b.start}-${b.end}) - a receipt may not cite another receipt`);
+    }
+    // header placement: a field constrained to the header (vendor) must cite the block's first
+    // non-exempt line, so a footer/address/processor line can't pose as the merchant.
+    let header = null;
+    for (let n = b.start; n <= b.end; n++) if (!isExemptLine(inputLines[n - 1])) { header = n; break; }
+    for (const f of schema.fields) {
+      if (!(f.constraints && f.constraints.first_line_of_block)) continue;
+      const cell = line[f.name];
+      if (!cell || cell.value === marker || !Array.isArray(cell.cite)) continue;
+      if (header !== null && !cell.cite.includes(header)) errs.push(`[trace] line ${i + 1}.${f.name}: must be taken from the receipt header (line ${header}, the block's first line), not line ${cell.cite.join(',')} - a footer or address is not the merchant`);
+    }
+  });
+}
+
+// Currency must not be silently dropped: if it is marked "not in source" yet a currency token sits
+// on a line this record cites, the drop is caught (the disclosed shared-line hole, closed for currency).
+const CURRENCY_TOKEN = /[$€£¥₹]|\b(usd|cad|eur|gbp|aud|jpy|chf|cny|inr|mxn|nzd|sek|nok|dkk|zar|brl|rub|hkd|sgd)\b/;
+function currencyDropCheck(out, schema, inputLines, errs) {
+  const marker = schema.not_in_source_marker;
+  out.lines.forEach((line, i) => {
+    const cur = line.currency;
+    if (!cur || cur.value !== marker) return;
+    const cited = new Set();
+    for (const f of schema.fields) { const c = line[f.name]; if (c && Array.isArray(c.cite)) for (const n of c.cite) cited.add(n); }
+    for (const n of cited) {
+      if (n >= 1 && n <= inputLines.length && CURRENCY_TOKEN.test(norm(inputLines[n - 1]))) {
+        errs.push(`[trace] line ${i + 1}.currency: marked "${marker}" but a currency token appears on cited line ${n} (${JSON.stringify(inputLines[n - 1])}) - a printed currency may not be dropped`);
+        break;
+      }
     }
   });
 }
@@ -241,7 +296,8 @@ function validateOutput(out, schema, id, pinnedInput = null) {
   if (inputLines === null) { errs.push(`[shape] input "${sourceForTrace}" does not exist - cannot trace citations`); return errs; }
   traceCheck(out, schema, inputLines, errs);
   coverageCheck(out, schema, inputLines, errs);
-  blockCheck(out, inputLines, errs);
+  blockCheck(out, schema, inputLines, errs);
+  currencyDropCheck(out, schema, inputLines, errs);
   return errs;
 }
 
@@ -255,8 +311,11 @@ function main() {
 
   if (fileArgIdx !== -1) {
     const path = process.argv[fileArgIdx + 1];
-    const out = JSON.parse(readFileSync(path, 'utf8'));
+    const raw = readFileSync(path, 'utf8');
+    const out = JSON.parse(raw);
     const errs = validateOutput(out, schema, id, pinnedInput);
+    const dup = firstDuplicateKey(raw);
+    if (dup) errs.unshift(`[shape] duplicate key "${dup}" in the JSON - a record must not repeat a key, or a reader and the parser could see different values`);
     if (errs.length) { console.error(`FAIL: ${path}`); for (const e of errs) console.error(`  - ${e}`); process.exit(1); }
     console.log(`ok: ${path} (${out.lines.length} line(s), schema: ${id}${pinnedInput ? `, input pinned to ${pinnedInput}` : ''})`);
     return;
@@ -267,20 +326,26 @@ function main() {
 
   const outputsDir = join(root, 'verify', 'outputs');
   for (const f of readdirSync(outputsDir).filter((f) => f.endsWith('.json'))) {
-    const out = JSON.parse(readFileSync(join(outputsDir, f), 'utf8'));
+    const raw = readFileSync(join(outputsDir, f), 'utf8');
+    const out = JSON.parse(raw);
     const errs = validateOutput(out, schema, id);
+    const dup = firstDuplicateKey(raw);
+    if (dup) errs.unshift(`[shape] duplicate key "${dup}" in the JSON`);
     if (errs.length) { failed = true; console.error(`FAIL: verify/outputs/${f}`); for (const e of errs) console.error(`  - ${e}`); }
     else console.log(`ok: verify/outputs/${f} (${out.lines.length} line(s))`);
   }
 
   const fixturesDir = join(root, 'verify', 'fixtures');
   for (const f of readdirSync(fixturesDir).filter((f) => f.startsWith('fail_') && f.endsWith('.json'))) {
-    const raw = JSON.parse(readFileSync(join(fixturesDir, f), 'utf8'));
+    const rawText = readFileSync(join(fixturesDir, f), 'utf8');
+    const raw = JSON.parse(rawText);
     const expect = raw._expect_gate;
     // Strip ONLY the harness metadata keys, then validate strictly - so a fixture cannot rely on the
     // annotation exemption to smuggle anything, and production validation stays fully closed.
     const { _fixture, _expect_gate, ...out } = raw;
     const errs = validateOutput(out, schema, id);
+    const dup = firstDuplicateKey(rawText);
+    if (dup) errs.unshift(`[shape] duplicate key "${dup}" in the JSON`);
     if (errs.length === 0) { failed = true; console.error(`FAIL: fixture ${f} was supposed to fail but passed - the gate it tests is dead`); continue; }
     if (expect && !errs.some((e) => e.startsWith(`[${expect}]`))) {
       failed = true;

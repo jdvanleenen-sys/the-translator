@@ -56,15 +56,22 @@ This reads every output in `verify/outputs/`, opens the input file it names, and
   point its evidence at a `../` traversal or absolute path.
 - **coverage** - every non-blank input line is either cited by a field or listed as unmapped with a
   controlled reason code (and any note must quote its line), so nothing is dropped silently.
-- **fixtures** - twenty-eight planted flaws in `verify/fixtures/fail_*.json` (computed total,
+- **fixtures** - thirty-three planted flaws in `verify/fixtures/fail_*.json` (computed total,
   inferred category, assumed currency, invented year, expanded vendor, dropped line, missing field,
   hollow `not in source`, extra field, wrong conversion, cross-line value, subtotal-as-amount,
   line-item-as-amount, tax-total-as-amount, tax from a non-tax line, item-as-category, number-as-date,
   cross-block citation, dropped receipt, invented key inside a cell, underscore-key injection,
   truncated amount, truncated date, truncated currency, truncated category, empty amount,
-  currency-holding-the-amount, category-holding-its-own-label, and a `../` traversal source_file) that
-  MUST fail - and each must fail **through the gate it declares**, so a fixture cannot pass by failing
-  for the wrong reason.
+  currency-holding-the-amount, category-holding-its-own-label, a `../` traversal source_file, a
+  `Total Savings` decoy as amount, an `Auth Ref` date, a payment-processor footer as vendor, a dropped
+  printed currency, and duplicate JSON keys) that MUST fail - and each must fail **through the gate it
+  declares**, so a fixture cannot pass by failing for the wrong reason.
+
+Beyond field-kind checks, the gates also require `vendor` to come from the **receipt header** (the
+block's first line, so a footer or processor line can't pose as the merchant), reject a `currency`
+marked `not in source` when a currency token sits on a cited line, keep `date` off `auth`/`ref`/`card`
+lines, and **reject duplicate JSON keys** at the raw-text level so a reader and the parser cannot see
+different values.
 
 To check a single output: `node verify/check.mjs --output verify/outputs/receipts-coffee.json`.
 
@@ -89,22 +96,22 @@ for the shipped outputs, which name their own inputs.)
 
 Stated plainly rather than hidden:
 
-- **Vendor semantics.** A vendor name is free text, so the checker confirms the vendor value sits on
-  its cited line but cannot prove that line is "the merchant line" rather than some other text. This
-  one field is verified by reading, not mechanically. Every other field is line-kind constrained.
-- **`not in source` on a shared line.** A field marked `not in source` whose value sits on a line
-  that a *different* field already cites is not caught mechanically (coverage still sees the line as
-  accounted for). Caught by reading. The common case - the skipped value on its own line - is caught
-  by coverage.
-- **Ambiguous total labels.** Line-kind detection is keyword-based. A line that carries both a total
-  word and a tax word (e.g. `Total incl. tax 105.00`) is uncommon on point-of-sale receipts; the
-  amount gate treats a tax word on the cited line as a tax line, so such a sole-total-label case would
-  need the plain total or is read by eye. The common tax-total confusion (`Total Tax 5.00`) is
-  correctly rejected.
-- **Duplicate JSON keys.** The checker validates the parsed object, so if a hand-crafted file
-  contained the same key twice, `JSON.parse` keeps the last (as does any standard JSON reader), and
-  the checker validates that same last value - there is no human-vs-checker discrepancy in the single
-  saved artifact a judge runs. It does not separately reject duplicate keys at the raw-text level.
+- **Vendor header assumption.** `vendor` must be the receipt's header (its block's first line), which
+  holds for ordinary receipts and blocks a footer/processor line. The residual: if a receipt puts a
+  non-name line first (a logo caption or address before the merchant name), the true name isn't the
+  header - that layout is read by eye.
+- **`not in source` on a shared line.** A field marked `not in source` whose value sits on a line a
+  *different* field already cites is not caught mechanically (coverage still sees the line as
+  accounted for). The common own-line case is caught by coverage, and the specific currency case (a
+  currency printed on a cited line) is now caught; the general case for other fields is read by eye.
+- **Ambiguous multi-keyword lines and multiples.** Line-kind detection is keyword-based, so it cannot
+  disambiguate a line that carries two competing kinds, or pick among several lines of the same kind.
+  Three inherent cases are read by eye: (1) a line with both a grand-total word and a tax word
+  (`Total incl. tax 105.00`) - can't be told from a legitimate `Total Tax 5.00`; (2) two total-labeled
+  lines (`Total` vs `Total Due`) - no authoritative-total rule; (3) two printed currencies - no
+  tie-breaker. The clear decoys (`Total Savings`, `Total Discount`, an `Auth Ref` date) ARE rejected.
+- **Duplicate JSON keys** are now rejected at the raw-text level (a repeated key in one object fails
+  `[shape]`), so a reader and the parser cannot be shown different values.
 
 ## What it does not do
 

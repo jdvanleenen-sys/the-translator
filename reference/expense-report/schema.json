@@ -33,7 +33,7 @@
       "order": 2,
       "role": "source",
       "traceable": true,
-      "constraints": { "shape": "date", "exact_token": true },
+      "constraints": { "shape": "date", "exact_token": true, "forbid_label": ["auth", "ref ", "reference", "invoice no", "order no", "order #", "member", "card", "acct", "account", "phone", "tel ", "expiry", "expires", "best before", "use by"] },
       "description": "The transaction date exactly as printed. Not normalized. 'Jan 3' with no year stays 'Jan 3'; the year is not invented. The value must look like a date, so a bare amount cannot be dropped into this field."
     },
     {
@@ -41,7 +41,8 @@
       "order": 3,
       "role": "source",
       "traceable": true,
-      "description": "The merchant name exactly as it appeared. Not expanded, not corrected to its usual spelling. (Vendor is free text, so semantic correctness of which line is the merchant is a documented checker limit; see README.)"
+      "constraints": { "first_line_of_block": true },
+      "description": "The merchant name exactly as it appeared, taken from the header (first line) of the receipt block - so a payment-processor footer or address fragment cannot be passed off as the merchant. Not expanded, not corrected to its usual spelling."
     },
     {
       "name": "amount",
@@ -52,7 +53,7 @@
         "numeric": true,
         "exact_token": true,
         "require_label": ["total", "amount due", "balance due", "balance", "amount payable", "grand total", "amount paid", "total paid"],
-        "forbid_label": ["subtotal", "sub-total", "sub total", "tax", "gst", "hst", "pst", "qst", "vat"]
+        "forbid_label": ["subtotal", "sub-total", "sub total", "tax", "gst", "hst", "pst", "qst", "vat", "savings", "saved", "discount", "coupon", "tip", "gratuity", "change", "rounding", "points", "loyalty", "tender", "cash", "item", "items", "qty", "quantity", "count", "unit"]
       },
       "description": "The transaction total exactly as printed on a total-labeled line (Total, Amount Due, Balance Due...). Never computed, never the subtotal, never a tax line, never a line-item or fare. If no total-labeled line is printed, 'not in source' - an unlabeled number is not assumed to be the total."
     },
