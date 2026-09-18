@@ -113,3 +113,28 @@ a cell plus an underscore top-level key) now fail, and `--input` rejects a sourc
 Disclosed limit (not fixed, by design): duplicate JSON keys are resolved last-wins by `JSON.parse`,
 as by any standard reader; the checker validates the single saved artifact a judge runs, so there is
 no reader-vs-checker discrepancy in the judging flow. Not rejected at the raw-text level. See `README.md`.
+
+---
+
+## Hardening pass 3 — added 2026-09-18 (fourth cross-brain round)
+
+Two independent reviews of v3 converged on the trace primitive: `line.includes(value)` proved a value
+appeared *somewhere* on the line, not that it was the line's complete token, so a truncation (`8` of
+`8.25`, `14-03` of `14-03-2026`) or an empty string passed. One review also found that in the
+non-`--input` mode the output's `source_file` was trusted and a `../` traversal path could point the
+evidence outside the repo. Both fixed; originals unchanged.
+
+- **complete-token trace:** numeric/date fields (`amount`, `tax`, `date`) now require the value to be
+  a whole token - a match flanked by a digit, decimal, comma, or date separator is rejected. Text
+  fields keep substring matching (so `$39.36` and multi-word names still trace). Pass bar: `8` cited
+  to `Balance Due 8.25` fails `[trace]`.
+- **numeric-shape + empty guard:** `amount`/`tax` must be a printed number (not a word like "Due");
+  no filled field may be empty (closing `includes("")`). Pass bar: `""` or `"Due"` as amount fails `[trace]`.
+- **path containment:** `source_file` (and any `--input`) must resolve inside the repo; a `../` or
+  absolute path fails `[shape]`. Pass bar: `source_file: "../attacker-receipt.txt"` fails even without `--input`.
+- **root-object guard:** a non-object top-level output fails `[shape]` explicitly.
+
+Fixtures grew 19 -> 23: `fail_truncated-amount`, `fail_truncated-date`, `fail_empty-amount`,
+`fail_traversal-source`. Verified directly: both reviewers' new exploits (amount `8` from
+`Balance Due 8.25`; a `../` traversal source_file in unpinned mode) now fail, and the correct market
+translation (`amount 8.25`) passes under `--input`.

@@ -112,3 +112,28 @@ invented key inside a cell, underscore-key leak, source_file not externally pinn
   (source_file mismatch); `--input` matching the output passes. An output cannot choose its own input.
 
 Both reviewers again produced the correct rideshare translation from the contract alone.
+
+---
+
+## Hardening run — 2026-09-18 (v4, after the third cross-brain round)
+
+Two independent v3 reviews converged on the trace primitive (substring, not complete-token, so a
+truncated amount/date or empty string passed) and one added an evidence-authority gap (a `../`
+traversal `source_file` in the unpinned mode). Both closed. Ran `node verify/check.mjs` after the fix.
+Exit 0.
+
+- 3 outputs traced clean.
+- 23 fixtures each failed through its declared gate (14 `[trace]`, 5 `[shape]`, 2 `[coverage]`, 2 `[block]`).
+- Fresh clone: exit 0.
+
+### The new reviewer exploits, run directly against the v4 checker
+
+- **Truncated amount** (`amount: "8"` cited to `Balance Due 8.25`): fails `[trace]` - not a complete
+  token. Empty-string and `"Due"` amounts fail the same gate.
+- **`../` traversal source_file** (unpinned mode, output names `../attacker-receipt.txt`): fails
+  `[shape]` - evidence must resolve inside the repo.
+- **Correct market translation** (`amount: "8.25"` from `Balance Due 8.25`, bare `7.30` left unmapped,
+  no inferred category/currency): passes under `--input`.
+
+Both reviewers also produced the correct market translation from the contract alone (`amount 8.25`,
+not the bare `7.30`; date kept as `14-03-2026`).

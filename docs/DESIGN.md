@@ -80,6 +80,17 @@ choose its own input. Fixtures 16 -> 19. Both reviewers' new exploits now fail. 
 duplicate JSON keys resolve last-wins as in any reader, so the single judged artifact has no
 reader-vs-checker gap; not rejected at raw-text level.
 
+## Hardening pass 3 (2026-09-18, fourth cross-brain round)
+
+Two independent v3 reviews converged on the last structural class: the trace primitive was substring
+containment, so a truncated numeric/date value (`8` of `8.25`) or an empty string passed; and in the
+unpinned mode an output's `source_file` could use a `../` traversal to prove claims from outside the
+repo. Fixes: complete-token matching for numeric/date fields (flank-char boundary), a numeric-shape
+and empty-value guard, repo-containment for `source_file`, and an explicit root-object-type guard.
+Fixtures 19 -> 23. Both reviewers' exploits now fail; one reviewer stated it saw no remaining
+structural escape hatch. The residual limits are `vendor` (free text, read-verified), a `not in
+source` sharing a cited line, and duplicate JSON keys (last-wins, no reader-vs-checker gap).
+
 ## Done (one sentence)
 
 One translator folder plus a forked checker that proves the output shape holds across three
