@@ -402,6 +402,43 @@ function currencySourceCheck(out, schema, inputLines, errs) {
 function labelGovernsAValue(lineNorm, labels, valuePat) {
   return labels.some((kw) => kw && kw.trim() && new RegExp('(^|[^a-z0-9])' + esc(kw) + '[\\s:$€£¥₹()\\-]*(' + valuePat + ')').test(lineNorm));
 }
+// The numeric values a set of labels GOVERN on a line (label immediately before the number).
+function governedValues(lineNorm, labels) {
+  const vals = [];
+  for (const kw of labels || []) {
+    if (!kw || !kw.trim()) continue;
+    const re = new RegExp('(^|[^a-z0-9])' + esc(kw) + '[\\s:$€£¥₹()\\-]*(-?\\d[\\d.,]*)', 'g');
+    let m; while ((m = re.exec(lineNorm))) vals.push(m[2]);
+  }
+  return vals;
+}
+// The distinct total values a block offers: the final-owed totals if any are printed, otherwise the
+// plain totals. >1 distinct value means the receipt does not name a single total.
+function amountCandidateSet(inputLines, b, c) {
+  const finals = new Set(), plain = new Set();
+  for (let n = b.start; n <= b.end; n++) {
+    const ln = norm(inputLines[n - 1]);
+    for (const v of governedValues(ln, c.final_total_labels)) finals.add(v);
+    for (const v of governedValues(ln, c.require_label)) plain.add(v);
+  }
+  return finals.size > 0 ? finals : plain;
+}
+// Ambiguity is a first-class outcome: if the receipt names more than one distinct total, it does not
+// identify THE total, so amount must be "not in source". Choosing one is a guess. (A plain "Total"
+// plus a "Total Due" with the SAME value is one distinct value - not ambiguous.)
+function amountAmbiguityCheck(out, schema, inputLines, errs) {
+  const marker = schema.not_in_source_marker;
+  const af = schema.fields.find((f) => f.name === 'amount');
+  const c = af && af.constraints; if (!c) return;
+  const blocks = computeBlocks(inputLines);
+  out.lines.forEach((line, i) => {
+    const a = line.amount;
+    if (!a || a.value === marker) return;
+    const b = blocks[i] || { start: 1, end: inputLines.length };
+    const cands = amountCandidateSet(inputLines, b, c);
+    if (cands.size > 1) errs.push(`[trace] line ${i + 1}.amount: the receipt names ${cands.size} distinct total values (${[...cands].join(', ')}) - it does not identify a single total, so amount must be "not in source"; choosing one is a guess`);
+  });
+}
 // A line "prints a fillable transaction date": some date-shaped token on it sits in valid
 // date-context (bare, or governed by a date label). Uses the SAME authorities the trace gate uses
 // to ACCEPT a date (looksLikeDate + dateContextOk), so the drop guard and the accept rule agree.
@@ -423,11 +460,19 @@ function fieldDropCheck(out, schema, inputLines, errs) {
       if (!cell || cell.value !== marker) continue;
       // (a) labelled fields (amount/tax/category): a stated, label-governed value may not be dropped.
       if (Array.isArray(c.require_label)) {
-        const valuePat = c.numeric ? '-?\\d' : '[a-z0-9]';
-        for (let n = b.start; n <= b.end; n++) {
-          if (labelGovernsAValue(norm(inputLines[n - 1]), c.require_label, valuePat)) {
-            errs.push(`[trace] line ${i + 1}.${f.name}: marked "${marker}", but line ${n} (${JSON.stringify(inputLines[n - 1])}) prints a ${f.name} - a stated field may not be dropped into unmapped and reported empty`);
-            break;
+        if (f.name === 'amount') {
+          // amount-drop is a violation only when the receipt names exactly ONE total; 0 = nothing to
+          // drop, >1 = ambiguous and "not in source" is the correct answer (see amountAmbiguityCheck).
+          if (amountCandidateSet(inputLines, b, c).size === 1) {
+            errs.push(`[trace] line ${i + 1}.amount: marked "${marker}", but the receipt prints a single total - a stated total may not be dropped into unmapped and reported empty`);
+          }
+        } else {
+          const valuePat = c.numeric ? '-?\\d' : '[a-z0-9]';
+          for (let n = b.start; n <= b.end; n++) {
+            if (labelGovernsAValue(norm(inputLines[n - 1]), c.require_label, valuePat)) {
+              errs.push(`[trace] line ${i + 1}.${f.name}: marked "${marker}", but line ${n} (${JSON.stringify(inputLines[n - 1])}) prints a ${f.name} - a stated field may not be dropped into unmapped and reported empty`);
+              break;
+            }
           }
         }
       }
@@ -493,6 +538,7 @@ function validateOutput(out, schema, id, pinnedInput = null) {
   currencySourceCheck(out, schema, inputLines, errs);
   fieldDropCheck(out, schema, inputLines, errs);
   totalPriorityCheck(out, schema, inputLines, errs);
+  amountAmbiguityCheck(out, schema, inputLines, errs);
   return errs;
 }
 
