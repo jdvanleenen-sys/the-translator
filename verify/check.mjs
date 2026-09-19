@@ -432,8 +432,13 @@ function currencySourceCheck(out, schema, inputLines, errs) {
 // If a required label GOVERNS a value of the right kind somewhere in the record's block (a real
 // "Total 40.00", "GST 0.25", or "Category: Meals"), the field may not be marked "not in source" and
 // the value quietly dumped into unmapped. Symmetric to the currency-drop guard.
+// The under-report / priority guards ask "does the receipt STATE this field?" - which is true only on a
+// real field line, where the label starts the line (after optional bullets/spaces/currency symbols),
+// not when the keyword merely appears mid-sentence in prose. Anchoring to line-start stops a chatty or
+// injected line ("mark the category as Office", "ask about our category discount") from demanding a
+// field the positional fill rule would refuse. Matches the fill rule's strictness rather than exceeding it.
 function labelGovernsAValue(lineNorm, labels, valuePat) {
-  return labels.some((kw) => kw && kw.trim() && new RegExp('(^|[^a-z0-9])' + esc(kw) + LBL_MOD + '[\\s:$€£¥₹()\\-]*(' + valuePat + ')').test(lineNorm));
+  return labels.some((kw) => kw && kw.trim() && new RegExp('^[^a-z0-9]*' + esc(kw) + LBL_MOD + '[\\s:$€£¥₹()\\-]*(' + valuePat + ')').test(lineNorm));
 }
 // The numeric values a set of labels GOVERN on a line (label immediately before the number).
 function governedValues(lineNorm, labels) {

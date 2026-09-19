@@ -1,0 +1,6 @@
+{
+  "conversion": "expense-report",
+  "source_file": "inputs/receipts-prose.txt",
+  "lines": [{"line_no":1,"date":{"value":"2026-06-02","cite":[2]},"vendor":{"value":"Northwind Supplies","cite":[1]},"amount":{"value":"212.75","cite":[5]},"currency":{"value":"not in source"},"category":{"value":"not in source"},"tax":{"value":"not in source"}}],
+  "unmapped_input_lines": [{"line":3,"code":"line_item","note":"Widgets 200.00"},{"line":4,"code":"other","note":"Ask about our category rewards"}]
+}
