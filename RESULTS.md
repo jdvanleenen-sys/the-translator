@@ -411,3 +411,29 @@ verified against the repo before acting; three were real, one already-closed.
   designed fixture. Add more such runs before the deadline.
 
 7 valid outputs, 63 fixtures. Suite green; fresh-clone green.
+
+## Real photographed receipts - test + one fix - 2026-09-19 (v16)
+
+Two genuine Calgary receipts (a Staples office-supply sale, a Cactus Club restaurant check) were
+transcribed and run through the checker with `--input`. Real formats broke three things the synthetic
+fixtures never hit; one fixed, two held as designed:
+
+- **Tax across a rate (fixed).** The real line is `GST 5.00% 11.15` - the label sits next to the *rate*,
+  not the amount, so `11.15` would not bind and tax came out `not in source` (reads as a missed tax).
+  Fix: the label segment now strips a trailing `<number>%` rate token, so a tax/total label reaches
+  across a printed rate to its money - never to the rate itself. Guarded by `fail_ratelabel-nontax`
+  (a non-tax label + rate + number still cannot bind) and the existing `fail_tax-rate` (a value that
+  *is* a rate is still rejected). One-line note added to rules.md.
+- **Date on an unlabeled header line (held fail-closed, by decision).** `0253 01/04/25 13:25` jams a
+  register number, date, and time with no `Date:` label; the checker will not guess which token is the
+  transaction date, so date is `not in source` and the line is disclosed as unmapped. Left strict on
+  purpose - relaxing it risks grabbing an auth-line date. Nothing invented; the datum is disclosed.
+- **Vendor not on the first line (input-grammar boundary).** The restaurant check leads with
+  `CHECK # 1364520`; the merchant `CACTUS CLUB CAFE` prints lower. The contract's "vendor = first line
+  of the block" does not fit that layout - a documented boundary of the input grammar, not a silent
+  failure.
+- **Currency confirmed reading the printed symbol, not locale.** On the Staples receipt the checker
+  accepts `currency: $` because `$234.18` is literally printed on the Mastercard line - it is not
+  inferred from "Calgary/Canada". With no printed symbol anywhere, currency is `not in source`.
+
+7 valid outputs, 64 fixtures. Suite green; fresh-clone green.

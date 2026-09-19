@@ -1,0 +1,4 @@
+{ "_fixture": "Guards the rate-strip: 'Handling 5.00% 11.15' has a non-tax label followed by a rate then a number. The rate-strip lets a real tax/total label reach across a rate to its amount, but 'Handling' is not a tax label, so 11.15 may not bind to tax; must fail [trace].", "_expect_gate": "trace",
+  "conversion": "expense-report", "source_file": "verify/fixtures/sample-receipt-ratelabel.txt",
+  "lines": [{"line_no":1,"date":{"value":"not in source"},"vendor":{"value":"Prairie Supply","cite":[1]},"amount":{"value":"40.00","cite":[2]},"currency":{"value":"not in source"},"category":{"value":"not in source"},"tax":{"value":"11.15","cite":[3]}}],
+  "unmapped_input_lines": [] }

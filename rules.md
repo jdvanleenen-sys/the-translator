@@ -84,6 +84,9 @@ a tax-labeled line), `category` (must be a category-labeled line), and `date` (m
   the receipt does not identify one total, so `amount` is **`not in source`** and each total line goes to
   `unmapped_input_lines`. Choosing one would be a guess. (Same value under a plain `Total` and a
   `Total Due` is one distinct value - not ambiguous.)
+- **A label separated from its amount by a printed rate:** on `GST 5.00% 11.15` (or `Total 5% 42.00`),
+  the label governs the **money** (`11.15`), never the rate (`5.00%`). A `<number>%` token between a
+  label and its amount is a rate and is skipped; the rate itself is never a field value.
 - **A field's value would need two non-adjacent lines:** it does not. Each field's value is a single printed token/phrase on one line.
 
 ## `unmapped_input_lines` (a controlled vocabulary, not free prose)

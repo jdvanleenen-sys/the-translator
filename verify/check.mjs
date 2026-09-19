@@ -109,6 +109,7 @@ function stripLabelTail(seg) {
     s = s.replace(/[:$€£¥₹.,\-]+$/u, '');                               // trailing punctuation / currency symbols
     s = s.replace(new RegExp('(^|[^a-z0-9])(' + CUR_CODES + ')$'), '$1'); // a trailing currency code
     s = s.replace(/(^|[^a-z0-9])(included|inclusive|incl|today|now)$/, '$1'); // a trailing modifier so "GST included 0.42" / "Balance Due Today 35.00" bind to the label
+    s = s.replace(/(^|[^a-z0-9])\d[\d.,]*\s*%$/, '$1');                  // a trailing rate token so "GST 5.00% 11.15" binds the amount to the label, never the rate
   } while (s !== prev);
   return s.replace(/\s+$/, '');
 }
