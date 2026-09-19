@@ -1,0 +1,42 @@
+Harbour Books
+Feb 14
+Paperback 12.00
+Notebook 6.50
+Subtotal 18.50
+HST 2.41
+---
+The Corner Diner
+Toronto, ON
+Meal 22.00
+Total $22.00
+---
+MCDONALDS #2847
+Mar 30
+Big Mac Combo 11.49
+T0TAL 11.49
+---
+Bella Trattoria
+2026/07/08
+Pasta 24.00
+GST 1.20
+PST 1.68
+Total 26.88
+Suggested tip (18%): 4.84
+---
+Alpine Outfitters
+Refund
+Total -15,00 EUR
+---
+City Utilities
+Account 4471-9902
+Previous Balance 40.00
+Payments -40.00
+Current Charges 62.50
+Amount Due 62.50
+Due by Aug 1
+---
+COSTCO WHOLESALE
+Member 111222333
+Grocery Total 84.20
+Pharmacy Total 15.00
+Amount Due 99.20

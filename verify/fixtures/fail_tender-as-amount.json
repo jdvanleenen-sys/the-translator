@@ -1,0 +1,4 @@
+{ "_fixture": "the true total is Total 84.12; the output reports the cash tendered (Amount Paid 100.00) as the amount. A tender is not the transaction total; must fail [trace].", "_expect_gate": "trace",
+  "conversion": "expense-report", "source_file": "verify/fixtures/sample-receipt-tender.txt",
+  "lines": [{"line_no":1,"date":{"value":"not in source"},"vendor":{"value":"Cafe Uno","cite":[1]},"amount":{"value":"100.00","cite":[3]},"currency":{"value":"not in source"},"category":{"value":"not in source"},"tax":{"value":"not in source"}}],
+  "unmapped_input_lines": [{"line":2,"code":"subtotal","note":"Total 84.12"},{"line":4,"code":"other","note":"Change 15.88"}] }

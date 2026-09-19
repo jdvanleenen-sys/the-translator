@@ -8,6 +8,10 @@ a refusal (`not in source`), never an invented value.
 
 ## Accepted input
 
+- **A receipt transcription, not prose.** The input is the receipt's own lines (one item per line, as
+  OCR or typing produces), not a free-form sentence describing a receipt. A prose narration ("a crumpled
+  receipt, total looks like $84, dated March 3") is out of scope: with no receipt lines to cite, the
+  fidelity rules correctly leave most fields `not in source`. This is a stated scope, not a failure.
 - **Plain UTF-8 text.** One physical line in equals one citable line out (1-based). No OCR correction,
   no reflowing; the text is treated exactly as supplied.
 - **One receipt per block.** Multiple receipts are separated by a line containing only `---`. A leading,

@@ -43,7 +43,7 @@ function isExemptLine(text) { const t = (text || '').trim(); return t === '' || 
 // A leading non-merchant preamble line (a whole-line receipt decoration), so the merchant header can
 // sit under "*** CUSTOMER COPY ***" or "THANK YOU". Matches only when the ENTIRE line (minus
 // punctuation) is a known preamble phrase - "Thank You Cafe" is NOT preamble, it is a merchant.
-const PREAMBLE = /^(customer copy|merchant copy|customer receipt|reprint|duplicate|duplicate receipt|copy|thank you|thanks|welcome|receipt|tax invoice|invoice|sales receipt)$/;
+const PREAMBLE = /^(customer copy|merchant copy|guest copy|guest receipt|customer receipt|gift receipt|return receipt|reprint|duplicate|duplicate receipt|copy|thank you|thanks|welcome|receipt|tax invoice|invoice|sales receipt|itemized receipt|order confirmation|e-receipt)$/;
 function isPreambleLine(text) {
   const t = norm(text).replace(/[^a-z0-9 ]+/g, ' ').replace(/\s+/g, ' ').trim();
   return t !== '' && PREAMBLE.test(t);
@@ -283,6 +283,17 @@ function traceCheck(out, schema, inputLines, errs) {
       if (c.token_boundary === 'alpha' && !cell.cite.every((n) => (inputLines[n - 1] || '').includes(cell.value))) {
         errs.push(`[trace] ${where}.${f.name}: value ${JSON.stringify(cell.value)} does not appear with its exact case on a cited line - a code/label is copied verbatim, not normalized`);
         continue;
+      }
+      // A monetary value immediately followed by "%" is a RATE, not an amount (a "Tax 8.25%" line
+      // states a rate; the tax AMOUNT is a separate number). Reject when every cited line shows it as a %.
+      if (c.numeric) {
+        const vN = norm(cell.value);
+        const allRate = matchLines.every((n) => {
+          const ln = norm(inputLines[n - 1]); let idx = ln.indexOf(vN);
+          while (idx !== -1) { if (ln.slice(idx + vN.length).replace(/^\s+/, '').startsWith('%')) { idx = ln.indexOf(vN, idx + 1); continue; } return false; }
+          return true;
+        });
+        if (allRate) { errs.push(`[trace] ${where}.${f.name}: value ${JSON.stringify(cell.value)} is a percentage/rate (followed by "%"), not a monetary amount`); continue; }
       }
       // Right-kind check, on ONE line at a time, with POSITIONAL binding: a single cited line must
       // hold the value AND have a required label GOVERN it (the label immediately to its left) AND

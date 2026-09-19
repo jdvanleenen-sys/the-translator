@@ -52,10 +52,10 @@
       "constraints": {
         "numeric": true,
         "exact_token": true,
-        "require_label": ["total", "total due", "total amount", "total payable", "amount due", "balance due", "amount payable", "grand total", "amount paid", "total paid"],
-        "final_total_labels": ["total due", "total payable", "amount due", "balance due", "amount payable", "amount paid", "total paid", "grand total"]
+        "require_label": ["total", "total due", "total amount", "total payable", "amount due", "balance due", "amount payable", "grand total"],
+        "final_total_labels": ["total due", "total payable", "amount due", "balance due", "amount payable", "grand total"]
       },
-      "description": "The transaction total exactly as printed, taken from the number a total label GOVERNS (the label sits immediately before it). Never computed, never a subtotal/tax/line-item/fare/savings line. If a final-owed total is printed (Total Due, Amount Due, Balance Due, Grand Total, ...), amount must be that one, not a plain 'Total' (e.g. a cash-rounding receipt with both 'Total 22.94' and 'Total Due 22.95' - amount is 22.95). If no total-labeled line is printed, 'not in source'."
+      "description": "The transaction total exactly as printed, taken from the number a total label GOVERNS (the label sits immediately before it). Never computed, never a subtotal/tax/line-item/fare/savings line. A TENDER line (Amount Paid, Amount Tendered, Cash, Change) is the money handed over, not the transaction total, and is not used - it goes to unmapped. If a final-owed total is printed (Total Due, Amount Due, Balance Due, Grand Total, ...), amount must be that one, not a plain 'Total' (e.g. a cash-rounding receipt with both 'Total 22.94' and 'Total Due 22.95' - amount is 22.95). If no total-labeled line is printed, 'not in source'."
     },
     {
       "name": "currency",

@@ -379,3 +379,35 @@ strictness instead of exceeding it. Locked with a 6th shipped valid output (`inp
 + `verify/outputs/receipts-prose.json`) that mentions "category"/"USD" in prose and correctly reports
 both as `not in source`; it would have failed before the fix. Real category/amount/tax drops (label at
 line start) are still caught. 6 outputs, 60 fixtures, suite green.
+
+---
+
+## Cross-brain ranking review + fixes - 2026-09-19 (v15)
+
+A fourth external review re-confirmed the conversion choice (receipt->expense is #1; five independent
+yeses; do not switch) and surfaced three forced-invention checker bugs and one scope question. All
+verified against the repo before acting; three were real, one already-closed.
+
+- **Tax rate as amount (fixed).** `Tax 8.25%` let `8.25` into `tax` - a rate, not money. A numeric
+  value immediately followed by `%` is now rejected. Fixture `fail_tax-rate`.
+- **Preamble list incomplete (fixed).** `GUEST COPY` was not skipped, so the real merchant under it was
+  rejected. Added guest copy / guest receipt / gift receipt / return receipt / e-receipt / order
+  confirmation to the preamble set. Fixture `fail_guest-copy-as-vendor`.
+- **Tender forced over the total (fixed).** `Amount Paid`/`Total Paid` were treated as final-owed
+  totals, so on `Total 84.12` / `Amount Paid 100.00` / `Change 15.88` the checker rejected the correct
+  84.12 and demanded the 100.00 tender. Tender is now not a total label at all (it goes to unmapped);
+  the amount is the Total, or a Balance/Amount Due when that is what is owed. Fixture
+  `fail_tender-as-amount`. rules.md gained an explicit "tender is not the total" rule.
+- **Category-in-prose (already closed, v14).** The reviewer's currency/category "inference" DQ warnings
+  were already handled; the one live one (a keyword in prose demanding a field) was fixed in v14.
+- **Prose input (scope decision).** The brief says "receipt described in text". Decision: the input is a
+  receipt TRANSCRIPTION (one item per line), not a free-form prose sentence; a narration is out of
+  scope and correctly yields mostly `not in source`. Stated in identity.md, README, input-grammar.md.
+- **Model-in-the-loop corpus (seeded).** The strongest point: fixtures prove the checker, not the model.
+  A genuine run of the deployable folder over seven unseen hard receipts (no total printed, OCR-garbled
+  total, cash tender, partial payment, JPY + ad-line currency, due-date-not-transaction-date, section
+  totals) is committed as `inputs/model-run-hard7.txt` + `verify/outputs/model-run-hard7.json` and is
+  now part of the auto-checked suite - a real "the model invented nothing" artifact, not an author-
+  designed fixture. Add more such runs before the deadline.
+
+7 valid outputs, 63 fixtures. Suite green; fresh-clone green.

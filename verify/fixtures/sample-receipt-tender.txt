@@ -1,0 +1,4 @@
+Cafe Uno
+Total 84.12
+Amount Paid 100.00
+Change 15.88

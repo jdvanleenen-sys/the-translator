@@ -35,12 +35,16 @@ assembled across two lines. Cite the narrowest line that contains the value.
   number, do not shorten it, and do not take a footer, address, or payment-processor line as the merchant.
 - **`amount`** - the transaction **total** exactly as printed on a **total-labeled line** (`Total`,
   `Total Due`, `Total Amount`, `Total Payable`, `Amount Due`, `Balance Due`, `Amount Payable`,
-  `Amount Paid`, `Total Paid`, `Grand Total`). It must **not** be taken
+  `Grand Total`). It must **not** be taken
   from a subtotal line, a tax line, or a line item/fare. If no total-labeled line is printed, `not in
   source` - a bare unlabeled number is not assumed to be the total. Never sum the items. It is the
-  **complete printed number** (`8.25`), never a truncation (`8`). It must come from the grand-total
-  line, **not** a `Total Savings`, `Total Discount`, `Total Items`, tip, change, or rounding line -
-  those carry the word "total" but are not the amount owed.
+  **complete printed number** (`8.25`), never a truncation (`8`), and never a **rate** (`8.25%` is a
+  rate, not money). It must come from the grand-total line, **not** a `Total Savings`, `Total Discount`,
+  `Total Items`, tip, change, or rounding line - those carry the word "total" but are not the amount owed.
+- **Tender is not the total.** `Amount Paid`, `Amount Tendered`, `Cash`, `Card`, and `Change` are the
+  money handed over, not the transaction total - they go to `unmapped_input_lines`, never into `amount`.
+  On `Total 84.12` / `Amount Paid 100.00` / `Change 15.88`, the amount is `84.12`. If a receipt shows
+  only a tender and a `Balance Due`/`Amount Due`, the amount is that owed total, not the tender.
 - **`currency`** - the symbol or code as printed (`$`, `USD`, `CAD`, `EUR`, `£`). If none is
   printed, `not in source`. Never assume it. When the total line prints the code and the number
   together (e.g. `Total CAD 16.42`), `amount` is the numeric portion (`16.42`) and `currency` is the

@@ -1,0 +1,4 @@
+{ "_fixture": "'Tax 8.25%' states a RATE; the output puts 8.25 in tax as if it were the tax amount. A %-suffixed number is a rate, not money; must fail [trace].", "_expect_gate": "trace",
+  "conversion": "expense-report", "source_file": "verify/fixtures/sample-receipt-taxrate.txt",
+  "lines": [{"line_no":1,"date":{"value":"not in source"},"vendor":{"value":"Prairie Supply","cite":[1]},"amount":{"value":"40.00","cite":[3]},"currency":{"value":"not in source"},"category":{"value":"not in source"},"tax":{"value":"8.25","cite":[2]}}],
+  "unmapped_input_lines": [] }
