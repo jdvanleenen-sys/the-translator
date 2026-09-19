@@ -180,7 +180,9 @@ function computeBlocks(inputLines) {
     if (inputLines[n - 1].trim() === '---') { blocks.push({ start, end: n - 1 }); start = n + 1; }
   }
   blocks.push({ start, end: inputLines.length });
-  return blocks;
+  // Drop blocks that hold no non-exempt line, so a leading/trailing/double "---" separator does not
+  // manufacture a phantom receipt that the one-line-per-receipt gate would then demand.
+  return blocks.filter((b) => { for (let n = b.start; n <= b.end; n++) if (!isExemptLine(inputLines[n - 1])) return true; return false; });
 }
 
 // ---------- gates ----------
