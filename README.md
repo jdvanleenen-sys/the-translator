@@ -123,13 +123,16 @@ Stated plainly rather than hidden:
   currency printed on a cited line) is now caught; the general case for other fields is read by eye.
 - **Ambiguous multi-keyword lines and multiples.** Line-kind detection is keyword-based, so it cannot
   disambiguate a line that carries two competing kinds, or pick among several lines of the same kind.
-  Three inherent cases are read by eye: (1) a line with both a grand-total word and a tax word
-  (`Total incl. tax 105.00`) - can't be told from a legitimate `Total Tax 5.00`; (2) two lines that
-  each genuinely carry the same valid label (`Total 22.94` vs `Total Due 22.95`) - no authoritative
-  rule for which; (3) two printed currencies - no tie-breaker. Note the harder version - *assembling*
-  a kind across two different lines (a subtotal number blessed by a clean line's word) - is NOT a
-  limit: the single-line rule closes it. The clear decoys (`Total Savings`, `Total Discount`, a
-  `Previous Balance`, an `Auth Ref` or `Check-in` date, a taxi fare as tax) are all rejected.
+  The residual cases read by eye are narrow: (1) a line with both a grand-total word and a tax word
+  (`Total incl. tax 105.00`) resolves *safely* - the amount gate rejects it (positional binding), so
+  the worst case is a refusal (`not in source`), never a wrong amount; (2) two *conflicting* final
+  totals of different value (`Amount Due 40` and `Balance Due 45` on one receipt) - rare and
+  self-contradictory; (3) two printed currencies where the amount's line has none. Note what is NOT a
+  limit: a plain `Total` printed alongside a `Total Due`/`Amount Due`/`Grand Total` is resolved by the
+  **final-total priority rule** (amount must be the final owed total, e.g. `22.95` not `22.94` on a
+  cash-rounding receipt); and *assembling* a kind across two lines is closed by the single-line rule.
+  The clear decoys (`Total Savings`, `Total Distance`, a `Previous Balance`, an `Auth Ref` or
+  `Check-in` date, a taxi fare as tax) are all rejected.
 - **Duplicate JSON keys** are now rejected at the raw-text level (a repeated key in one object fails
   `[shape]`), so a reader and the parser cannot be shown different values.
 

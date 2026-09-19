@@ -280,3 +280,22 @@ date-shaped), so the ambiguous decimal case was never exercised. Fix: the 2-part
 as a separator (a 2-part `NN.NN` is an amount; dotted 3-part dates `14.03.2026` still match the 3-part
 rule above). Fixtures grew 47 -> 48 (`fail_amount-as-date`, a bare `12.30` parked in the date field,
 fails `[trace]`). No regression.
+
+---
+
+## Competition-tester pass — added 2026-09-18 (hostile pre-submission verification)
+
+A hostile pre-submission run (competition-tester skill) tried to smuggle one misattributed fact
+through the checker on unseen inputs. It found one wrong-but-green path and it is now closed.
+
+- **Wrong total instance (cash-rounding receipt).** With both `Total 22.94` and `Total Due 22.95`
+  printed, the checker accepted `amount 22.94` - a misattributed fact (the amount owed is 22.95).
+  Two bugs: `rules.md` had no tie-breaker for multiple total-labeled lines, and `Total Due` was not
+  in the amount `require_label` list (so the checker rejected the correct 22.95 and accepted the wrong
+  22.94). Fixed: added `total due` to the recognized totals and a **final-total priority gate** - if a
+  final-owed total (`Total Due`/`Amount Due`/`Balance Due`/`Grand Total`/...) is printed, `amount` must
+  be taken from it, not a plain `Total`. New fixture `fail_wrong-total-instance`.
+
+Also confirmed still-safe (reject or refuse, never invent): `Total incl. tax` as amount, `You saved`
+as amount, a plain `Total` chosen over a printed `Grand Total`, and a statement-period date as the
+transaction date. No other wrong-but-green output was found.

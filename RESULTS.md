@@ -244,3 +244,17 @@ One internal round on the date field's shape check. Suite re-run green.
   was never exercised. Fix: the 2-part date matcher no longer accepts `.` as a separator (a 2-part
   `NN.NN` is an amount; dotted 3-part dates like `14.03.2026` still match the 3-part rule). New fixture
   `fail_amount-as-date` (`12.30` on a bare line, parked in date) fails `[trace]`.
+
+---
+
+## Competition-tester run - 2026-09-18 (v10, hostile pre-submission)
+
+A hostile pre-submission verification found one wrong-but-green path and closed it; suite re-run green.
+
+- 5 outputs clean; 49 fixtures each through its declared gate; fresh-clone green; CI green.
+- **Fixed:** on a cash-rounding receipt (`Total 22.94` + `Total Due 22.95`) the checker accepted
+  `amount 22.94` (misattributed - the owed amount is 22.95). Added `total due` to the recognized
+  totals and a final-total priority gate; the wrong total now fails `[trace]`, the correct `Total Due`
+  passes. Locked as `fail_wrong-total-instance`.
+- **Confirmed safe:** `Total incl. tax`, `You saved`, plain-Total-over-Grand-Total, and a
+  statement-period date all fail or refuse rather than ship an invented/misattributed fact.
