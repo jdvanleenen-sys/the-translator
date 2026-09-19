@@ -1,0 +1,77 @@
+{
+  "id": "support-ticket",
+  "name": "Support ticket fields",
+  "version": "1.0.0",
+  "description": "One support-ticket record per customer email. Fixed field set, fixed order. Every filled field cites the input line(s) its value came from and must be governed by the right label. Anything the email does not state - including severity and category, which are NEVER inferred from tone or content - is 'not in source'. The prose body is disclosed in unmapped_input_lines, never dropped.",
+  "record_key": "lines",
+  "unmapped_key": "unmapped_input_lines",
+  "not_in_source_marker": "not in source",
+  "top_level_keys": ["conversion", "source_file", "lines", "unmapped_input_lines"],
+  "unmapped_reason_codes": [
+    "subject",
+    "salutation",
+    "body",
+    "signature",
+    "quoted_reply",
+    "disclaimer",
+    "header_meta",
+    "other"
+  ],
+  "fields": [
+    {
+      "name": "line_no",
+      "order": 1,
+      "role": "structural",
+      "traceable": false,
+      "description": "The 1-based row index of this record in the output. Structural envelope, not a claim about the email. Must equal its position in the lines array. Never carries a citation."
+    },
+    {
+      "name": "date",
+      "order": 2,
+      "role": "source",
+      "traceable": true,
+      "constraints": { "shape": "date", "exact_token": true, "date_context": ["date", "dated", "datetime", "date/time", "sent", "received", "on"] },
+      "description": "The date the email states, exactly as printed, from a bare date line or one a date label governs (Date/Sent/Received/...). Never normalized, never invented."
+    },
+    {
+      "name": "requester",
+      "order": 3,
+      "role": "source",
+      "traceable": true,
+      "constraints": { "exact_token": true, "token_boundary": "alpha", "require_label": ["from", "sender", "requester", "submitted by"] },
+      "description": "The person who sent the email, copied verbatim from the line a sender label governs (From:/Sender:/...). Not the signature guess, not normalized."
+    },
+    {
+      "name": "order_ref",
+      "order": 4,
+      "role": "source",
+      "traceable": true,
+      "constraints": { "exact_token": true, "token_boundary": "alpha", "require_label": ["order", "reference", "ref", "account", "invoice", "ticket"] },
+      "description": "The order/reference/account identifier ONLY if the email states one on a labeled line (Order/Reference/Account/...). Copied verbatim. Otherwise 'not in source'."
+    },
+    {
+      "name": "product",
+      "order": 5,
+      "role": "source",
+      "traceable": true,
+      "constraints": { "exact_token": true, "token_boundary": "alpha", "require_label": ["product", "item", "service", "plan"] },
+      "description": "The product/service ONLY if the email names it on a labeled line (Product:/Service:/...). Never inferred from the body or subject. Almost always 'not in source' - that is correct."
+    },
+    {
+      "name": "severity",
+      "order": 6,
+      "role": "source",
+      "traceable": true,
+      "constraints": { "exact_token": true, "token_boundary": "alpha", "require_label": ["severity", "priority", "urgency", "impact"] },
+      "description": "The severity ONLY if the email literally states it on a labeled line (Severity:/Priority:/...). NEVER inferred from tone - 'this is really frustrating' or 'ASAP' is not a severity. If not stated, 'not in source'. This is the field a guessing tool invents; this one refuses."
+    },
+    {
+      "name": "category",
+      "order": 7,
+      "role": "source",
+      "traceable": true,
+      "constraints": { "exact_token": true, "token_boundary": "alpha", "require_label": ["category", "type", "queue", "department"] },
+      "description": "The category/queue ONLY if the email literally states it on a labeled line (Category:/Type:/...). NEVER inferred from what the email is about. If not stated, 'not in source'."
+    }
+  ]
+}

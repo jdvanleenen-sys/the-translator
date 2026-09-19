@@ -1,0 +1,11 @@
+From: Jane Doe
+Date: 2026-09-10
+Subject: Login broken after update
+Order 84321
+Hi team,
+Since the update this morning I cannot log in.
+It just spins and returns to the login screen.
+I have tried two browsers. This is really frustrating.
+Please help as soon as possible.
+Thanks,
+Jane

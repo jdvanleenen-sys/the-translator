@@ -1,0 +1,20 @@
+{ "_fixture": "Body line 7 is silently dropped - neither cited by a field nor listed in unmapped_input_lines. Nothing that matters may be dropped without disclosure; must fail [coverage].", "_expect_gate": "coverage",
+  "conversion": "support-ticket", "source_file": "inputs/email-support-1.txt",
+  "lines": [
+    { "line_no": 1,
+      "date": {"value":"2026-09-10","cite":[2]},
+      "requester": {"value":"Jane Doe","cite":[1]},
+      "order_ref": {"value":"84321","cite":[4]},
+      "product": {"value":"not in source"},
+      "severity": {"value":"not in source"},
+      "category": {"value":"not in source"} }
+  ],
+  "unmapped_input_lines": [
+    {"line":3,"code":"subject","note":"Subject: Login broken after update"},
+    {"line":5,"code":"salutation","note":"Hi team,"},
+    {"line":6,"code":"body","note":"Since the update this morning I cannot log in."},
+    {"line":8,"code":"body","note":"I have tried two browsers. This is really frustrating."},
+    {"line":9,"code":"body","note":"Please help as soon as possible."},
+    {"line":10,"code":"salutation","note":"Thanks,"},
+    {"line":11,"code":"signature","note":"Jane"}
+  ] }

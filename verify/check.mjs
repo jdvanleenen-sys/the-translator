@@ -187,13 +187,17 @@ function looksLikeDate(v) {
     if ((a >= 1 && a <= 12 && b >= 1 && b <= 31) || (b >= 1 && b <= 12 && a >= 1 && a <= 31)) return true; }
   return false;
 }
-function loadSchema() {
+// Load every cartridge: reference/<id>/schema.json -> { id: schema }. The engine is conversion-agnostic;
+// each output names its cartridge via out.conversion, and the runner validates it against that schema.
+function loadSchemas() {
   const refDir = join(root, 'reference');
+  const map = {};
   for (const entry of readdirSync(refDir)) {
     const p = join(refDir, entry, 'schema.json');
-    if (existsSync(p)) return { schema: JSON.parse(readFileSync(p, 'utf8')), id: entry };
+    if (existsSync(p)) map[entry] = JSON.parse(readFileSync(p, 'utf8'));
   }
-  throw new Error('no reference/<id>/schema.json found');
+  if (Object.keys(map).length === 0) throw new Error('no reference/<id>/schema.json found');
+  return map;
 }
 function readInputLines(sourceFile) {
   const p = join(root, sourceFile);
@@ -641,7 +645,12 @@ function validateOutput(out, schema, id, pinnedInput = null) {
 // ---------- runner ----------
 
 function main() {
-  const { schema, id } = loadSchema();
+  const schemas = loadSchemas();
+  const ids = Object.keys(schemas).sort();
+  const defaultId = ids.includes('expense-report') ? 'expense-report' : ids[0];
+  // Pick the cartridge an output belongs to by its declared conversion; an unknown conversion falls back
+  // to the default cartridge so shapeCheck still flags the mismatch through [shape].
+  const pick = (out) => { const id = out && schemas[out.conversion] ? out.conversion : defaultId; return { schema: schemas[id], id }; };
   const inIdx = process.argv.indexOf('--input');
   const pinnedInput = inIdx !== -1 ? process.argv[inIdx + 1] : null;
   const fileArgIdx = process.argv.indexOf('--output');
@@ -650,6 +659,7 @@ function main() {
     const path = process.argv[fileArgIdx + 1];
     const raw = readFileSync(path, 'utf8');
     const out = JSON.parse(raw);
+    const { schema, id } = pick(out);
     const errs = validateOutput(out, schema, id, pinnedInput);
     const dup = firstDuplicateKey(raw);
     if (dup) errs.unshift(`[shape] duplicate key "${dup}" in the JSON - a record must not repeat a key, or a reader and the parser could see different values`);
@@ -662,12 +672,13 @@ function main() {
   let failed = false;
   const outRes = [];   // { f, lines, pass }
   const fixRes = [];    // { f, expect, caught }
-  if (!matrix) console.log(`--- schema: ${id} (${schema.name}) ---`);
+  if (!matrix) console.log(`--- cartridges: ${ids.join(', ')} (one engine, ${ids.length} schema${ids.length > 1 ? 's' : ''}) ---`);
 
   const outputsDir = join(root, 'verify', 'outputs');
   for (const f of readdirSync(outputsDir).filter((f) => f.endsWith('.json'))) {
     const raw = readFileSync(join(outputsDir, f), 'utf8');
     const out = JSON.parse(raw);
+    const { schema, id } = pick(out);
     const errs = validateOutput(out, schema, id);
     const dup = firstDuplicateKey(raw);
     if (dup) errs.unshift(`[shape] duplicate key "${dup}" in the JSON`);
@@ -685,6 +696,7 @@ function main() {
     // Strip ONLY the harness metadata keys, then validate strictly - so a fixture cannot rely on the
     // annotation exemption to smuggle anything, and production validation stays fully closed.
     const { _fixture, _expect_gate, ...out } = raw;
+    const { schema, id } = pick(out);
     const errs = validateOutput(out, schema, id);
     const dup = firstDuplicateKey(rawText);
     if (dup) errs.unshift(`[shape] duplicate key "${dup}" in the JSON`);
