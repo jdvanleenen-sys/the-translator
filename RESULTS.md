@@ -459,3 +459,26 @@ More genuine Calgary receipts run through the checker with `--input`:
   gains the "merchant not in the header" and "one transaction is one block" limits.
 
 8 valid outputs, 64 fixtures. Suite green; fresh-clone green.
+
+## Columnar tax bug - found on a grocery receipt, fixed - 2026-09-19 (v18)
+
+The Save-On-Foods receipt prints tax as columns: `Tax-Code | Taxable-Value | Tax-Value`, i.e.
+`GST 27.98 1.40`. This exposed a **forced-wrong-answer** bug - the worst class:
+
+- `tax: 1.40` (the correct Tax-Value) was **rejected** (`GST` did not sit immediately before it),
+- `tax: not in source` (honest refusal) was **rejected** (the drop-guard sees a printed tax),
+- `tax: 27.98` (the taxable **base** - wrong) was **accepted**.
+
+So the checker rejected the right value and the honest refusal, and passed only the wrong one. Fix
+(decision: capture the tax correctly): for the tax field, the label may reach across an intervening
+taxable-value/base, but the bound value must be the **last money token** the label governs - the
+Tax-Value column. Now `GST 27.98 1.40` -> `1.40` binds, `27.98` is rejected, and `not in source` is
+still refused because the correct value is reachable. Guarded by `fail_tax-base-not-value` (the base
+27.98 must not bind); schema.json gains `columnar_tax` on the tax field; rules.md and input-grammar note
+the Tax-Value rule. Save-On shipped as `inputs/receipts-saveon.txt` + `verify/outputs/receipts-saveon.json`.
+
+Still open (compound date labels): `DateTime:` / `DATE/TIME:` are not recognized date labels, so date is
+`not in source` on the Superstore and Save-On receipts (both accepted as honest refusals - not forced).
+A candidate safe fix (recognize these explicit compound labels) is noted for decision.
+
+11 valid outputs, 65 fixtures. Suite green; fresh-clone green.

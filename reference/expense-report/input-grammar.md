@@ -58,7 +58,10 @@ the one common layout the same-line rule does not yet cover. Do not work around 
   a single final-owed total, the amount is **`not in source`** - the receipt does not identify one, and
   choosing is a guess.
 - **Tax** comes from a tax-labelled line (`Tax`, `GST`, `HST`, `PST`, `QST`, `VAT`, `Duty`, `Levy`),
-  never computed as total minus subtotal.
+  never computed as total minus subtotal. On a **columnar** grocery layout (`GST 27.98 1.40`, i.e.
+  `Tax-Code | Taxable-Value | Tax-Value`), the tax is the **Tax-Value column** - the last money value the
+  label governs (`1.40`) - never the taxable base (`27.98`). A `<rate>%` between the label and the amount
+  is skipped (`GST 5.00% 11.15` -> `11.15`).
 - **Currency** must be adjacent to the amount, or come from a currency declaration / monetary line
   (`All prices in JPY`, `Currency: USD`, a bare code line). A currency lifted from unrelated text (an ad
   line) is rejected. **Stated limit:** a currency stated only on a remote declaration line is read by a

@@ -1,0 +1,4 @@
+{ "_fixture": "Columnar tax line 'GST 27.98 1.40' (Taxable-Value | Tax-Value). The output puts the taxable BASE (27.98) in tax instead of the Tax-Value (1.40). The tax is the last money value the label governs; the base is not; must fail [trace].", "_expect_gate": "trace",
+  "conversion": "expense-report", "source_file": "verify/fixtures/sample-receipt-columnar-tax.txt",
+  "lines": [{"line_no":1,"date":{"value":"not in source"},"vendor":{"value":"Prairie Supply","cite":[1]},"amount":{"value":"40.00","cite":[2]},"currency":{"value":"not in source"},"category":{"value":"not in source"},"tax":{"value":"27.98","cite":[3]}}],
+  "unmapped_input_lines": [] }

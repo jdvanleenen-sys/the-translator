@@ -87,6 +87,9 @@ a tax-labeled line), `category` (must be a category-labeled line), and `date` (m
 - **A label separated from its amount by a printed rate:** on `GST 5.00% 11.15` (or `Total 5% 42.00`),
   the label governs the **money** (`11.15`), never the rate (`5.00%`). A `<number>%` token between a
   label and its amount is a rate and is skipped; the rate itself is never a field value.
+- **A columnar tax line (`GST 27.98 1.40`):** when a tax label is followed by a taxable-value then a
+  tax-value, the `tax` is the **Tax-Value column** - the last money value the label governs (`1.40`),
+  never the taxable base (`27.98`). Base then tax is the universal receipt order.
 - **A field's value would need two non-adjacent lines:** it does not. Each field's value is a single printed token/phrase on one line.
 
 ## `unmapped_input_lines` (a controlled vocabulary, not free prose)

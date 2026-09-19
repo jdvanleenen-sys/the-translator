@@ -1,0 +1,27 @@
+save-on-foods #6634
+Heritage
+Visit www.saveonfoods.com
+G.S.T #[redacted]
+INT'L CREAMER 4.99
+*Deposit 0.10
+*Recycle Fee 0.02
+Nature Valley Bars 15.99 G
+Card $13.99 Save -2.00
+Nature Valley Bars 15.99 G
+Card $13.99 Save -2.00
+Sub Total $33.09
+Card $$ pts- AB 33
+Tax-Code Taxable-Value Tax-Value
+GST 27.98 1.40
+BALANCE DUE $34.49
+Credit $34.49
+[ ] XXXXXXXXXXX1446
+-----TRANSACTION RECORD-----
+TYPE: Purchase
+ACCT: MASTERCARD
+CARD NUMBER: ***********1446
+DATE/TIME: 09/25/2024 09:02:38
+REFERENCE #: 0010015320
+AUTHOR.# : 07177J
+MASTERCARD
+01 APPROVED - THANK YOU 027

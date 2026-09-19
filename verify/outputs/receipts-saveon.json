@@ -1,0 +1,161 @@
+{
+ "conversion": "expense-report",
+ "source_file": "inputs/receipts-saveon.txt",
+ "lines": [
+  {
+   "line_no": 1,
+   "date": {
+    "value": "not in source"
+   },
+   "vendor": {
+    "value": "save-on-foods #6634",
+    "cite": [
+     1
+    ]
+   },
+   "amount": {
+    "value": "34.49",
+    "cite": [
+     16
+    ]
+   },
+   "currency": {
+    "value": "$",
+    "cite": [
+     16
+    ]
+   },
+   "category": {
+    "value": "not in source"
+   },
+   "tax": {
+    "value": "1.40",
+    "cite": [
+     15
+    ]
+   }
+  }
+ ],
+ "unmapped_input_lines": [
+  {
+   "line": 2,
+   "code": "other",
+   "note": "Heritage"
+  },
+  {
+   "line": 3,
+   "code": "other",
+   "note": "Visit www.saveonfoods.com"
+  },
+  {
+   "line": 4,
+   "code": "other",
+   "note": "G.S.T #[redacted]"
+  },
+  {
+   "line": 5,
+   "code": "other",
+   "note": "INT'L CREAMER 4.99"
+  },
+  {
+   "line": 6,
+   "code": "other",
+   "note": "*Deposit 0.10"
+  },
+  {
+   "line": 7,
+   "code": "other",
+   "note": "*Recycle Fee 0.02"
+  },
+  {
+   "line": 8,
+   "code": "other",
+   "note": "Nature Valley Bars 15.99 G"
+  },
+  {
+   "line": 9,
+   "code": "other",
+   "note": "Card $13.99 Save -2.00"
+  },
+  {
+   "line": 10,
+   "code": "other",
+   "note": "Nature Valley Bars 15.99 G"
+  },
+  {
+   "line": 11,
+   "code": "other",
+   "note": "Card $13.99 Save -2.00"
+  },
+  {
+   "line": 12,
+   "code": "other",
+   "note": "Sub Total $33.09"
+  },
+  {
+   "line": 13,
+   "code": "other",
+   "note": "Card $$ pts- AB 33"
+  },
+  {
+   "line": 14,
+   "code": "other",
+   "note": "Tax-Code Taxable-Value Tax-Value"
+  },
+  {
+   "line": 17,
+   "code": "other",
+   "note": "Credit $34.49"
+  },
+  {
+   "line": 18,
+   "code": "other",
+   "note": "[ ] XXXXXXXXXXX1446"
+  },
+  {
+   "line": 19,
+   "code": "other",
+   "note": "-----TRANSACTION RECORD-----"
+  },
+  {
+   "line": 20,
+   "code": "other",
+   "note": "TYPE: Purchase"
+  },
+  {
+   "line": 21,
+   "code": "other",
+   "note": "ACCT: MASTERCARD"
+  },
+  {
+   "line": 22,
+   "code": "other",
+   "note": "CARD NUMBER: ***********1446"
+  },
+  {
+   "line": 23,
+   "code": "other",
+   "note": "DATE/TIME: 09/25/2024 09:02:38"
+  },
+  {
+   "line": 24,
+   "code": "other",
+   "note": "REFERENCE #: 0010015320"
+  },
+  {
+   "line": 25,
+   "code": "other",
+   "note": "AUTHOR.# : 07177J"
+  },
+  {
+   "line": 26,
+   "code": "other",
+   "note": "MASTERCARD"
+  },
+  {
+   "line": 27,
+   "code": "other",
+   "note": "01 APPROVED - THANK YOU 027"
+  }
+ ]
+}

@@ -100,7 +100,7 @@ function labelOnLine(lineNorm, kw) {
 const CUR_CODES = 'usd|cad|eur|gbp|aud|jpy|chf|cny|inr|mxn|nzd|sek|nok|dkk|zar|brl|rub|hkd|sgd';
 // The label segment is the line text just before the value; strip trailing punctuation, currency
 // symbols, and a trailing currency code so "Total EUR " and "Total: $" both reduce to "total".
-function stripLabelTail(seg) {
+function stripLabelTail(seg, opts = {}) {
   let s = seg, prev;
   do {
     prev = s;
@@ -110,6 +110,7 @@ function stripLabelTail(seg) {
     s = s.replace(new RegExp('(^|[^a-z0-9])(' + CUR_CODES + ')$'), '$1'); // a trailing currency code
     s = s.replace(/(^|[^a-z0-9])(included|inclusive|incl|today|now)$/, '$1'); // a trailing modifier so "GST included 0.42" / "Balance Due Today 35.00" bind to the label
     s = s.replace(/(^|[^a-z0-9])\d[\d.,]*\s*%$/, '$1');                  // a trailing rate token so "GST 5.00% 11.15" binds the amount to the label, never the rate
+    if (opts.baseNumber) s = s.replace(/(^|[^a-z0-9])-?\d[\d.,]*$/, '$1'); // a trailing taxable-value/base so a columnar "GST 27.98 1.40" reaches the label
   } while (s !== prev);
   return s.replace(/\s+$/, '');
 }
@@ -117,10 +118,17 @@ const endsWithLabel = (seg, labels) => labels.some((kw) => kw && kw.trim() && ne
 // Positional binding: the value is valid only if a required label GOVERNS it - i.e. the label sits
 // immediately to the value's left. This is what "Total Distance 12.40" fails and "Total 41.90" passes:
 // the number must be the one the label quantifies, not merely present on a line that has the word.
-function labelGovernsValue(lineNorm, valNorm, labels) {
+function labelGovernsValue(lineNorm, valNorm, labels, opts = {}) {
   let idx = lineNorm.indexOf(valNorm);
-  while (idx !== -1) { if (endsWithLabel(stripLabelTail(lineNorm.slice(0, idx)), labels)) return true; idx = lineNorm.indexOf(valNorm, idx + 1); }
+  while (idx !== -1) { if (endsWithLabel(stripLabelTail(lineNorm.slice(0, idx), opts), labels)) return true; idx = lineNorm.indexOf(valNorm, idx + 1); }
   return false;
+}
+// The last monetary token on a line (a number not followed by "%"). Used for columnar tax lines
+// ("GST <taxable-value> <tax-value>"): the tax is the Tax-Value column, i.e. the last money token.
+function lastMoneyToken(lineNorm) {
+  const toks = lineNorm.match(/-?\d[\d.,]*%?/g) || [];
+  for (let i = toks.length - 1; i >= 0; i--) if (!toks[i].endsWith('%')) return toks[i];
+  return null;
 }
 // Date: the line must be a bare date (nothing before the value) or governed by a date-context label.
 function dateContextOk(lineNorm, valNorm, ctx) {
@@ -306,7 +314,9 @@ function traceCheck(out, schema, inputLines, errs) {
         const qualifies = matchLines.some((n) => {
           const ln = norm(inputLines[n - 1]);
           let labelOk = true;
-          if (Array.isArray(c.require_label)) labelOk = labelGovernsValue(ln, val, c.require_label);
+          if (Array.isArray(c.require_label)) labelOk = c.columnar_tax
+            ? (labelGovernsValue(ln, val, c.require_label, { baseNumber: true }) && val === lastMoneyToken(ln))
+            : labelGovernsValue(ln, val, c.require_label);
           else if (Array.isArray(c.date_context)) labelOk = dateContextOk(ln, val, c.date_context);
           const forbidden = Array.isArray(c.forbid_label) && c.forbid_label.some((kw) => labelOnLine(ln, kw));
           return labelOk && !forbidden;
