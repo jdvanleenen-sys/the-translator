@@ -121,6 +121,17 @@ extended date denylist (check-in/check-out/valid/...), and dropping bare `balanc
 require list. Fixtures 33 -> 39; all five bypasses and the previous-balance torture now fail; no
 regression. Only genuinely-ambiguous same-label multiples (`Total` vs `Total Due`) remain read-by-eye.
 
+## External red-team pass 5 (2026-09-18, positional binding)
+
+A fifth external review showed the label gate proved a require-word was on the line, not that it
+governed the value - so `Total Distance 12.40`, `Grand Total (order 5567) 40.00`, and
+`TOTAL 59.99 was 89.99` passed, and currency/amount weren't bound. Fixed with positional binding: the
+required label must sit immediately to the value's left (stripping currency/punctuation/parentheticals),
+label and date gates became allowlists rather than denylists, and currency must be adjacent to the
+amount. Fixtures 39 -> 43; the legitimate `40.00` on a parenthetical order line still passes; no
+regression. This is the same principle applied everywhere: a value's kind must be bound to the label
+that governs it, on one line.
+
 ## Done (one sentence)
 
 One translator folder plus a forked checker that proves the output shape holds across three

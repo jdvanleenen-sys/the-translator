@@ -205,6 +205,24 @@ const usdBase = () => ({ conversion: 'expense-report', source_file: USD,
     unmapped_input_lines: [{ line: 3, code: 'line_item', note: 'Room 90.00' }, { line: 5, code: 'other', note: 'Balance Due 90.00' }] };
   fixtures['fail_previous-balance-as-amount'] = f; }
 
+// --- v8 fixtures (external round 3: label present but governing a different number; currency mispair) ---
+{ const f = { _expect_gate: 'trace', _fixture: 'a Total Distance measurement (12.40) reported as the fare while Amount Due 28.50 is the real total', conversion: 'expense-report', source_file: 'verify/fixtures/sample-receipt-distance.txt',
+    lines: [{ line_no: 1, date: { value: '2026-03-14', cite: [2] }, vendor: { value: 'Yellow Cab Calgary', cite: [1] }, amount: { value: '12.40', cite: [3] }, currency: nis, category: nis, tax: nis }],
+    unmapped_input_lines: [{ line: 4, code: 'other', note: 'Amount Due 28.50' }, { line: 5, code: 'greeting_footer', note: 'Thank you for riding' }] };
+  fixtures['fail_total-distance-as-amount'] = f; }
+{ const f = { _expect_gate: 'trace', _fixture: 'an order id (5567) embedded on the Grand Total line lifted as the amount', conversion: 'expense-report', source_file: 'verify/fixtures/sample-receipt-orderid.txt',
+    lines: [{ line_no: 1, date: { value: '2026-03-14', cite: [2] }, vendor: { value: 'Harbor Freight Tools', cite: [1] }, amount: { value: '5567', cite: [3] }, currency: nis, category: nis, tax: nis }],
+    unmapped_input_lines: [{ line: 4, code: 'card_mask', note: 'Visa ****1234' }] };
+  fixtures['fail_orderid-as-amount'] = f; }
+{ const f = { _expect_gate: 'trace', _fixture: 'the pre-discount "was" price (89.99) reported as the amount instead of the total 59.99', conversion: 'expense-report', source_file: 'verify/fixtures/sample-receipt-wasprice.txt',
+    lines: [{ line_no: 1, date: { value: 'Apr 9', cite: [2] }, vendor: { value: 'Peak Outfitters', cite: [1] }, amount: { value: '89.99', cite: [3] }, currency: nis, category: nis, tax: nis }],
+    unmapped_input_lines: [{ line: 4, code: 'greeting_footer', note: 'Thank you' }] };
+  fixtures['fail_was-price-as-amount'] = f; }
+{ const f = { _expect_gate: 'trace', _fixture: 'currency CAD paired with the USD amount 20.00 on a two-currency line (cross-field mispair)', conversion: 'expense-report', source_file: 'verify/fixtures/sample-receipt-mispair.txt',
+    lines: [{ line_no: 1, date: { value: 'Jun 1', cite: [2] }, vendor: { value: 'Duty Free Shop', cite: [1] }, amount: { value: '20.00', cite: [3] }, currency: { value: 'CAD', cite: [3] }, category: nis, tax: nis }],
+    unmapped_input_lines: [] };
+  fixtures['fail_currency-mispair'] = f; }
+
 let count = 0;
 for (const [name, obj] of Object.entries(fixtures)) {
   // key order: annotations first, then conversion/source_file/lines/unmapped

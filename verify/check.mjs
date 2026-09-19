@@ -74,11 +74,54 @@ const isNumericValue = (v) => /^-?\d[\d.,]*$/.test(norm(v).replace(/\s+/g, ''));
 // Does a label word appear on the line as a WHOLE word (bounded by start/end or a non-alphanumeric)?
 // Word-boundary matching, not substring: "total" must not match inside "subtotal", "tax" must not
 // match inside "taxi". lineNorm is already lowercased/whitespace-collapsed.
+const esc = (s) => s.trim().toLowerCase().replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
 function labelOnLine(lineNorm, kw) {
-  const k = (kw || '').trim().toLowerCase();
-  if (!k) return false;
-  const esc = k.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-  return new RegExp('(^|[^a-z0-9])' + esc + '([^a-z0-9]|$)').test(lineNorm);
+  if (!kw || !kw.trim()) return false;
+  return new RegExp('(^|[^a-z0-9])' + esc(kw) + '([^a-z0-9]|$)').test(lineNorm);
+}
+
+const CUR_CODES = 'usd|cad|eur|gbp|aud|jpy|chf|cny|inr|mxn|nzd|sek|nok|dkk|zar|brl|rub|hkd|sgd';
+// The label segment is the line text just before the value; strip trailing punctuation, currency
+// symbols, and a trailing currency code so "Total EUR " and "Total: $" both reduce to "total".
+function stripLabelTail(seg) {
+  let s = seg, prev;
+  do {
+    prev = s;
+    s = s.replace(/\s+$/, '');
+    s = s.replace(/\([^()]*\)$/, '');                                   // a trailing complete (parenthetical)
+    s = s.replace(/[:$€£¥₹.,\-]+$/u, '');                               // trailing punctuation / currency symbols
+    s = s.replace(new RegExp('(^|[^a-z0-9])(' + CUR_CODES + ')$'), '$1'); // a trailing currency code
+  } while (s !== prev);
+  return s.replace(/\s+$/, '');
+}
+const endsWithLabel = (seg, labels) => labels.some((kw) => kw && kw.trim() && new RegExp('(^|[^a-z0-9])' + esc(kw) + '$').test(seg));
+// Positional binding: the value is valid only if a required label GOVERNS it - i.e. the label sits
+// immediately to the value's left. This is what "Total Distance 12.40" fails and "Total 41.90" passes:
+// the number must be the one the label quantifies, not merely present on a line that has the word.
+function labelGovernsValue(lineNorm, valNorm, labels) {
+  let idx = lineNorm.indexOf(valNorm);
+  while (idx !== -1) { if (endsWithLabel(stripLabelTail(lineNorm.slice(0, idx)), labels)) return true; idx = lineNorm.indexOf(valNorm, idx + 1); }
+  return false;
+}
+// Date: the line must be a bare date (nothing before the value) or governed by a date-context label.
+function dateContextOk(lineNorm, valNorm, ctx) {
+  let idx = lineNorm.indexOf(valNorm);
+  while (idx !== -1) { const seg = stripLabelTail(lineNorm.slice(0, idx)); if (seg === '' || endsWithLabel(seg, ctx)) return true; idx = lineNorm.indexOf(valNorm, idx + 1); }
+  return false;
+}
+// Currency must be immediately adjacent to the amount value (only whitespace between), so a second
+// currency printed elsewhere on the line (USD 20.00 (CAD 27.00)) cannot be paired with the amount.
+function currencyAdjacentToAmount(lineNorm, amountNorm, curNorm) {
+  let idx = lineNorm.indexOf(amountNorm);
+  while (idx !== -1) {
+    const before = lineNorm.slice(0, idx).replace(/\s+$/, '');
+    const after = lineNorm.slice(idx + amountNorm.length).replace(/^\s+/, '');
+    const bOk = before.endsWith(curNorm) && (before.length === curNorm.length || /[^a-z0-9]/.test(before[before.length - curNorm.length - 1]));
+    const aOk = after.startsWith(curNorm) && (after.length === curNorm.length || /[^a-z0-9]/.test(after[curNorm.length]));
+    if (bOk || aOk) return true;
+    idx = lineNorm.indexOf(amountNorm, idx + 1);
+  }
+  return false;
 }
 
 // Detect a duplicate key within the same JSON object at the raw-text level. JSON.parse keeps the last
@@ -207,22 +250,27 @@ function traceCheck(out, schema, inputLines, errs) {
         errs.push(`[trace] ${where}.${f.name}: value not found as a complete token on any single cited line - invented, mis-cited, truncated, or fabricated across lines\n      value: ${JSON.stringify(cell.value)}\n      cited: ${span}`);
         continue;
       }
-      // Right-kind check, on ONE line at a time: a SINGLE cited line must hold the value AND carry a
-      // require-word AND carry no forbid-word. Quantifying require/forbid separately over the whole
-      // citation set let an attacker assemble "right kind" from two lines (a subtotal supplying the
-      // word "total", a line item supplying cleanliness); requiring a single qualifying line kills that.
-      if (Array.isArray(c.require_label) || Array.isArray(c.forbid_label)) {
+      // Right-kind check, on ONE line at a time, with POSITIONAL binding: a single cited line must
+      // hold the value AND have a required label GOVERN it (the label immediately to its left) AND
+      // carry no forbid-word. Independent quantifiers let an attacker assemble "right kind" from two
+      // lines; requiring the label to govern the value also stops "Total Distance 12.40" (the word
+      // "total" is present but governs "distance", not the money).
+      if (Array.isArray(c.require_label) || Array.isArray(c.date_context) || Array.isArray(c.forbid_label)) {
+        const val = norm(cell.value);
         const qualifies = matchLines.some((n) => {
           const ln = norm(inputLines[n - 1]);
-          const reqOk = !Array.isArray(c.require_label) || c.require_label.some((kw) => labelOnLine(ln, kw));
+          let labelOk = true;
+          if (Array.isArray(c.require_label)) labelOk = labelGovernsValue(ln, val, c.require_label);
+          else if (Array.isArray(c.date_context)) labelOk = dateContextOk(ln, val, c.date_context);
           const forbidden = Array.isArray(c.forbid_label) && c.forbid_label.some((kw) => labelOnLine(ln, kw));
-          return reqOk && !forbidden;
+          return labelOk && !forbidden;
         });
         if (!qualifies) {
-          const parts = [];
-          if (Array.isArray(c.require_label)) parts.push(`carry a label (one of: ${c.require_label.join(', ')})`);
-          if (Array.isArray(c.forbid_label)) parts.push(`carry none of (${c.forbid_label.join(', ')})`);
-          errs.push(`[trace] ${where}.${f.name}: no single cited line both holds the value and is the right kind - one line must ${parts.join(' and ')}. A value's kind may not be assembled from two different lines.`);
+          let why;
+          if (Array.isArray(c.require_label)) why = `a required label (one of: ${c.require_label.join(', ')}) must sit immediately before the value`;
+          else if (Array.isArray(c.date_context)) why = `the line must be a bare date or governed by a date label (${c.date_context.join(', ')})`;
+          else why = `the cited line carries a forbidden label (${c.forbid_label.join(', ')})`;
+          errs.push(`[trace] ${where}.${f.name}: no single cited line binds the value to the right kind - ${why}. A value's kind may not be assembled from two lines, nor taken from a label that governs a different number.`);
         }
       }
     }
@@ -302,6 +350,21 @@ function currencyDropCheck(out, schema, inputLines, errs) {
 
 // pinnedInput: when the verifier supplies --input, the output may not choose its own evidence - its
 // source_file must resolve to that file, and citations are traced against it.
+// When amount and currency are both filled and share a cited line, the currency must be adjacent to
+// the amount value on that line - so on a two-currency line the currency can't be paired with a
+// different currency's number.
+function currencyBindingCheck(out, schema, inputLines, errs) {
+  const marker = schema.not_in_source_marker;
+  out.lines.forEach((line, i) => {
+    const a = line.amount, cur = line.currency;
+    if (!a || !cur || a.value === marker || cur.value === marker || !Array.isArray(a.cite) || !Array.isArray(cur.cite)) return;
+    const shared = a.cite.filter((n) => cur.cite.includes(n));
+    if (shared.length === 0) return; // amount and currency on different lines: not bound here
+    const ok = shared.some((n) => n >= 1 && n <= inputLines.length && currencyAdjacentToAmount(norm(inputLines[n - 1]), norm(a.value), norm(cur.value)));
+    if (!ok) errs.push(`[trace] line ${i + 1}.currency: ${JSON.stringify(cur.value)} is not adjacent to the amount ${JSON.stringify(a.value)} on their shared line - a currency must belong to the amount's own number, not another number's`);
+  });
+}
+
 function validateOutput(out, schema, id, pinnedInput = null) {
   const errs = [];
   shapeCheck(out, schema, id, errs);
@@ -322,6 +385,7 @@ function validateOutput(out, schema, id, pinnedInput = null) {
   coverageCheck(out, schema, inputLines, errs);
   blockCheck(out, schema, inputLines, errs);
   currencyDropCheck(out, schema, inputLines, errs);
+  currencyBindingCheck(out, schema, inputLines, errs);
   return errs;
 }
 

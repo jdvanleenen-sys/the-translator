@@ -56,7 +56,7 @@ This reads every output in `verify/outputs/`, opens the input file it names, and
   point its evidence at a `../` traversal or absolute path.
 - **coverage** - every non-blank input line is either cited by a field or listed as unmapped with a
   controlled reason code (and any note must quote its line), so nothing is dropped silently.
-- **fixtures** - thirty-nine planted flaws in `verify/fixtures/fail_*.json` (computed total,
+- **fixtures** - forty-three planted flaws in `verify/fixtures/fail_*.json` (computed total,
   inferred category, assumed currency, invented year, expanded vendor, dropped line, missing field,
   hollow `not in source`, extra field, wrong conversion, cross-line value, subtotal-as-amount,
   line-item-as-amount, tax-total-as-amount, tax from a non-tax line, item-as-category, number-as-date,
@@ -66,17 +66,22 @@ This reads every output in `verify/outputs/`, opens the input file it names, and
   `Total Savings` decoy as amount, an `Auth Ref` date, a payment-processor footer as vendor, a dropped
   printed currency, duplicate JSON keys, a split-citation amount (a subtotal number laundered by
   co-citing a clean line), a taxi fare as tax, a co-cited processor footer as vendor, a truncated
-  vendor, a check-in date on a hotel folio, and a previous balance as the amount) that MUST fail - and
+  vendor, a check-in date on a hotel folio, a previous balance as the amount, a `Total Distance`
+  measurement as the amount, an order id embedded on the total line as the amount, a `was` (pre-discount)
+  price as the amount, and a currency paired with a different number's value) that MUST fail - and
   each must fail **through the gate it declares**, so a fixture cannot pass by failing for the wrong reason.
 
-Beyond field-kind checks, the gates enforce that a value's kind comes from **one line**: a single
-cited line must hold the value AND carry a required label AND carry no forbidden label - a kind may
+Beyond field-kind checks, the gates enforce **positional binding**: a value's kind comes from **one
+line**, and the required label must *govern* the value - sit immediately to its left. So a kind may
 not be assembled across two lines (a subtotal supplying the word "total", a line item supplying
-cleanliness). Labels match on **word boundaries**, so `subtotal` is not a `total` and `taxi` is not a
-`tax`. `vendor` must equal the **receipt header line verbatim** (no footer, address, or truncation).
-A `currency` marked `not in source` is rejected when a currency token sits on a cited line. `date` is
-kept off `auth`/`ref`/`card`/`check-in`/`check-out` and similar non-transaction-date lines. Duplicate
-JSON keys are rejected at the raw-text level.
+cleanliness), and a label may not be borrowed from a different number (`Total Distance 12.40` does not
+make `12.40` a total; `Grand Total (order 5567) 40.00` binds `40.00`, not `5567`). Labels match on
+**word boundaries** (`subtotal` is not a `total`, `taxi` is not a `tax`) and are **allowlists** of the
+real total/date labels, not denylists of decoys. `vendor` must equal the **receipt header line
+verbatim**. `currency` must be **adjacent to the amount** (so a second currency on the line can't be
+paired with it) and is rejected as `not in source` when a currency token sits on a cited line. `date`
+must be a **bare date or governed by a date label** (invoice/issued/…), not a check-in/expiry/auth
+date. Duplicate JSON keys are rejected at the raw-text level.
 
 To check a single output: `node verify/check.mjs --output verify/outputs/receipts-coffee.json`.
 

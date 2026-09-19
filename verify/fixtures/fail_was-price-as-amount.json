@@ -1,0 +1,45 @@
+{
+  "_fixture": "the pre-discount \"was\" price (89.99) reported as the amount instead of the total 59.99",
+  "_expect_gate": "trace",
+  "conversion": "expense-report",
+  "source_file": "verify/fixtures/sample-receipt-wasprice.txt",
+  "lines": [
+    {
+      "line_no": 1,
+      "date": {
+        "value": "Apr 9",
+        "cite": [
+          2
+        ]
+      },
+      "vendor": {
+        "value": "Peak Outfitters",
+        "cite": [
+          1
+        ]
+      },
+      "amount": {
+        "value": "89.99",
+        "cite": [
+          3
+        ]
+      },
+      "currency": {
+        "value": "not in source"
+      },
+      "category": {
+        "value": "not in source"
+      },
+      "tax": {
+        "value": "not in source"
+      }
+    }
+  ],
+  "unmapped_input_lines": [
+    {
+      "line": 4,
+      "code": "greeting_footer",
+      "note": "Thank you"
+    }
+  ]
+}

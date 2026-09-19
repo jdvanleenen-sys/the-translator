@@ -217,3 +217,28 @@ Fixtures grew 33 -> 39. Verified directly: all five bypasses and the previous-ba
 (each through its gate); no regression on the four real outputs. Remaining disclosed limits unchanged,
 except that *assembling* a kind across two lines is now closed - only two lines that each genuinely
 carry the same valid label (e.g. `Total` vs `Total Due`) remain read-by-eye.
+
+---
+
+## External red-team pass 5 — added 2026-09-18 (label present but governing a different number)
+
+A fifth external review sharpened the root cause: the gate confirmed a require-word was on the line
+and the value was a token on the line, but never that the value was the number the word *governs*. So
+`Total Distance 12.40` (a distance), `Grand Total (order 5567) 40.00` (an order id), and
+`TOTAL 59.99 was 89.99` (a pre-discount price) all passed; and currency/amount were validated in
+isolation, so a currency could be paired with a different number's value (`27.00 USD` off a
+`USD 20.00 (CAD 27.00)` line). All fixed by making the binding **positional**:
+
+- **The required label must GOVERN the value** - sit immediately to its left (after stripping currency
+  symbols/codes, punctuation, and a trailing parenthetical). `Total 41.90` binds; `Total Distance
+  12.40` does not; `Grand Total (order 5567) 40.00` binds `40.00`, not `5567`. Kills the "Total
+  <measure>" family (distance/weight/volume/time) without a denylist.
+- **Label gates are allowlists, not denylists.** `date` is now a positional allowlist too: a date must
+  be bare or governed by a date label (invoice/issued/sale/...), so a check-in/expiry/auth date is
+  rejected regardless of whether its exact word was enumerated.
+- **Currency is bound to the amount:** when both are filled and share a cited line, the currency must
+  be adjacent to the amount value, so a second currency on the line can't be paired with it.
+
+Fixtures grew 39 -> 43. Verified directly: `Total Distance`, order-id, `was`-price, and currency-mispair
+attacks all fail through their gate; the legitimate `40.00` on the `(order 5567)` line still passes;
+no regression on the four real outputs.

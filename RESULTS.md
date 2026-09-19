@@ -195,3 +195,20 @@ All now fail, each through `[trace]`:
 - truncated vendor (`WALMART` of `WALMART SUPERCENTER`) - same.
 - check-in date on a hotel folio - date denylist extended.
 - previous balance (900.00) as amount - `balance` dropped from the require list; `previous` forbidden.
+
+---
+
+## External red-team run - 2026-09-18 (v8, positional binding)
+
+A fifth external review showed the label was checked as present-on-line, not as governing the value.
+Fixed with positional binding (the required label must sit immediately before the value), allowlist
+label/date gates, and currency-must-be-adjacent-to-amount. Suite re-run green.
+
+- 4 outputs clean; 43 fixtures each through its declared gate; fresh-clone green; CI green.
+
+### The reviewer's new attacks, run directly against v8 (all fail `[trace]`)
+
+- `Total Distance 12.40` as amount - the label governs "distance", not the money.
+- order id `5567` on `Grand Total (order 5567) 40.00` as amount - and the legitimate `40.00` still passes.
+- `was` pre-discount price `89.99` (`TOTAL 59.99 was 89.99`) as amount.
+- currency `CAD` paired with the USD amount `20.00` on a two-currency line - currency must be adjacent to the amount.

@@ -1,0 +1,42 @@
+{
+  "_fixture": "currency CAD paired with the USD amount 20.00 on a two-currency line (cross-field mispair)",
+  "_expect_gate": "trace",
+  "conversion": "expense-report",
+  "source_file": "verify/fixtures/sample-receipt-mispair.txt",
+  "lines": [
+    {
+      "line_no": 1,
+      "date": {
+        "value": "Jun 1",
+        "cite": [
+          2
+        ]
+      },
+      "vendor": {
+        "value": "Duty Free Shop",
+        "cite": [
+          1
+        ]
+      },
+      "amount": {
+        "value": "20.00",
+        "cite": [
+          3
+        ]
+      },
+      "currency": {
+        "value": "CAD",
+        "cite": [
+          3
+        ]
+      },
+      "category": {
+        "value": "not in source"
+      },
+      "tax": {
+        "value": "not in source"
+      }
+    }
+  ],
+  "unmapped_input_lines": []
+}

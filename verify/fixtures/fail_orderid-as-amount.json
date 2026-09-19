@@ -1,0 +1,45 @@
+{
+  "_fixture": "an order id (5567) embedded on the Grand Total line lifted as the amount",
+  "_expect_gate": "trace",
+  "conversion": "expense-report",
+  "source_file": "verify/fixtures/sample-receipt-orderid.txt",
+  "lines": [
+    {
+      "line_no": 1,
+      "date": {
+        "value": "2026-03-14",
+        "cite": [
+          2
+        ]
+      },
+      "vendor": {
+        "value": "Harbor Freight Tools",
+        "cite": [
+          1
+        ]
+      },
+      "amount": {
+        "value": "5567",
+        "cite": [
+          3
+        ]
+      },
+      "currency": {
+        "value": "not in source"
+      },
+      "category": {
+        "value": "not in source"
+      },
+      "tax": {
+        "value": "not in source"
+      }
+    }
+  ],
+  "unmapped_input_lines": [
+    {
+      "line": 4,
+      "code": "card_mask",
+      "note": "Visa ****1234"
+    }
+  ]
+}
