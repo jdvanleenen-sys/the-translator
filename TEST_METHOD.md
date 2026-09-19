@@ -309,6 +309,18 @@ Stated limit (in `input-grammar.md`, not closed): a cross-line label (label on o
 the next) is refused as not-in-source rather than stitched together - a fidelity-safe refusal, and the
 top candidate for the next careful pass (it must update the drop/ambiguity guards in lockstep).
 
+## External + checker-primitive red-team - added 2026-09-19 (v12/v13)
+
+- **v12 (Perplexity, 12 attacks):** 9 caught as-is; fixed partial-payment ("Amount Paid" reported as the
+  total while a "Balance Due Today" is owed -> ambiguity via a small label-modifier tolerance,
+  `fail_paid-vs-due`); "injection category line" is not a checker hole (the value is on a real
+  category-labeled line).
+- **v13 (attacking the checker's primitives):** closed an **over-citation coverage bypass** (a field
+  citing a line the value is not on marked that line accounted-for and buried it; now every cited line
+  must contain the value, `fail_over-citation`) and made **vendor verbatim exact** in case and internal
+  whitespace (`ACME PAINT` != `Acme Paint`, and a no-break space != a space; `fail_vendor-normalized`),
+  which also closed the earlier disclosed A9 whitespace limit. Fixtures 56 -> 58.
+
 ---
 
 ## Competition-tester pass — added 2026-09-18 (hostile pre-submission verification)

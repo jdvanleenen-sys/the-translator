@@ -313,6 +313,27 @@ after the modifier change.
 
 ---
 
+## Self-red-team run - 2026-09-19 (v13, attacking the checker's own primitives)
+
+Probing the checker mechanics rather than field semantics. Two real holes found and closed; thousands
+separators, truncation, no-year dates, and invented years all behaved correctly.
+
+- **Over-citation coverage bypass (HIGH, wrong-but-green).** A field could cite a line the value is NOT
+  on; `traceCheck` required only that ONE cited line contain the value, and `coverageCheck` marked EVERY
+  cited line accounted-for. So an output could bury a meaningful line (e.g. "OBJECTION customer disputed
+  the charge") by adding its number to `amount.cite`, and pass, directly breaking "nothing dropped".
+  Fix: every cited line of a filled field must contain the value; an over-citation fails `[trace]`.
+  Fixture `fail_over-citation`.
+- **Vendor normalization (case + whitespace).** The header check compared normalized strings, so
+  `ACME PAINT` -> `Acme Paint` (and a no-break space folded to a space, the earlier A9) passed. Fix:
+  vendor is now compared raw (trim ends only), so case and internal spacing must match verbatim. This
+  also closes A9, so the whitespace-normalization limit is removed from the README. Fixture
+  `fail_vendor-normalized`. The 5 shipped outputs already match their headers exactly.
+
+Fixtures 56 -> 58. Suite green; fresh-clone green.
+
+---
+
 ## Competition-tester run - 2026-09-18 (v10, hostile pre-submission)
 
 A hostile pre-submission verification found one wrong-but-green path and closed it; suite re-run green.

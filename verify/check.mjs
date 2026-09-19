@@ -270,6 +270,13 @@ function traceCheck(out, schema, inputLines, errs) {
         errs.push(`[trace] ${where}.${f.name}: value not found as a complete token on any single cited line - invented, mis-cited, truncated, or fabricated across lines\n      value: ${JSON.stringify(cell.value)}\n      cited: ${span}`);
         continue;
       }
+      // Every cited line must actually contain the value. An over-citation (citing a line the value is
+      // NOT on) would otherwise mark that line "accounted" in the coverage gate and silently bury it.
+      if (matchLines.length !== cell.cite.length) {
+        const bad = cell.cite.filter((n) => !matchLines.includes(n));
+        errs.push(`[trace] ${where}.${f.name}: value ${JSON.stringify(cell.value)} is not on cited line(s) ${bad.join(', ')} - every cited line must contain the value; an over-citation cannot be used to mark an unrelated line accounted-for`);
+        continue;
+      }
       // Right-kind check, on ONE line at a time, with POSITIONAL binding: a single cited line must
       // hold the value AND have a required label GOVERN it (the label immediately to its left) AND
       // carry no forbid-word. Independent quantifiers let an attacker assemble "right kind" from two
@@ -341,8 +348,11 @@ function blockCheck(out, schema, inputLines, errs) {
       const cell = line[f.name];
       if (!cell || cell.value === marker || !Array.isArray(cell.cite)) continue;
       if (header === null) continue;
-      if (!cell.cite.includes(header) || norm(cell.value) !== norm(inputLines[header - 1])) {
-        errs.push(`[trace] line ${i + 1}.${f.name}: must be the receipt header verbatim (line ${header}: ${JSON.stringify(inputLines[header - 1])}), not ${JSON.stringify(cell.value)} - a footer, address, or truncated name is not the merchant`);
+      // Verbatim means verbatim: compare raw (trim ends only), so case and internal whitespace must
+      // match exactly. "ACME PAINT" -> "Acme Paint" or a no-break space folded to a space is a
+      // normalization, which the brief treats as invention.
+      if (!cell.cite.includes(header) || cell.value.trim() !== inputLines[header - 1].trim()) {
+        errs.push(`[trace] line ${i + 1}.${f.name}: must be the receipt header verbatim (line ${header}: ${JSON.stringify(inputLines[header - 1])}), not ${JSON.stringify(cell.value)} - not normalized in case or spacing, and not a footer/address/truncation`);
       }
     }
   });
