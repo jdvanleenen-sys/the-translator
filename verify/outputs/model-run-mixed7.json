@@ -1,0 +1,26 @@
+{
+  "conversion": "expense-report",
+  "source_file": "inputs/model-run-mixed7.txt",
+  "lines": [
+    {"line_no":1,"date":{"value":"2026-08-12","cite":[2]},"vendor":{"value":"Riverstone Hardware","cite":[1]},"amount":{"value":"136.49","cite":[6]},"currency":{"value":"not in source"},"category":{"value":"not in source"},"tax":{"value":"6.50","cite":[5]}},
+    {"line_no":2,"date":{"value":"Aug 15","cite":[10]},"vendor":{"value":"The Copper Fork","cite":[9]},"amount":{"value":"103.00","cite":[14]},"currency":{"value":"not in source"},"category":{"value":"Meals","cite":[13]},"tax":{"value":"not in source"}},
+    {"line_no":3,"date":{"value":"09/02/2026","cite":[17]},"vendor":{"value":"Downtown Parkade","cite":[16]},"amount":{"value":"12.00","cite":[19]},"currency":{"value":"$","cite":[19]},"category":{"value":"not in source"},"tax":{"value":"not in source"}},
+    {"line_no":4,"date":{"value":"not in source"},"vendor":{"value":"Global Air Lounge","cite":[21]},"amount":{"value":"45.00","cite":[23]},"currency":{"value":"USD","cite":[23]},"category":{"value":"not in source"},"tax":{"value":"not in source"}},
+    {"line_no":5,"date":{"value":"2026-07-20","cite":[27]},"vendor":{"value":"Seabreeze Inn","cite":[25]},"amount":{"value":"334.80","cite":[30]},"currency":{"value":"not in source"},"category":{"value":"not in source"},"tax":{"value":"24.80","cite":[29]}},
+    {"line_no":6,"date":{"value":"15 Aug 2026","cite":[33]},"vendor":{"value":"Outback Electronics","cite":[32]},"amount":{"value":"1,299.00","cite":[36]},"currency":{"value":"AUD","cite":[36]},"category":{"value":"not in source"},"tax":{"value":"118.09","cite":[35]}},
+    {"line_no":7,"date":{"value":"Aug 18","cite":[39]},"vendor":{"value":"Wellness Pharmacy #12","cite":[38]},"amount":{"value":"24.50","cite":[41]},"currency":{"value":"not in source"},"category":{"value":"not in source"},"tax":{"value":"not in source"}}
+  ],
+  "unmapped_input_lines": [
+    {"line":3,"code":"line_item","note":"Cordless Drill 129.99"},
+    {"line":4,"code":"subtotal","note":"Subtotal 129.99"},
+    {"line":7,"code":"card_mask","note":"VISA ****8842"},
+    {"line":11,"code":"line_item","note":"Dinner for two 88.00"},
+    {"line":12,"code":"other","note":"Gratuity 15.00"},
+    {"line":18,"code":"line_item","note":"Lot B - 3 hours"},
+    {"line":22,"code":"line_item","note":"Day Pass USD 45.00 / CAD 61.00"},
+    {"line":26,"code":"other","note":"Check-out: 2026-07-22"},
+    {"line":28,"code":"line_item","note":"Room 2 nights 310.00"},
+    {"line":34,"code":"line_item","note":"Laptop 1,180.91"},
+    {"line":40,"code":"line_item","note":"Prescription 24.50"}
+  ]
+}

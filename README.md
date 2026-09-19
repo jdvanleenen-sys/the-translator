@@ -58,7 +58,7 @@ by a stranger, with no dependencies beyond Node. For a one-screen verdict:
 node verify/check.mjs --matrix
 ```
 
-prints a pass/fail matrix: real outputs (including a live model run on unseen receipts) all trace to
+prints a pass/fail matrix: real outputs (including live model runs on unseen receipts) all trace to
 their input, and every planted attack, by class (invented value / dropped field / schema break /
 cross-receipt citation), is caught. For the full per-file detail:
 

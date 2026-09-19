@@ -703,7 +703,7 @@ function printMatrix(outRes, fixRes, failed) {
   L.push('receipt text -> fixed expense record; every value traces to the input or says "not in source".');
   L.push('');
   L.push('  Real outputs, every value traced to its input');
-  L.push(`      ${String(okOut).padStart(2)}/${String(outRes.length).padEnd(2)} outputs  (${lines} lines, incl. a live model run on unseen receipts)   ${mark(okOut === outRes.length)}`);
+  L.push(`      ${String(okOut).padStart(2)}/${String(outRes.length).padEnd(2)} outputs  (${lines} lines, incl. live model runs on unseen receipts)   ${mark(okOut === outRes.length)}`);
   L.push('');
   L.push('  Planted attacks, each MUST be rejected');
   for (const g of ['trace', 'coverage', 'shape', 'block']) { const b = byGate[g]; if (!b) continue; L.push(`      ${(GATE[g] + ' ').padEnd(34, '.')} ${String(b.c).padStart(2)}/${String(b.n).padEnd(2)} caught   ${mark(b.c === b.n)}`); }
