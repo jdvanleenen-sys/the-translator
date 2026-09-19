@@ -43,7 +43,7 @@ function isExemptLine(text) { const t = (text || '').trim(); return t === '' || 
 // A leading non-merchant preamble line (a whole-line receipt decoration), so the merchant header can
 // sit under "*** CUSTOMER COPY ***" or "THANK YOU". Matches only when the ENTIRE line (minus
 // punctuation) is a known preamble phrase - "Thank You Cafe" is NOT preamble, it is a merchant.
-const PREAMBLE = /^(customer copy|merchant copy|guest copy|guest receipt|customer receipt|gift receipt|return receipt|reprint|duplicate|duplicate receipt|copy|thank you|thanks|welcome|receipt|tax invoice|invoice|sales receipt|itemized receipt|order confirmation|e-receipt)$/;
+const PREAMBLE = /^(customer copy|merchant copy|guest copy|guest receipt|customer receipt|gift receipt|return receipt|reprint|duplicate|duplicate receipt|copy|thank you|thanks|welcome|receipt|tax invoice|invoice|sales receipt|itemized receipt|order confirmation|e-receipt|transaction record|releve de transaction|releve de|transaction)$/;
 function isPreambleLine(text) {
   const t = norm(text).replace(/[^a-z0-9 ]+/g, ' ').replace(/\s+/g, ' ').trim();
   return t !== '' && PREAMBLE.test(t);
@@ -517,7 +517,9 @@ function dateAmbiguityCheck(out, schema, inputLines, errs) {
 // A line "prints a fillable transaction date": some date-shaped token on it sits in valid
 // date-context (bare, or governed by a date label). Uses the SAME authorities the trace gate uses
 // to ACCEPT a date (looksLikeDate + dateContextOk), so the drop guard and the accept rule agree.
-const DATE_CAND = /[a-z]{3,9}\.?\s*\d{1,2}(?:,?\s*\d{2,4})?|\d{1,4}[./\-]\d{1,2}(?:[./\-]\d{2,4})?/gi;
+// A date-shaped token. The numeric form is bounded by (?<!\d)...(?!\d) so a date is not read out of a
+// longer number/code: "01/027 APPROVED" (a batch code) must NOT yield the phantom date "01/02".
+const DATE_CAND = /[a-z]{3,9}\.?\s*\d{1,2}(?:,?\s*\d{2,4})?|(?<!\d)\d{1,4}[./\-]\d{1,2}(?:[./\-]\d{2,4})?(?!\d)/gi;
 function linePrintsFillableDate(lineNorm, dateCtx) {
   const cands = lineNorm.match(DATE_CAND) || [];
   return cands.some((t) => looksLikeDate(t) && dateContextOk(lineNorm, norm(t), dateCtx));

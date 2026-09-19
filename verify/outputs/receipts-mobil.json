@@ -1,0 +1,189 @@
+{
+ "conversion": "expense-report",
+ "source_file": "inputs/receipts-mobil.txt",
+ "lines": [
+  {
+   "line_no": 1,
+   "date": {
+    "value": "2026-09-19",
+    "cite": [
+     7
+    ]
+   },
+   "vendor": {
+    "value": "MOBIL 1743 GAS STN",
+    "cite": [
+     4
+    ]
+   },
+   "amount": {
+    "value": "100.00",
+    "cite": [
+     15
+    ]
+   },
+   "currency": {
+    "value": "CAD$",
+    "cite": [
+     15
+    ]
+   },
+   "category": {
+    "value": "not in source"
+   },
+   "tax": {
+    "value": "4.76",
+    "cite": [
+     14
+    ]
+   }
+  }
+ ],
+ "unmapped_input_lines": [
+  {
+   "line": 1,
+   "code": "other",
+   "note": "TRANSACTION RECORD"
+  },
+  {
+   "line": 2,
+   "code": "other",
+   "note": "RELEVE DE"
+  },
+  {
+   "line": 3,
+   "code": "other",
+   "note": "TRANSACTION"
+  },
+  {
+   "line": 5,
+   "code": "other",
+   "note": "110 COUNTRY VILLAGE RD N"
+  },
+  {
+   "line": 6,
+   "code": "other",
+   "note": "CALGARY AB T3K 5Z2"
+  },
+  {
+   "line": 8,
+   "code": "other",
+   "note": "TRANS #: 975198"
+  },
+  {
+   "line": 9,
+   "code": "other",
+   "note": "Station#: 00324349"
+  },
+  {
+   "line": 10,
+   "code": "other",
+   "note": "GST #: R733514327"
+  },
+  {
+   "line": 11,
+   "code": "other",
+   "note": "PUMP 4"
+  },
+  {
+   "line": 12,
+   "code": "other",
+   "note": "EREG $100.00"
+  },
+  {
+   "line": 13,
+   "code": "other",
+   "note": "54.084L AT $1.849/L"
+  },
+  {
+   "line": 16,
+   "code": "other",
+   "note": "Type: PURCHASE"
+  },
+  {
+   "line": 17,
+   "code": "other",
+   "note": "VISA"
+  },
+  {
+   "line": 18,
+   "code": "other",
+   "note": "************4199"
+  },
+  {
+   "line": 19,
+   "code": "other",
+   "note": "REFERENCE #:"
+  },
+  {
+   "line": 20,
+   "code": "other",
+   "note": "****6885 0011332770C"
+  },
+  {
+   "line": 21,
+   "code": "other",
+   "note": "INVOICE NO: 271610"
+  },
+  {
+   "line": 22,
+   "code": "other",
+   "note": "AUTH: 055124"
+  },
+  {
+   "line": 23,
+   "code": "other",
+   "note": "VISA CREDIT"
+  },
+  {
+   "line": 24,
+   "code": "other",
+   "note": "VERIFIED BY PIN"
+  },
+  {
+   "line": 25,
+   "code": "other",
+   "note": "01/027 APPROVED"
+  },
+  {
+   "line": 26,
+   "code": "other",
+   "note": "THANK YOU"
+  },
+  {
+   "line": 27,
+   "code": "other",
+   "note": "Loyalty: NO"
+  },
+  {
+   "line": 28,
+   "code": "other",
+   "note": "Reconciliation ID:"
+  },
+  {
+   "line": 29,
+   "code": "other",
+   "note": "1375021"
+  },
+  {
+   "line": 30,
+   "code": "other",
+   "note": "-- IMPORTANT --"
+  },
+  {
+   "line": 31,
+   "code": "other",
+   "note": "Retain This Copy"
+  },
+  {
+   "line": 32,
+   "code": "other",
+   "note": "For Your Records"
+  },
+  {
+   "line": 33,
+   "code": "other",
+   "note": "- Customer's Copy -"
+  }
+ ]
+}

@@ -501,3 +501,24 @@ Shipped as `inputs/receipts-earls.txt` + `verify/outputs/receipts-earls.json`.
 
 Five real photographed receipts now ship in the checked suite (Staples, Superstore, Save-On, Earls, plus
 the earlier corpus): 12 valid outputs, 66 fixtures. Suite green; fresh-clone green.
+
+## Gas receipt (Mobil) - two fixes - 2026-09-19 (v21)
+
+A Mobil gas receipt (fuel, GST-included, pump preset) surfaced two issues:
+
+- **Phantom date from a batch code (bug, fixed).** The only real date is `2026-09-19`; the checker also
+  read `01/02` out of `01/027 APPROVED` (a batch/approval code), saw two dates, called it ambiguous, and
+  suppressed the real one. The date-candidate scanner now requires a whole token - a numeric date bounded
+  by `(?<!\d)...(?!\d)` - so `01/027` is not read as `01/02`. Guarded by `fail_batchcode-phantom-date`.
+- **Merchant under a card-terminal header (fixed).** The receipt leads with
+  `TRANSACTION RECORD / RELEVE DE / TRANSACTION`, a bilingual decoration, so the merchant `MOBIL 1743 GAS
+  STN` was not line 1. Added `transaction record`, `releve de transaction`, `releve de`, `transaction` to
+  the whole-line preamble set (same move as the earlier `GUEST COPY` fix), so the merchant binds. Guarded
+  by `fail_txnrecord-as-vendor`. (This is coverage-by-accretion; it is fixable only because the merchant
+  sits right under the preamble - unlike the Cactus check-number case, which stays a documented boundary.)
+
+Everything else bound correctly: amount `100.00` (TOTAL), currency `CAD$`, tax `4.76` from
+`GST INCLUDED $ 4.76` (the amount, not the `GST #` registration number). Shipped as
+`inputs/receipts-mobil.txt` + `verify/outputs/receipts-mobil.json`.
+
+Six real photographed receipts now ship: 13 valid outputs, 68 fixtures. Suite green; fresh-clone green.

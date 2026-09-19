@@ -1,0 +1,4 @@
+{ "_fixture": "The only real date is 2026-09-19; '01/027 APPROVED' is a batch code, not a date. The output drops date to 'not in source' as if the receipt were ambiguous. A date candidate must be a whole token (01/027 is not 01/02), so the receipt names one date and it may not be dropped; must fail [trace].", "_expect_gate": "trace",
+  "conversion": "expense-report", "source_file": "verify/fixtures/sample-receipt-batchcode-date.txt",
+  "lines": [{"line_no":1,"date":{"value":"not in source"},"vendor":{"value":"Fuel Stop","cite":[1]},"amount":{"value":"40.00","cite":[3]},"currency":{"value":"not in source"},"category":{"value":"not in source"},"tax":{"value":"not in source"}}],
+  "unmapped_input_lines": [{"line":2,"code":"other","note":"2026-09-19 14:58:50"},{"line":4,"code":"other","note":"01/027 APPROVED"}] }

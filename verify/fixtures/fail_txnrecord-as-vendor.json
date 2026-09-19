@@ -1,0 +1,4 @@
+{ "_fixture": "'TRANSACTION RECORD' is a whole-line card-terminal preamble, not the merchant (which is 'Nord Fuel' on the next line). The output claims it as vendor. A preamble decoration may not be the vendor; must fail [trace].", "_expect_gate": "trace",
+  "conversion": "expense-report", "source_file": "verify/fixtures/sample-receipt-txnrecord-header.txt",
+  "lines": [{"line_no":1,"date":{"value":"not in source"},"vendor":{"value":"TRANSACTION RECORD","cite":[1]},"amount":{"value":"25.00","cite":[3]},"currency":{"value":"not in source"},"category":{"value":"not in source"},"tax":{"value":"not in source"}}],
+  "unmapped_input_lines": [{"line":2,"code":"other","note":"Nord Fuel"}] }

@@ -19,8 +19,9 @@ a refusal (`not in source`), never an invented value.
 - **Blank lines and `---`** are exempt from coverage. Every other line must be cited by a field or
   listed in `unmapped_input_lines` with a controlled reason code. Nothing is dropped silently.
 - **The merchant is the block header:** the first line that is not blank and not a whole-line preamble
-  decoration (`*** CUSTOMER COPY ***`, `THANK YOU`, `RECEIPT`, `DUPLICATE`, ...). A line that merely
-  contains such a word ("Thank You Cafe") is a merchant, not a preamble.
+  decoration (`*** CUSTOMER COPY ***`, `THANK YOU`, `RECEIPT`, `DUPLICATE`, `TRANSACTION RECORD`,
+  `RELEVE DE TRANSACTION`, ...). A line that merely contains such a word ("Thank You Cafe") is a
+  merchant, not a preamble.
 
   **Stated limit - merchant not in the header.** This assumes the merchant name heads the receipt, which
   holds for the common case (storefront and grocery receipts print the name first). Some restaurant POS
