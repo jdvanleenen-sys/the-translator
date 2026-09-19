@@ -1,9 +1,10 @@
-# The Translator — receipt text to expense report
+# The Translator — receipt text to a source-locked expense record
 
-A folder-based AI translator. Feed it the text of one or more receipts; it returns a fixed-shape
-expense-report record, one line per receipt, the same way every time. Every value that makes a claim
-about the receipt either quotes the input line it came from or says `not in source`. Nothing is
-invented.
+A folder-based AI translator with an executable no-invention test. Feed it the text of one or more
+receipts; it returns a fixed-shape expense-report record, one line per receipt, the same way every
+time. Every value either quotes the exact input line it came from or says `not in source`. Nothing is
+computed, normalized, or inferred, and a bundled offline checker (`verify/check.mjs`) proves it against
+the input, so **a non-source value is a test failure, not a matter of trust**.
 
 Who does this by hand today: bookkeepers, admins, freelancers, and small-business owners turning a
 pile of receipts into an expense report at month end.
@@ -22,7 +23,20 @@ pile of receipts into an expense report at month end.
 - **Out:** a JSON object with one `line` per receipt and seven fixed fields per line:
   `line_no, date, vendor, amount, currency, category, tax`. Empty fields say `not in source`.
 
-See `examples.md` for three worked pairs.
+See `examples.md` for three worked pairs. The full input grammar the translator accepts, and the
+layouts it deliberately refuses, are in `reference/expense-report/input-grammar.md`.
+
+## Limits (stated, not hidden)
+
+- **Cross-line labels.** A total whose label is on one line and value on the next (`AMOUNT DUE` then
+  `47.83`) is reported `not in source`, not stitched together. A fidelity-safe refusal, never an
+  invented value.
+- **Currency on a remote line.** A currency stated only on a declaration line (`All prices in JPY`) is
+  accepted; the checker bounds this to declaration / monetary / bare-code lines but cannot prove the
+  declaration governs this particular receipt. Verify it by eye.
+- **The checker audits the output, not the model.** It proves the emitted record against the input it
+  cites; the model's obedience to the rules is shown by `receipts/` (the cold walk, control run, and the
+  recorded human walk).
 
 ## The structural envelope (nothing hides here)
 

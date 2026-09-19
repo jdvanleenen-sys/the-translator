@@ -34,7 +34,8 @@ assembled across two lines. Cite the narrowest line that contains the value.
   copied verbatim. Do not expand `Co` to `Company`, do not fix a misspelling, do not drop a store
   number, do not shorten it, and do not take a footer, address, or payment-processor line as the merchant.
 - **`amount`** - the transaction **total** exactly as printed on a **total-labeled line** (`Total`,
-  `Amount Due`, `Balance Due`, `Balance`, `Amount Payable`, `Grand Total`). It must **not** be taken
+  `Total Due`, `Total Amount`, `Total Payable`, `Amount Due`, `Balance Due`, `Amount Payable`,
+  `Amount Paid`, `Total Paid`, `Grand Total`). It must **not** be taken
   from a subtotal line, a tax line, or a line item/fare. If no total-labeled line is printed, `not in
   source` - a bare unlabeled number is not assumed to be the total. Never sum the items. It is the
   **complete printed number** (`8.25`), never a truncation (`8`). It must come from the grand-total
@@ -75,6 +76,10 @@ a tax-labeled line), `category` (must be a category-labeled line), and `date` (m
   `Amount Due`, `Balance Due`, `Amount Payable`, `Grand Total`) outranks a plain `Total`. On a
   cash-rounding receipt with `Total 22.94` and `Total Due 22.95`, `amount` is `22.95`; the plain
   `Total` goes to `unmapped_input_lines` (code `other`).
+- **Two or more DISTINCT totals with no single final-owed total** (e.g. `Total 10.00` and `Total 12.00`):
+  the receipt does not identify one total, so `amount` is **`not in source`** and each total line goes to
+  `unmapped_input_lines`. Choosing one would be a guess. (Same value under a plain `Total` and a
+  `Total Due` is one distinct value - not ambiguous.)
 - **A field's value would need two non-adjacent lines:** it does not. Each field's value is a single printed token/phrase on one line.
 
 ## `unmapped_input_lines` (a controlled vocabulary, not free prose)
@@ -86,6 +91,21 @@ payment_method, card_mask, loyalty, location, header, greeting_footer, other`) -
 so the disclosure layer classifies with declared codes rather than invented prose. The optional
 `note`, if present, must itself quote the line it describes (the checker traces it). Blank lines and
 bare `---` separators are exempt and need no entry.
+
+## Before you output (self-check, fail closed)
+
+After you draft the record, re-read it against the receipt line by line, then emit only what survives:
+
+1. For every filled field, confirm the value appears on the exact line it cites, as a complete token,
+   and is the right KIND (total from a total-labeled line, tax from a tax line, currency adjacent or
+   declared, a date-shaped transaction date, vendor = the block header verbatim). If you cannot confirm
+   it on the cited line, change the field to `not in source`.
+2. Confirm every non-blank input line is either cited by a field or listed in `unmapped_input_lines`.
+3. If any value was computed, summed, normalized, corrected, or inferred, replace it with `not in source`.
+
+Emit the record only after this pass. This is the fail-closed default: when unsure, refuse. The folder
+also ships a mechanical checker (`verify/check.mjs`) that enforces exactly these rules against the
+output; run it on your result if you can.
 
 ## When in doubt
 

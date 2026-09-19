@@ -281,6 +281,34 @@ as a separator (a 2-part `NN.NN` is an amount; dotted 3-part dates `14.03.2026` 
 rule above). Fixtures grew 47 -> 48 (`fail_amount-as-date`, a bare `12.30` parked in the date field,
 fails `[trace]`). No regression.
 
+## Overnight hardening pass - added 2026-09-18 (sustained self-red-team + comp-11/12 feedback re-read)
+
+Method unchanged; new gates and fixtures, prompted by a long self-red-team and a re-read of the
+comp-11/comp-12 judge feedback for the silent-fail ("quiet failure") class. New/changed gates in
+`verify/check.mjs`, each with a kept-red fixture asserting its intended gate:
+- **Label completeness:** `Total Amount` / `Total Payable` added; a trailing `included`/`incl` modifier
+  is stripped so `GST included 0.42` binds. Because the field-drop guard shares the list, this also
+  closes the matching silent-drop.
+- **Silent-drop guards for date and vendor:** `fieldDropCheck` now also fails when a printed transaction
+  date (labelled or bare) or the merchant header is marked not-in-source and dumped to `unmapped`. Date
+  detection reuses `looksLikeDate` + `dateContextOk`, so the drop guard and the accept rule agree (a
+  check-in-only receipt still yields a correct not-in-source date).
+- **`currencySourceCheck`:** a filled currency must be adjacent to the amount, on a currency-declaration
+  /monetary line, or a bare code line - not laundered from unrelated text.
+- **`amountAmbiguityCheck`:** more than one distinct total in a block -> amount must be not-in-source.
+  The amount drop-guard fires only when exactly one total is printed, so ambiguity and under-reporting
+  do not deadlock.
+- **`computeBlocks`** drops empty blocks (leading/trailing/double `---`); **`blockHeader`** skips a
+  whole-line preamble (`CUSTOMER COPY`, `THANK YOU`) to find the merchant, and cannot skip past it.
+
+Fixtures 49 -> 55: `fail_total-amount-dropped`, `fail_date-dropped`, `fail_vendor-dropped`,
+`fail_currency-laundered`, `fail_ambiguous-total`, `fail_preamble-skip`. Input contract published in
+`reference/expense-report/input-grammar.md`; `rules.md` gained a fail-closed self-check step.
+
+Stated limit (in `input-grammar.md`, not closed): a cross-line label (label on one line, its value on
+the next) is refused as not-in-source rather than stitched together - a fidelity-safe refusal, and the
+top candidate for the next careful pass (it must update the drop/ambiguity guards in lockstep).
+
 ---
 
 ## Competition-tester pass — added 2026-09-18 (hostile pre-submission verification)

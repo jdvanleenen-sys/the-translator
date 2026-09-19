@@ -247,6 +247,44 @@ One internal round on the date field's shape check. Suite re-run green.
 
 ---
 
+## Overnight hardening run - 2026-09-18 (v11, sustained self-red-team + comp-11/12 feedback re-read)
+
+A long autonomous adversarial pass, plus a re-read of the comp-11 and comp-12 judge feedback aimed at
+the silent-fail class both prior comps punish. Six new kept-red fixtures; each change tested and
+committed separately; suite green throughout (5 outputs; fixtures 49 -> 55).
+
+- **F1 label completeness.** Added `Total Amount` / `Total Payable` and a trailing `included`/`incl`
+  modifier, so `Total Amount 40.00`, `Total Payable 40.00`, and `GST included 0.42` are accepted. The
+  same shared list closes the dangerous half: a printed `Total Amount` can no longer be marked
+  not-in-source and dropped. Decoys (`Total Distance`/`Total Savings`, `Subtotal`, `Taxi`) still reject.
+  Fixture `fail_total-amount-dropped`.
+- **Two silent-fails closed (the class the brief and both prior comps punish).** `date` and `vendor`
+  had no drop guard: a printed transaction date and the merchant header could be dumped to `unmapped`
+  and pass. Extended `fieldDropCheck` to date (labelled or bare, using the same `looksLikeDate` +
+  `dateContextOk` the accept rule uses, so a check-in-only receipt still correctly yields not-in-source)
+  and vendor (the header is the merchant). Fixtures `fail_date-dropped`, `fail_vendor-dropped`.
+- **Currency launder (wrong-but-green).** A currency lifted from ad copy passed when the total line had
+  no adjacent currency. `currencySourceCheck`: a filled currency must be adjacent to the amount, on a
+  currency-declaration/monetary line, or a bare code line - still allowing `All prices in JPY`. Fixture
+  `fail_currency-laundered`.
+- **Ambiguity as first-class (wrong-but-green).** Two distinct totals let the output pick one.
+  `amountAmbiguityCheck`: >1 distinct total -> amount must be not-in-source, reconciled with the
+  under-reporting guard (amount-drop fires only when exactly one total is printed, so no deadlock).
+  Fixture `fail_ambiguous-total`.
+- **Robustness (false-negatives that rejected correct receipts).** A leading/trailing/double `---` no
+  longer manufactures a phantom receipt; the merchant header may sit under a `CUSTOMER COPY` / `THANK
+  YOU` preamble (bounded whole-line skip that cannot skip the real merchant). Fixture `fail_preamble-skip`.
+- **Docs.** Published `reference/expense-report/input-grammar.md` (accepted input + stated limits);
+  `rules.md` gained a fail-closed self-check step and the two-distinct-totals rule; F3 doc drift fixed
+  (total-label list aligned to the schema; bare `Balance` removed).
+
+Cross-check vs comp-11 + comp-12 feedback: all four judged criteria met; the silent-fail / "quiet
+failure" class is now guarded on every field. Open weighted item: the recorded human outsider walk (a
+bonus lever, not a rules requirement). Disclosed limit (not closed): cross-line labels (label on one
+line, value on the next) are refused as not-in-source rather than stitched - a fidelity-safe refusal.
+
+---
+
 ## Competition-tester run - 2026-09-18 (v10, hostile pre-submission)
 
 A hostile pre-submission verification found one wrong-but-green path and closed it; suite re-run green.
