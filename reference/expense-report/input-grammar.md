@@ -22,6 +22,21 @@ a refusal (`not in source`), never an invented value.
   decoration (`*** CUSTOMER COPY ***`, `THANK YOU`, `RECEIPT`, `DUPLICATE`, ...). A line that merely
   contains such a word ("Thank You Cafe") is a merchant, not a preamble.
 
+  **Stated limit - merchant not in the header.** This assumes the merchant name heads the receipt, which
+  holds for the common case (storefront and grocery receipts print the name first). Some restaurant POS
+  bill slips instead lead with `CHECK #<n>` / `TABLE #<n>` and print the merchant name lower down or only
+  on the attached card slip. Those receipts are outside this grammar: feed a transcription whose first
+  line is the merchant (e.g. lead with the card-slip copy that prints the name). The translator does not
+  hunt for the merchant elsewhere on the page - finding it by position would be a judgement the
+  deterministic checker cannot verify, and guessing is the failure mode this tool exists to avoid.
+
+- **One transaction is one block.** N *receipts* means N *transactions*, one `line` each. A single
+  transaction printed across several slips (an itemized bill plus one or more card/gift-card payment
+  slips, even a split payment) is **one** receipt: transcribe it as one block, not several. Separating
+  the slips with `---` would wrongly emit one line per slip. Within that one block the translator picks
+  the single owed total (`Total Due`) over the payment-slip and tip-inclusive totals and discloses the
+  rest as unmapped - it never sums the slips.
+
 ## Same-line binding (and the stated limit)
 
 A labelled value is captured only when its label **governs it on the same line** - the label sits

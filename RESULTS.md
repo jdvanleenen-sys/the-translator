@@ -437,3 +437,25 @@ fixtures never hit; one fixed, two held as designed:
   inferred from "Calgary/Canada". With no printed symbol anywhere, currency is `not in source`.
 
 7 valid outputs, 64 fixtures. Suite green; fresh-clone green.
+
+## Folder of real receipts - grocery pass + 3-slip boundary - 2026-09-19 (v17)
+
+More genuine Calgary receipts run through the checker with `--input`:
+
+- **Grocery (Real Canadian Superstore) - clean pass, shipped.** Four fields fill (date `2024/09/14`
+  from a bare date line, vendor, amount `29.65` from the `TOTAL` line, currency `CAD$` read from the
+  printed code) and two are principled refusals: no `Category:` line, and - the sharp one - the receipt
+  prints `GST #<reg>`, a *registration number*, which the tool correctly does **not** report as a tax
+  amount. Committed as `inputs/receipts-superstore.txt` + `verify/outputs/receipts-superstore.json`.
+- **3-slip split payment (Cactus Club) - one transaction, one line.** A single dinner (Check #257878)
+  printed across three slips: itemized bill, a Givex gift-card payment, and a Visa for the remainder.
+  Transcribed as one block, the tool resolved a five-way total minefield correctly - it chose the meal's
+  `TOTAL DUE 193.74` over `TOTAL CAD$228.61`, `TOTAL CAD$78.61`, `AMOUNT OWED 78.61`, and the paid/tip
+  lines, disclosing every split-payment number as unmapped and summing nothing. Date, GST tax, and
+  currency all bound correctly. **One break: vendor.** The bill slip leads with `CHECK # 257878`, so the
+  "merchant = header" rule cannot reach the real `CACTUS CLUB CAFE` lower on the page. Decision: document
+  as an input-grammar boundary (merchant must head the receipt), not patch the header rule 6 days out -
+  finding the merchant by position is a judgement the deterministic checker cannot verify. input-grammar.md
+  gains the "merchant not in the header" and "one transaction is one block" limits.
+
+8 valid outputs, 64 fixtures. Suite green; fresh-clone green.

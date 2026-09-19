@@ -1,0 +1,47 @@
+{
+  "conversion": "expense-report",
+  "source_file": "inputs/receipts-superstore.txt",
+  "lines": [
+    {
+      "line_no": 1,
+      "date": {"value":"2024/09/14","cite":[31]},
+      "vendor": {"value":"REAL CANADIAN SUPERSTORE","cite":[1]},
+      "amount": {"value":"29.65","cite":[9]},
+      "currency": {"value":"CAD$","cite":[9]},
+      "category": {"value":"not in source"},
+      "tax": {"value":"not in source"}
+    }
+  ],
+  "unmapped_input_lines": [
+    {"line":2,"code":"location","note":"RCSS 1543 - 100 COUNTRY VILLAGE ROAD NE"},
+    {"line":3,"code":"other","note":"Phone [redacted]"},
+    {"line":4,"code":"greeting_footer","note":"Big on Fresh, Low on Price"},
+    {"line":5,"code":"other","note":"37-PHARMACY"},
+    {"line":6,"code":"line_item","note":"39972 Tx#78096294 Q 15.42"},
+    {"line":7,"code":"line_item","note":"39972 Tx#1964265 Q 14.23"},
+    {"line":8,"code":"subtotal","note":"SUBTOTAL 29.65"},
+    {"line":10,"code":"other","note":"Trans. Type: PURCHASE"},
+    {"line":11,"code":"payment_method","note":"Account: MASTERCARD"},
+    {"line":12,"code":"payment_method","note":"Card Type: CREDIT"},
+    {"line":13,"code":"card_mask","note":"Card Number: ***********6408 P"},
+    {"line":14,"code":"other","note":"DateTime: 24/09/14 14:50:09"},
+    {"line":15,"code":"other","note":"Ref. #: 108253"},
+    {"line":16,"code":"other","note":"Auth #: 00333J"},
+    {"line":17,"code":"payment_method","note":"MASTERCARD"},
+    {"line":18,"code":"other","note":"A0000000041010 0000008001"},
+    {"line":19,"code":"greeting_footer","note":"00 APPROVED - THANK YOU"},
+    {"line":20,"code":"other","note":"Retain this copy for statement"},
+    {"line":21,"code":"other","note":"validation"},
+    {"line":22,"code":"other","note":"*** CUSTOMER COPY ***"},
+    {"line":23,"code":"payment_method","note":"CREDIT TN 29.65"},
+    {"line":24,"code":"loyalty","note":"You could have earned at least 290"},
+    {"line":25,"code":"loyalty","note":"PC Optimum points with a"},
+    {"line":26,"code":"loyalty","note":"PC Financial Mastercard or PC Money Account."},
+    {"line":27,"code":"loyalty","note":"Learn more at pcfinancial.ca"},
+    {"line":28,"code":"other","note":"GST # [redacted]"},
+    {"line":29,"code":"greeting_footer","note":"THANK YOU FOR SHOPPING SUPERSTORE"},
+    {"line":30,"code":"other","note":"MANAGER NAME: Darryl 850 36 1677"},
+    {"line":32,"code":"greeting_footer","note":"WWW.STOREOPINION.CA OR CALL"},
+    {"line":33,"code":"greeting_footer","note":"TELL US HOW WE DID TODAY! VISIT"}
+  ]
+}
