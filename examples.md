@@ -84,6 +84,24 @@ the line.
 | 1 | 03/14/2026 | HARDWARE DEPOT #42 | 39.36  | $        | not in source | 1.87          |
 | 2 | Mar 15 2026| Corner Lumber      | 88.00  | $        | not in source | not in source |
 
+**The record** (JSON, what the checker actually verifies, every filled value cites its line):
+
+```json
+{ "conversion": "expense-report", "source_file": "inputs/receipts-hardware.txt",
+  "lines": [
+    { "line_no": 1, "date": {"value":"03/14/2026","cite":[2]}, "vendor": {"value":"HARDWARE DEPOT #42","cite":[1]},
+      "amount": {"value":"39.36","cite":[7]}, "currency": {"value":"$","cite":[7]},
+      "category": {"value":"not in source"}, "tax": {"value":"1.87","cite":[6]} },
+    { "line_no": 2, "date": {"value":"Mar 15 2026","cite":[10]}, "vendor": {"value":"Corner Lumber","cite":[9]},
+      "amount": {"value":"88.00","cite":[12]}, "currency": {"value":"$","cite":[12]},
+      "category": {"value":"not in source"}, "tax": {"value":"not in source"} }
+  ],
+  "unmapped_input_lines": [
+    {"line":3,"code":"line_item"}, {"line":4,"code":"line_item"}, {"line":5,"code":"subtotal"},
+    {"line":11,"code":"line_item"}, {"line":13,"code":"payment_method"} ] }
+```
+<sub>Abridged for reading (notes omitted); the exact checked file is `verify/outputs/receipts-hardware.json`.</sub>
+
 **What it teaches:** `amount` is the printed **total** (39.36), not the subtotal and not a sum of
 the items - the subtotal on line 5 is disclosed as unmapped. Receipt 1 has a GST line so `tax` is
 1.87; receipt 2 has no tax line, so its `tax` is `not in source` - the tax from receipt 1 is never
@@ -111,6 +129,20 @@ carried over or assumed.
 | # | date       | vendor              | amount | currency | category | tax  |
 |---|------------|---------------------|--------|----------|----------|------|
 | 1 | 2026-02-08 | Hotel Rivoli — Paris | 268.84 | EUR      | Lodging  | 4.40 |
+
+**The record** (JSON, what the checker actually verifies):
+
+```json
+{ "conversion": "expense-report", "source_file": "inputs/receipts-hotel.txt",
+  "lines": [
+    { "line_no": 1, "date": {"value":"2026-02-08","cite":[2]}, "vendor": {"value":"Hotel Rivoli — Paris","cite":[1]},
+      "amount": {"value":"268.84","cite":[7]}, "currency": {"value":"EUR","cite":[7]},
+      "category": {"value":"Lodging","cite":[3]}, "tax": {"value":"4.40","cite":[5]} }
+  ],
+  "unmapped_input_lines": [
+    {"line":4,"code":"line_item"}, {"line":6,"code":"tax_additional"}, {"line":8,"code":"payment_method"} ] }
+```
+<sub>Abridged for reading (notes omitted); the exact checked file is `verify/outputs/receipts-hotel.json`.</sub>
 
 **What it teaches:** `category` is filled here - and only here - because the receipt literally
 prints `Category: Lodging` on line 3. `currency` is `EUR` because it is printed on line 7, not
