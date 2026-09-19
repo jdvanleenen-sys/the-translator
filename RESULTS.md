@@ -330,7 +330,19 @@ separators, truncation, no-year dates, and invented years all behaved correctly.
   also closes A9, so the whitespace-normalization limit is removed from the README. Fixture
   `fail_vendor-normalized`. The 5 shipped outputs already match their headers exactly.
 
-Fixtures 56 -> 58. Suite green; fresh-clone green.
+A second sweep of the same kind found two more, both parallels of fixes already made for other fields:
+- **Date ambiguity.** Two distinct bare dates let the output pick one (a guess), exactly like the
+  multi-total case. Added `dateAmbiguityCheck` (label-governed dates win over bare; >1 distinct ->
+  date must be not-in-source) and reconciled the date drop-guard (fires only on exactly one date).
+  A labeled date still wins over a stray bare date, and a check-in-only receipt still yields
+  not-in-source. Fixture `fail_ambiguous-date`.
+- **Category / currency case-normalization.** `Category: MEALS` -> `Meals` (and a lowercased currency
+  code) passed because the token check compared normalized text. Alpha-boundary codes/labels
+  (currency, category) now require exact case on a cited line, matching the verbatim vendor rule.
+  Fixture `fail_category-normalized`.
+
+Also confirmed correct as-is: thousands separators, truncation, no-year dates, invented years,
+percent-rate-as-total, and legit refunds. Fixtures 56 -> 60. Suite green; fresh-clone green.
 
 ---
 

@@ -277,6 +277,13 @@ function traceCheck(out, schema, inputLines, errs) {
         errs.push(`[trace] ${where}.${f.name}: value ${JSON.stringify(cell.value)} is not on cited line(s) ${bad.join(', ')} - every cited line must contain the value; an over-citation cannot be used to mark an unrelated line accounted-for`);
         continue;
       }
+      // Verbatim case for alpha-boundary codes/labels (currency, category): the value must appear with
+      // its exact case on a cited line, so "Category: MEALS" is not normalized to "Meals" and a currency
+      // code keeps its case. (Numbers are case-free; vendor is checked raw in blockCheck.)
+      if (c.token_boundary === 'alpha' && !cell.cite.every((n) => (inputLines[n - 1] || '').includes(cell.value))) {
+        errs.push(`[trace] ${where}.${f.name}: value ${JSON.stringify(cell.value)} does not appear with its exact case on a cited line - a code/label is copied verbatim, not normalized`);
+        continue;
+      }
       // Right-kind check, on ONE line at a time, with POSITIONAL binding: a single cited line must
       // hold the value AND have a required label GOVERN it (the label immediately to its left) AND
       // carry no forbid-word. Independent quantifiers let an attacker assemble "right kind" from two
@@ -465,6 +472,21 @@ function amountAmbiguityCheck(out, schema, inputLines, errs) {
     if (cands.size > 1) errs.push(`[trace] line ${i + 1}.amount: the receipt names ${cands.size} distinct total values (${[...cands].join(', ')}) - it does not identify a single total, so amount must be "not in source"; choosing one is a guess`);
   });
 }
+// Same for the date: more than one distinct transaction date -> date must be "not in source".
+function dateAmbiguityCheck(out, schema, inputLines, errs) {
+  const marker = schema.not_in_source_marker;
+  const df = schema.fields.find((f) => f.name === 'date');
+  const ctx = df && df.constraints && df.constraints.date_context;
+  if (!Array.isArray(ctx)) return;
+  const blocks = computeBlocks(inputLines);
+  out.lines.forEach((line, i) => {
+    const d = line.date;
+    if (!d || d.value === marker) return;
+    const b = blocks[i] || { start: 1, end: inputLines.length };
+    const cands = dateCandidateSet(inputLines, b, ctx);
+    if (cands.size > 1) errs.push(`[trace] line ${i + 1}.date: the receipt names ${cands.size} distinct dates (${[...cands].join(', ')}) - it does not identify a single transaction date, so date must be "not in source"`);
+  });
+}
 // A line "prints a fillable transaction date": some date-shaped token on it sits in valid
 // date-context (bare, or governed by a date label). Uses the SAME authorities the trace gate uses
 // to ACCEPT a date (looksLikeDate + dateContextOk), so the drop guard and the accept rule agree.
@@ -472,6 +494,26 @@ const DATE_CAND = /[a-z]{3,9}\.?\s*\d{1,2}(?:,?\s*\d{2,4})?|\d{1,4}[./\-]\d{1,2}
 function linePrintsFillableDate(lineNorm, dateCtx) {
   const cands = lineNorm.match(DATE_CAND) || [];
   return cands.some((t) => looksLikeDate(t) && dateContextOk(lineNorm, norm(t), dateCtx));
+}
+// The distinct transaction-date values a block offers: label-governed dates if any are printed,
+// otherwise bare dates. >1 distinct value means the receipt does not identify a single date.
+function dateCandidateSet(inputLines, b, ctx) {
+  const labeled = new Set(), bare = new Set();
+  for (let n = b.start; n <= b.end; n++) {
+    const ln = norm(inputLines[n - 1]);
+    for (const t of (ln.match(DATE_CAND) || [])) {
+      const v = norm(t);
+      if (!looksLikeDate(v)) continue;
+      let idx = ln.indexOf(v);
+      while (idx !== -1) {
+        const seg = stripLabelTail(ln.slice(0, idx));
+        if (seg === '') bare.add(v);
+        else if (endsWithLabel(seg, ctx)) labeled.add(v);
+        idx = ln.indexOf(v, idx + 1);
+      }
+    }
+  }
+  return labeled.size > 0 ? labeled : bare;
 }
 function fieldDropCheck(out, schema, inputLines, errs) {
   const marker = schema.not_in_source_marker;
@@ -501,13 +543,12 @@ function fieldDropCheck(out, schema, inputLines, errs) {
           }
         }
       }
-      // (b) date: a printed transaction date (labelled or bare) may not be dropped.
+      // (b) date: a printed transaction date may not be dropped - but only when the receipt names
+      // exactly ONE. Zero = nothing to drop; more than one = ambiguous, and "not in source" is correct
+      // (see dateAmbiguityCheck), so the drop-guard must yield, exactly as it does for amount.
       else if (Array.isArray(c.date_context)) {
-        for (let n = b.start; n <= b.end; n++) {
-          if (linePrintsFillableDate(norm(inputLines[n - 1]), c.date_context)) {
-            errs.push(`[trace] line ${i + 1}.${f.name}: marked "${marker}", but line ${n} (${JSON.stringify(inputLines[n - 1])}) prints a transaction date - a stated date may not be dropped into unmapped and reported empty`);
-            break;
-          }
+        if (dateCandidateSet(inputLines, b, c.date_context).size === 1) {
+          errs.push(`[trace] line ${i + 1}.${f.name}: marked "${marker}", but the receipt prints a single transaction date - a stated date may not be dropped into unmapped and reported empty`);
         }
       }
       // (c) vendor: the merchant is the block header; if a header line exists it may not be dropped.
@@ -564,6 +605,7 @@ function validateOutput(out, schema, id, pinnedInput = null) {
   fieldDropCheck(out, schema, inputLines, errs);
   totalPriorityCheck(out, schema, inputLines, errs);
   amountAmbiguityCheck(out, schema, inputLines, errs);
+  dateAmbiguityCheck(out, schema, inputLines, errs);
   return errs;
 }
 

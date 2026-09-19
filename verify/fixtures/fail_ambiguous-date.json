@@ -1,0 +1,8 @@
+{
+  "_fixture": "two distinct bare dates (2026-01-03, 2026-02-04); the output picks one. The receipt does not identify a single transaction date, so date must be not-in-source. Must fail [trace].",
+  "_expect_gate": "trace",
+  "conversion": "expense-report",
+  "source_file": "verify/fixtures/sample-receipt-twodates.txt",
+  "lines": [{"line_no":1,"date":{"value":"2026-01-03","cite":[2]},"vendor":{"value":"Corner Cafe","cite":[1]},"amount":{"value":"5.00","cite":[4]},"currency":{"value":"not in source"},"category":{"value":"not in source"},"tax":{"value":"not in source"}}],
+  "unmapped_input_lines": [{"line":3,"code":"other","note":"2026-02-04"}]
+}

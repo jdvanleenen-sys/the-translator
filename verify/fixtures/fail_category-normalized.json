@@ -1,0 +1,8 @@
+{
+  "_fixture": "the receipt prints 'Category: MEALS'; the output normalizes it to 'Meals'. An alpha code/label is copied verbatim (exact case); must fail [trace].",
+  "_expect_gate": "trace",
+  "conversion": "expense-report",
+  "source_file": "verify/fixtures/sample-receipt-catcase.txt",
+  "lines": [{"line_no":1,"date":{"value":"not in source"},"vendor":{"value":"Corner Cafe","cite":[1]},"amount":{"value":"5.00","cite":[3]},"currency":{"value":"not in source"},"category":{"value":"Meals","cite":[2]},"tax":{"value":"not in source"}}],
+  "unmapped_input_lines": []
+}
