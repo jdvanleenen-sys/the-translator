@@ -1,0 +1,14 @@
+{ "_fixture": "The note never states a pipeline stage. The output infers stage 'Evaluation' from 'He seemed keen', citing that line. Stage is filled only from a stage/status label, never from how the call felt. Must fail [trace].", "_expect_gate": "trace",
+  "conversion": "crm-note", "source_file": "inputs/call-notes-1.txt",
+  "lines": [
+    { "line_no": 1,
+      "date": {"value":"2026-09-12","cite":[1]},
+      "contact": {"value":"Marcus Lee","cite":[2]},
+      "company": {"value":"Ridgeline Logistics","cite":[3]},
+      "budget": {"value":"40000","cite":[6]},
+      "next_step": {"value":"send the pilot proposal by Sept 19","cite":[7]},
+      "stage": {"value":"Evaluation","cite":[5]} }
+  ],
+  "unmapped_input_lines": [
+    {"line":4,"code":"discussion","note":"Discussed the Q4 rollout and their two-warehouse pilot."}
+  ] }

@@ -1,0 +1,15 @@
+{ "_fixture": "The output writes a next step ('schedule a demo') that nobody committed to, citing the discussion line. The next step is copied verbatim from a next-step-labeled line, never manufactured from the conversation. Must fail [trace] - 'a next step nobody said' is the brief's named invention.", "_expect_gate": "trace",
+  "conversion": "crm-note", "source_file": "inputs/call-notes-1.txt",
+  "lines": [
+    { "line_no": 1,
+      "date": {"value":"2026-09-12","cite":[1]},
+      "contact": {"value":"Marcus Lee","cite":[2]},
+      "company": {"value":"Ridgeline Logistics","cite":[3]},
+      "budget": {"value":"40000","cite":[6]},
+      "next_step": {"value":"schedule a demo","cite":[4]},
+      "stage": {"value":"not in source"} }
+  ],
+  "unmapped_input_lines": [
+    {"line":5,"code":"objection","note":"He seemed keen but raised onboarding-time concerns."},
+    {"line":7,"code":"note","note":"Next step: send the pilot proposal by Sept 19"}
+  ] }

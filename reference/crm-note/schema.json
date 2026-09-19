@@ -1,0 +1,75 @@
+{
+  "id": "crm-note",
+  "name": "CRM call record",
+  "version": "1.0.0",
+  "description": "One CRM record per sales-call note. Fixed field set, fixed order. Every filled field cites the note line it came from and must be governed by the right label. Anything the rep did not write down - a deal stage, a next step nobody committed to, a budget never named - is 'not in source', never inferred from how the call 'felt'. The discussion is disclosed in unmapped_input_lines, never dropped.",
+  "record_key": "lines",
+  "unmapped_key": "unmapped_input_lines",
+  "not_in_source_marker": "not in source",
+  "top_level_keys": ["conversion", "source_file", "lines", "unmapped_input_lines"],
+  "unmapped_reason_codes": [
+    "header_meta",
+    "discussion",
+    "objection",
+    "note",
+    "signature",
+    "other"
+  ],
+  "fields": [
+    {
+      "name": "line_no",
+      "order": 1,
+      "role": "structural",
+      "traceable": false,
+      "description": "The 1-based row index of this record. Structural envelope, not a claim about the call. Must equal its position in the lines array. Never carries a citation."
+    },
+    {
+      "name": "date",
+      "order": 2,
+      "role": "source",
+      "traceable": true,
+      "constraints": { "shape": "date", "exact_token": true, "date_context": ["date", "dated", "called", "call", "on"] },
+      "description": "The call date, exactly as written, from a bare date line or one a date label governs (Call date/Date/...). Never normalized, never invented."
+    },
+    {
+      "name": "contact",
+      "order": 3,
+      "role": "source",
+      "traceable": true,
+      "constraints": { "exact_token": true, "token_boundary": "alpha", "require_label": ["contact", "spoke with", "attendee", "prospect", "with"] },
+      "description": "The person on the call, copied verbatim from the line a contact label governs (Contact:/Spoke with:/...). Not guessed from the body."
+    },
+    {
+      "name": "company",
+      "order": 4,
+      "role": "source",
+      "traceable": true,
+      "constraints": { "exact_token": true, "token_boundary": "alpha", "require_label": ["company", "account", "org", "organization", "client"] },
+      "description": "The account, copied verbatim from the line a company label governs (Company:/Account:/...). Not inferred from an email domain or the discussion."
+    },
+    {
+      "name": "budget",
+      "order": 5,
+      "role": "source",
+      "traceable": true,
+      "constraints": { "numeric": true, "exact_token": true, "require_label": ["budget", "deal size", "deal value", "contract value"] },
+      "description": "The budget/deal size ONLY if the note states a number on a budget-labeled line. Never estimated. Otherwise 'not in source'."
+    },
+    {
+      "name": "next_step",
+      "order": 6,
+      "role": "source",
+      "traceable": true,
+      "constraints": { "exact_token": true, "token_boundary": "alpha", "require_label": ["next step", "next steps", "action", "action item", "follow-up", "follow up", "to do"] },
+      "description": "The agreed next step, copied verbatim from the line a next-step label governs. A next step nobody actually committed to may not be written here - that is the invention the brief warns about."
+    },
+    {
+      "name": "stage",
+      "order": 7,
+      "role": "source",
+      "traceable": true,
+      "constraints": { "exact_token": true, "token_boundary": "alpha", "require_label": ["stage", "status", "deal stage", "pipeline"] },
+      "description": "The pipeline stage ONLY if the note literally states it on a stage-labeled line. NEVER inferred from how the call felt ('seemed keen' is not a stage). If not stated, 'not in source'."
+    }
+  ]
+}
