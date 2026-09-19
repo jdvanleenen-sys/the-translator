@@ -372,6 +372,29 @@ function currencyBindingCheck(out, schema, inputLines, errs) {
   });
 }
 
+// Currency source guard: a filled currency must come from a line that is either adjacent to the
+// amount, a currency DECLARATION / monetary line (prices/amounts/total/tax/... in X), or a bare
+// currency line. This stops a currency laundered from unrelated ad copy ("Ask about our USD travel
+// card") while still allowing the legitimate remote declaration ("All prices in JPY").
+const CUR_DECL = /\b(currency|prices?|amounts?|totals?|subtotals?|tax|gst|hst|pst|qst|vat|duty|balance|due|payable|paid|charged|billed|grand|denominated|funds)\b/;
+const CUR_STRIP = /[$€£¥₹]|\b(usd|cad|eur|gbp|aud|jpy|chf|cny|inr|mxn|nzd|sek|nok|dkk|zar|brl|rub|hkd|sgd)\b/g;
+function currencySourceCheck(out, schema, inputLines, errs) {
+  const marker = schema.not_in_source_marker;
+  out.lines.forEach((line, i) => {
+    const cur = line.currency, a = line.amount;
+    if (!cur || cur.value === marker || !Array.isArray(cur.cite)) return;
+    const ok = cur.cite.some((n) => {
+      if (n < 1 || n > inputLines.length) return false;
+      const ln = norm(inputLines[n - 1]);
+      if (a && a.value !== marker && currencyAdjacentToAmount(ln, norm(a.value), norm(cur.value))) return true;
+      if (CUR_DECL.test(ln)) return true;                                   // a monetary/declaration line
+      if (ln.replace(CUR_STRIP, ' ').replace(/[^a-z0-9]+/g, '') === '') return true; // a bare currency line
+      return false;
+    });
+    if (!ok) errs.push(`[trace] line ${i + 1}.currency: ${JSON.stringify(cur.value)} is taken from a line that is neither adjacent to the amount, a currency declaration (prices/amounts/total/tax/...), nor a bare currency line - a currency may not be laundered from unrelated text`);
+  });
+}
+
 // Under-reporting guard: a field may be "not in source" only if the receipt truly does not state it.
 // If a required label GOVERNS a value of the right kind somewhere in the record's block (a real
 // "Total 40.00", "GST 0.25", or "Category: Meals"), the field may not be marked "not in source" and
@@ -467,6 +490,7 @@ function validateOutput(out, schema, id, pinnedInput = null) {
   blockCheck(out, schema, inputLines, errs);
   currencyDropCheck(out, schema, inputLines, errs);
   currencyBindingCheck(out, schema, inputLines, errs);
+  currencySourceCheck(out, schema, inputLines, errs);
   fieldDropCheck(out, schema, inputLines, errs);
   totalPriorityCheck(out, schema, inputLines, errs);
   return errs;

@@ -1,0 +1,8 @@
+{
+  "_fixture": "currency 'USD' laundered from an ad line ('Ask us about our USD travel card') while the total line prints no currency. The receipt never states its transaction currency; must fail [trace].",
+  "_expect_gate": "trace",
+  "conversion": "expense-report",
+  "source_file": "verify/fixtures/sample-receipt-curlaunder.txt",
+  "lines": [{"line_no":1,"date":{"value":"not in source"},"vendor":{"value":"Shoreline Shop","cite":[1]},"amount":{"value":"11.00","cite":[3]},"currency":{"value":"USD","cite":[2]},"category":{"value":"not in source"},"tax":{"value":"not in source"}}],
+  "unmapped_input_lines": [{"line":2,"code":"other","note":"Ask us about our USD travel card"}]
+}
