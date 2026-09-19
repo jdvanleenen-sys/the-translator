@@ -28,6 +28,12 @@ layouts it deliberately refuses, are in `reference/expense-report/input-grammar.
 
 ## Limits (stated, not hidden)
 
+- **Scope: transcription in, record out.** The input is the receipt's *text* — the lines a scanner or a
+  person typing produces. Turning a photo into that text (OCR) is a separate, commodity step; it is not
+  what this tool does or claims, and the guarantee begins at the text. Feed it a transcription, not a
+  photo and not a prose story about a receipt. This is why the committed `inputs/*.txt` are readable
+  transcriptions: the tool is measured on moving that text into fields without inventing, and the checker
+  proves each value against those exact lines.
 - **Cross-line labels.** A total whose label is on one line and value on the next (`AMOUNT DUE` then
   `47.83`) is reported `not in source`, not stitched together. A fidelity-safe refusal, never an
   invented value.
