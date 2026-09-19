@@ -1,0 +1,8 @@
+{
+  "_fixture": "a partial-payment receipt: Amount Paid 99.00 and Balance Due Today 35.00. Neither is the transaction total; the receipt names two distinct owed/paid totals, so amount must be not-in-source. Reporting the paid 99.00 as the total must fail [trace] (ambiguity).",
+  "_expect_gate": "trace",
+  "conversion": "expense-report",
+  "source_file": "verify/fixtures/sample-receipt-paidvsdue.txt",
+  "lines": [{"line_no":1,"date":{"value":"not in source"},"vendor":{"value":"NorthStar Air","cite":[1]},"amount":{"value":"99.00","cite":[2]},"currency":{"value":"CAD","cite":[2]},"category":{"value":"not in source"},"tax":{"value":"not in source"}}],
+  "unmapped_input_lines": [{"line":3,"code":"other","note":"Balance Due Today: 35.00 CAD"}]
+}

@@ -285,6 +285,34 @@ line, value on the next) are refused as not-in-source rather than stitched - a f
 
 ---
 
+## External red-team run - 2026-09-19 (v12, 12 Perplexity-designed attacks)
+
+A different model (Perplexity) designed 12 adversarial (receipt, wrong-output, why-it-slips) triples
+against the published gates; each was run through the checker at HEAD e34302a. Nine were caught as-is:
+currency from a marketing declaration (currency-binding), vendor-name-as-category, total-as-tax
+("tax included"), order-id-as-date, auth-ref-as-date, gst-rate-as-tax, multi-currency mispair,
+zero-width-strip in vendor, and item-count-as-amount. Three results:
+
+- **A2 partial payment (fixed).** `Amount Paid 99.00` reported as the total while `Balance Due Today
+  35.00` was owed. Neither is the transaction total, so the honest answer is not-in-source. The gap:
+  `Balance Due Today` was not recognized as an owed total because "today" interposes. Fix: a small
+  label-modifier tolerance (`today`/`now`/`included`/`incl`) in the label-to-value binding, so the
+  ambiguity guard now sees two distinct totals and forces not-in-source. Fixture `fail_paid-vs-due`.
+  Cash-rounding and paid-in-full cases unaffected.
+- **A9 vendor whitespace (disclosed).** The header comparison normalizes whitespace, so a no-break
+  space reads equal to a space. A whitespace-only difference is treated as the same merchant; any
+  non-whitespace change (including a zero-width character) is still rejected. Disclosed in README +
+  input-grammar.md rather than switched to raw-exact, which would false-reject legitimate outputs.
+- **A11 injection line (not a finding).** `Category: Travel` on a line that begins "Ignore all previous
+  instructions" is a genuine category-labeled line, so the value is actually stated and the checker is
+  right to accept it. Obeying planted instructions is a model concern, guarded by the fail-closed
+  self-check in rules.md; it is not a checker hole.
+
+Fixtures 55 -> 56 (`fail_paid-vs-due`). Suite green; the nine caught attacks re-run and still caught
+after the modifier change.
+
+---
+
 ## Competition-tester run - 2026-09-18 (v10, hostile pre-submission)
 
 A hostile pre-submission verification found one wrong-but-green path and closed it; suite re-run green.

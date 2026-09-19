@@ -34,6 +34,9 @@ layouts it deliberately refuses, are in `reference/expense-report/input-grammar.
 - **Currency on a remote line.** A currency stated only on a declaration line (`All prices in JPY`) is
   accepted; the checker bounds this to declaration / monetary / bare-code lines but cannot prove the
   declaration governs this particular receipt. Verify it by eye.
+- **Vendor whitespace.** The merchant-header check normalizes whitespace (a no-break space reads equal
+  to a space), so a whitespace-only difference is treated as the same merchant. Any non-whitespace
+  change, a dropped, added, or altered character, including a zero-width character, is rejected.
 - **The checker audits the output, not the model.** It proves the emitted record against the input it
   cites; the model's obedience to the rules is shown by `receipts/` (the cold walk, control run, and the
   recorded human walk).

@@ -88,6 +88,10 @@ const isNumericValue = (v) => /^-?\d[\d.,]*$/.test(norm(v).replace(/\s+/g, ''));
 // Word-boundary matching, not substring: "total" must not match inside "subtotal", "tax" must not
 // match inside "taxi". lineNorm is already lowercased/whitespace-collapsed.
 const esc = (s) => s.trim().toLowerCase().replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+// An optional short modifier word between a label and its value, so "Balance Due Today: 35.00" and
+// "GST included 0.42" still bind the label to the number (and are still counted as candidate totals,
+// which is how a "Balance Due" hidden behind "today" triggers the ambiguity guard).
+const LBL_MOD = '(?:\\s+(?:today|now|included|incl|inclusive))?';
 function labelOnLine(lineNorm, kw) {
   if (!kw || !kw.trim()) return false;
   return new RegExp('(^|[^a-z0-9])' + esc(kw) + '([^a-z0-9]|$)').test(lineNorm);
@@ -104,7 +108,7 @@ function stripLabelTail(seg) {
     s = s.replace(/\([^()]*\)$/, '');                                   // a trailing complete (parenthetical)
     s = s.replace(/[:$€£¥₹.,\-]+$/u, '');                               // trailing punctuation / currency symbols
     s = s.replace(new RegExp('(^|[^a-z0-9])(' + CUR_CODES + ')$'), '$1'); // a trailing currency code
-    s = s.replace(/(^|[^a-z0-9])(included|inclusive|incl)$/, '$1');       // a trailing "included"/"incl" modifier so "GST included 0.42" binds to "gst"
+    s = s.replace(/(^|[^a-z0-9])(included|inclusive|incl|today|now)$/, '$1'); // a trailing modifier so "GST included 0.42" / "Balance Due Today 35.00" bind to the label
   } while (s !== prev);
   return s.replace(/\s+$/, '');
 }
@@ -412,14 +416,14 @@ function currencySourceCheck(out, schema, inputLines, errs) {
 // "Total 40.00", "GST 0.25", or "Category: Meals"), the field may not be marked "not in source" and
 // the value quietly dumped into unmapped. Symmetric to the currency-drop guard.
 function labelGovernsAValue(lineNorm, labels, valuePat) {
-  return labels.some((kw) => kw && kw.trim() && new RegExp('(^|[^a-z0-9])' + esc(kw) + '[\\s:$€£¥₹()\\-]*(' + valuePat + ')').test(lineNorm));
+  return labels.some((kw) => kw && kw.trim() && new RegExp('(^|[^a-z0-9])' + esc(kw) + LBL_MOD + '[\\s:$€£¥₹()\\-]*(' + valuePat + ')').test(lineNorm));
 }
 // The numeric values a set of labels GOVERN on a line (label immediately before the number).
 function governedValues(lineNorm, labels) {
   const vals = [];
   for (const kw of labels || []) {
     if (!kw || !kw.trim()) continue;
-    const re = new RegExp('(^|[^a-z0-9])' + esc(kw) + '[\\s:$€£¥₹()\\-]*(-?\\d[\\d.,]*)', 'g');
+    const re = new RegExp('(^|[^a-z0-9])' + esc(kw) + LBL_MOD + '[\\s:$€£¥₹()\\-]*(-?\\d[\\d.,]*)', 'g');
     let m; while ((m = re.exec(lineNorm))) vals.push(m[2]);
   }
   return vals;
