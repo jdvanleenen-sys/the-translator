@@ -71,6 +71,10 @@ a tax-labeled line), `category` (must be a category-labeled line), and `date` (m
 - **Multiple tax lines, no printed combined tax:** put the **first** printed tax line in `tax` and
   list every further tax line in `unmapped_input_lines` (code `tax_additional`). Tax lines are never summed.
 - **Subtotal and total both printed:** `amount` is the **total**. The subtotal goes to `unmapped_input_lines` (code `subtotal`).
+- **Multiple total-labeled lines:** `amount` is the **final owed total**. A final-owed label (`Total Due`,
+  `Amount Due`, `Balance Due`, `Amount Payable`, `Grand Total`) outranks a plain `Total`. On a
+  cash-rounding receipt with `Total 22.94` and `Total Due 22.95`, `amount` is `22.95`; the plain
+  `Total` goes to `unmapped_input_lines` (code `other`).
 - **A field's value would need two non-adjacent lines:** it does not. Each field's value is a single printed token/phrase on one line.
 
 ## `unmapped_input_lines` (a controlled vocabulary, not free prose)

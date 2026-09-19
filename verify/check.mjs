@@ -155,7 +155,7 @@ function looksLikeDate(v) {
   if (/\b(jan|feb|mar|apr|may|jun|jul|aug|sep|sept|oct|nov|dec)/.test(s)) return true;
   if (/\b\d{4}-\d{1,2}-\d{1,2}\b/.test(s)) return true;
   if (/\b\d{1,2}[/.\-]\d{1,2}[/.\-]\d{2,4}\b/.test(s)) return true;
-  const m = s.match(/\b(\d{1,2})[/.\-](\d{1,2})\b/);
+  const m = s.match(/\b(\d{1,2})[/\-](\d{1,2})\b/); // dot excluded: a 2-part NN.NN is an amount (12.30), not a date; dotted 3-part dates (14.03.2026) match the rule above
   if (m) { const a = +m[1], b = +m[2];
     if ((a >= 1 && a <= 12 && b >= 1 && b <= 31) || (b >= 1 && b <= 12 && a >= 1 && a <= 31)) return true; }
   return false;
@@ -397,6 +397,27 @@ function fieldDropCheck(out, schema, inputLines, errs) {
   });
 }
 
+// Total priority: if a final-owed total (Total Due / Amount Due / Balance Due / Grand Total / ...)
+// is printed in the block, the amount must be taken from it, not from a plain "Total". Closes the
+// cash-rounding misattribution (Total 22.94 vs Total Due 22.95 -> amount must be 22.95).
+function totalPriorityCheck(out, schema, inputLines, errs) {
+  const marker = schema.not_in_source_marker;
+  const amountField = schema.fields.find((f) => f.name === 'amount');
+  const finals = amountField && amountField.constraints && amountField.constraints.final_total_labels;
+  if (!Array.isArray(finals)) return;
+  const blocks = computeBlocks(inputLines);
+  out.lines.forEach((line, i) => {
+    const a = line.amount;
+    if (!a || a.value === marker || !Array.isArray(a.cite)) return;
+    const b = blocks[i] || { start: 1, end: inputLines.length };
+    let blockHasFinal = false;
+    for (let n = b.start; n <= b.end; n++) if (labelGovernsAValue(norm(inputLines[n - 1]), finals, '-?\\d')) { blockHasFinal = true; break; }
+    if (!blockHasFinal) return;
+    const amountIsFinal = a.cite.some((n) => n >= 1 && n <= inputLines.length && labelGovernsValue(norm(inputLines[n - 1]), norm(a.value), finals));
+    if (!amountIsFinal) errs.push(`[trace] line ${i + 1}.amount: a final total is printed (one of: ${finals.join(', ')}), so amount must be taken from it, not from a plain "total" - ${JSON.stringify(a.value)} is the wrong total`);
+  });
+}
+
 function validateOutput(out, schema, id, pinnedInput = null) {
   const errs = [];
   shapeCheck(out, schema, id, errs);
@@ -419,6 +440,7 @@ function validateOutput(out, schema, id, pinnedInput = null) {
   currencyDropCheck(out, schema, inputLines, errs);
   currencyBindingCheck(out, schema, inputLines, errs);
   fieldDropCheck(out, schema, inputLines, errs);
+  totalPriorityCheck(out, schema, inputLines, errs);
   return errs;
 }
 

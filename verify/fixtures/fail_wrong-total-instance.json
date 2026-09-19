@@ -1,0 +1,60 @@
+{
+  "_fixture": "cash-rounding receipt: amount is the pre-rounding Total 22.94, not the final Total Due 22.95",
+  "_expect_gate": "trace",
+  "conversion": "expense-report",
+  "source_file": "verify/fixtures/sample-receipt-twototals.txt",
+  "lines": [
+    {
+      "line_no": 1,
+      "date": {
+        "value": "Feb 9",
+        "cite": [
+          2
+        ]
+      },
+      "vendor": {
+        "value": "Diner 88",
+        "cite": [
+          1
+        ]
+      },
+      "amount": {
+        "value": "22.94",
+        "cite": [
+          5
+        ]
+      },
+      "currency": {
+        "value": "not in source"
+      },
+      "category": {
+        "value": "not in source"
+      },
+      "tax": {
+        "value": "not in source"
+      }
+    }
+  ],
+  "unmapped_input_lines": [
+    {
+      "line": 3,
+      "code": "subtotal",
+      "note": "Subtotal 19.94"
+    },
+    {
+      "line": 4,
+      "code": "other",
+      "note": "Tip 3.00"
+    },
+    {
+      "line": 6,
+      "code": "other",
+      "note": "Rounding 0.01"
+    },
+    {
+      "line": 7,
+      "code": "other",
+      "note": "Total Due 22.95"
+    }
+  ]
+}

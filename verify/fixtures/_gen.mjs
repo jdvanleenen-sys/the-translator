@@ -241,6 +241,12 @@ const usdBase = () => ({ conversion: 'expense-report', source_file: USD,
     unmapped_input_lines: [{ line: 2, code: 'other', note: 'Refunds in USD only' }] };
   fixtures['fail_currency-disclaimer'] = f; }
 
+// --- v10 fixtures (competition-tester: wrong total instance among multiple total-labeled lines) ---
+{ const f = { _expect_gate: 'trace', _fixture: 'cash-rounding receipt: amount is the pre-rounding Total 22.94, not the final Total Due 22.95', conversion: 'expense-report', source_file: 'verify/fixtures/sample-receipt-twototals.txt',
+    lines: [{ line_no: 1, date: { value: 'Feb 9', cite: [2] }, vendor: { value: 'Diner 88', cite: [1] }, amount: { value: '22.94', cite: [5] }, currency: nis, category: nis, tax: nis }],
+    unmapped_input_lines: [{ line: 3, code: 'subtotal', note: 'Subtotal 19.94' }, { line: 4, code: 'other', note: 'Tip 3.00' }, { line: 6, code: 'other', note: 'Rounding 0.01' }, { line: 7, code: 'other', note: 'Total Due 22.95' }] };
+  fixtures['fail_wrong-total-instance'] = f; }
+
 let count = 0;
 for (const [name, obj] of Object.entries(fixtures)) {
   // key order: annotations first, then conversion/source_file/lines/unmapped

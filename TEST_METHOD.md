@@ -269,3 +269,14 @@ rounds hadn't probed.
 Fixtures grew 43 -> 47 (`fail_amount-dropped`, `fail_tax-dropped`, `fail_category-dropped`,
 `fail_currency-disclaimer`); a fifth real output (`inputs/receipts-itemcount.txt`) locks the
 false-positive fix. No regression.
+
+## Self-red-team pass 3 - added 2026-09-18 (date-shape: an NN.NN amount read as a date)
+
+One internal round on the date field. The date gate accepts a bare line (nothing before the value) as
+valid date-context, and `looksLikeDate` accepted a 2-part `NN.NN` when both parts fell in month/day
+ranges - so `12.30` (an amount) read as Dec 30. An amount printed alone on its own line could therefore
+be parked in the `date` field and pass. The existing `fail_number-as-date` fixture used `20.00` (not
+date-shaped), so the ambiguous decimal case was never exercised. Fix: the 2-part date matcher drops `.`
+as a separator (a 2-part `NN.NN` is an amount; dotted 3-part dates `14.03.2026` still match the 3-part
+rule above). Fixtures grew 47 -> 48 (`fail_amount-as-date`, a bare `12.30` parked in the date field,
+fails `[trace]`). No regression.

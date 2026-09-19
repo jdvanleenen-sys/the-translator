@@ -1,0 +1,7 @@
+Diner 88
+Feb 9
+Subtotal 19.94
+Tip 3.00
+Total 22.94
+Rounding 0.01
+Total Due 22.95

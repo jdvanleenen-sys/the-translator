@@ -1,0 +1,18 @@
+{
+  "_fixture": "an amount (12.30) on a bare line, parked in the date field. 12.30 reads as Dec 30 to a naive date check; it is an amount, and the receipt states no date.",
+  "_expect_gate": "trace",
+  "conversion": "expense-report",
+  "source_file": "verify/fixtures/sample-receipt-baredate.txt",
+  "lines": [
+    {
+      "line_no": 1,
+      "date": {"value": "12.30", "cite": [2]},
+      "vendor": {"value": "Joe's Diner", "cite": [1]},
+      "amount": {"value": "not in source"},
+      "currency": {"value": "not in source"},
+      "category": {"value": "not in source"},
+      "tax": {"value": "not in source"}
+    }
+  ],
+  "unmapped_input_lines": []
+}

@@ -229,3 +229,18 @@ Three internal rounds probing classes the external rounds missed. Suite re-run g
 - **False-positive fixed:** `Total 40.00 (10 items)` (a legit total mentioning an item count) was being
   rejected by the amount forbid-list; positional binding subsumes that list, so it was removed - decoys
   stay rejected and the item-count total passes.
+
+---
+
+## Self-red-team run - 2026-09-18 (v10, date-shape: an NN.NN amount read as a date)
+
+One internal round on the date field's shape check. Suite re-run green.
+
+- 5 outputs clean; 48 fixtures each through its gate; fresh-clone green; CI green.
+- **Date-shape fixed:** `looksLikeDate` treated a 2-part `NN.NN` as a date when both parts fell in
+  month/day ranges (`12.30` reads as Dec 30), and the date gate accepts a bare line as date-context - so
+  an amount printed alone on its own line could be parked in the `date` field and pass `[trace]`. The
+  existing `fail_number-as-date` fixture used `20.00` (not date-shaped), so this ambiguous decimal case
+  was never exercised. Fix: the 2-part date matcher no longer accepts `.` as a separator (a 2-part
+  `NN.NN` is an amount; dotted 3-part dates like `14.03.2026` still match the 3-part rule). New fixture
+  `fail_amount-as-date` (`12.30` on a bare line, parked in date) fails `[trace]`.
