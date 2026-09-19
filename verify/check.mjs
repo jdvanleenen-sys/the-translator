@@ -40,6 +40,19 @@ function norm(s) {
     .replace(/\s+/g, ' ').trim();
 }
 function isExemptLine(text) { const t = (text || '').trim(); return t === '' || t === '---'; }
+// A leading non-merchant preamble line (a whole-line receipt decoration), so the merchant header can
+// sit under "*** CUSTOMER COPY ***" or "THANK YOU". Matches only when the ENTIRE line (minus
+// punctuation) is a known preamble phrase - "Thank You Cafe" is NOT preamble, it is a merchant.
+const PREAMBLE = /^(customer copy|merchant copy|customer receipt|reprint|duplicate|duplicate receipt|copy|thank you|thanks|welcome|receipt|tax invoice|invoice|sales receipt)$/;
+function isPreambleLine(text) {
+  const t = norm(text).replace(/[^a-z0-9 ]+/g, ' ').replace(/\s+/g, ' ').trim();
+  return t !== '' && PREAMBLE.test(t);
+}
+// The merchant header of a block: the first line that is neither exempt (blank/---) nor a preamble.
+function blockHeader(inputLines, b) {
+  for (let n = b.start; n <= b.end; n++) if (!isExemptLine(inputLines[n - 1]) && !isPreambleLine(inputLines[n - 1])) return n;
+  return null;
+}
 const samePath = (a, b) => resolve(root, a).replace(/\\/g, '/').toLowerCase() === resolve(root, b).replace(/\\/g, '/').toLowerCase();
 // The evidence file must live inside the repo - an output may not point its source_file at a
 // traversal path (../) or an absolute path outside the project to prove its claims.
@@ -318,8 +331,7 @@ function blockCheck(out, schema, inputLines, errs) {
     // header value: a field pinned to the header (vendor) must equal the block's first non-exempt
     // line VERBATIM (not merely cite it) - so a footer/address/processor line, or a truncation of the
     // real name, can't pose as the merchant.
-    let header = null;
-    for (let n = b.start; n <= b.end; n++) if (!isExemptLine(inputLines[n - 1])) { header = n; break; }
+    const header = blockHeader(inputLines, b);
     for (const f of schema.fields) {
       if (!(f.constraints && f.constraints.header_full_line)) continue;
       const cell = line[f.name];
@@ -452,8 +464,7 @@ function fieldDropCheck(out, schema, inputLines, errs) {
   const blocks = computeBlocks(inputLines);
   out.lines.forEach((line, i) => {
     const b = blocks[i] || { start: 1, end: inputLines.length };
-    let header = null;
-    for (let n = b.start; n <= b.end; n++) if (!isExemptLine(inputLines[n - 1])) { header = n; break; }
+    const header = blockHeader(inputLines, b);
     for (const f of schema.fields) {
       const c = f.constraints || {};
       const cell = line[f.name];

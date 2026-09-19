@@ -1,0 +1,8 @@
+{
+  "_fixture": "a receipt whose merchant (Acme Paint) sits under a '*** CUSTOMER COPY ***' preamble. The output skips past the merchant and names the address as vendor. The header is the first non-preamble line (Acme Paint); must fail [trace].",
+  "_expect_gate": "trace",
+  "conversion": "expense-report",
+  "source_file": "verify/fixtures/sample-receipt-preamble.txt",
+  "lines": [{"line_no":1,"date":{"value":"not in source"},"vendor":{"value":"123 Main St","cite":[3]},"amount":{"value":"40.00","cite":[4]},"currency":{"value":"not in source"},"category":{"value":"not in source"},"tax":{"value":"not in source"}}],
+  "unmapped_input_lines": [{"line":1,"code":"header","note":"CUSTOMER COPY"},{"line":2,"code":"header","note":"Acme Paint"}]
+}
