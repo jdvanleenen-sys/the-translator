@@ -78,22 +78,15 @@ This reads every output in `verify/outputs/`, opens the input file it names, and
   point its evidence at a `../` traversal or absolute path.
 - **coverage** - every non-blank input line is either cited by a field or listed as unmapped with a
   controlled reason code (and any note must quote its line), so nothing is dropped silently.
-- **fixtures** - forty-seven planted flaws in `verify/fixtures/fail_*.json` (computed total,
-  inferred category, assumed currency, invented year, expanded vendor, dropped line, missing field,
-  hollow `not in source`, extra field, wrong conversion, cross-line value, subtotal-as-amount,
-  line-item-as-amount, tax-total-as-amount, tax from a non-tax line, item-as-category, number-as-date,
-  cross-block citation, dropped receipt, invented key inside a cell, underscore-key injection,
-  truncated amount, truncated date, truncated currency, truncated category, empty amount,
-  currency-holding-the-amount, category-holding-its-own-label, a `../` traversal source_file, a
-  `Total Savings` decoy as amount, an `Auth Ref` date, a payment-processor footer as vendor, a dropped
-  printed currency, duplicate JSON keys, a split-citation amount (a subtotal number laundered by
-  co-citing a clean line), a taxi fare as tax, a co-cited processor footer as vendor, a truncated
-  vendor, a check-in date on a hotel folio, a previous balance as the amount, a `Total Distance`
-  measurement as the amount, an order id embedded on the total line as the amount, a `was` (pre-discount)
-  price as the amount, a currency paired with a different number's value, an amount/tax/category marked
-  `not in source` while the receipt prints it, and a currency lifted from a disclaimer while the total
-  is in another currency) that MUST fail - and each must fail **through the gate it declares**, so a
-  fixture cannot pass by failing for the wrong reason.
+- **fixtures** - the kept-red files in `verify/fixtures/fail_*.json` each plant exactly one invention or
+  misattribution and MUST fail, each **through the gate it declares** (`_expect_gate`), so a fixture
+  cannot pass by failing for the wrong reason. They span the whole attack surface: computed total,
+  inferred category, assumed/laundered currency, invented year, normalized vendor (case or spacing),
+  dropped line/field, hollow `not in source`, extra or underscore key, wrong conversion, cross-line or
+  cross-receipt citation, over-citation, truncation, subtotal/tax/fare/tip/tender posing as the amount,
+  a rate (`8.25%`) posing as money, ambiguous totals or dates, a `../` traversal source_file, and
+  duplicate JSON keys. The file names in `verify/fixtures/` are the authoritative list, and
+  `node verify/check.mjs --matrix` prints the live count by class.
 
 Beyond field-kind checks, the gates enforce **positional binding**: a value's kind comes from **one
 line**, and the required label must *govern* the value - sit immediately to its left. So a kind may
