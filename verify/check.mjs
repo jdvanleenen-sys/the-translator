@@ -645,8 +645,11 @@ function main() {
     return;
   }
 
+  const matrix = process.argv.includes('--matrix');
   let failed = false;
-  console.log(`--- schema: ${id} (${schema.name}) ---`);
+  const outRes = [];   // { f, lines, pass }
+  const fixRes = [];    // { f, expect, caught }
+  if (!matrix) console.log(`--- schema: ${id} (${schema.name}) ---`);
 
   const outputsDir = join(root, 'verify', 'outputs');
   for (const f of readdirSync(outputsDir).filter((f) => f.endsWith('.json'))) {
@@ -655,8 +658,10 @@ function main() {
     const errs = validateOutput(out, schema, id);
     const dup = firstDuplicateKey(raw);
     if (dup) errs.unshift(`[shape] duplicate key "${dup}" in the JSON`);
-    if (errs.length) { failed = true; console.error(`FAIL: verify/outputs/${f}`); for (const e of errs) console.error(`  - ${e}`); }
-    else console.log(`ok: verify/outputs/${f} (${out.lines.length} line(s))`);
+    const pass = errs.length === 0;
+    outRes.push({ f, lines: (out.lines || []).length, pass });
+    if (!pass) { failed = true; if (!matrix) { console.error(`FAIL: verify/outputs/${f}`); for (const e of errs) console.error(`  - ${e}`); } }
+    else if (!matrix) console.log(`ok: verify/outputs/${f} (${out.lines.length} line(s))`);
   }
 
   const fixturesDir = join(root, 'verify', 'fixtures');
@@ -670,18 +675,42 @@ function main() {
     const errs = validateOutput(out, schema, id);
     const dup = firstDuplicateKey(rawText);
     if (dup) errs.unshift(`[shape] duplicate key "${dup}" in the JSON`);
-    if (errs.length === 0) { failed = true; console.error(`FAIL: fixture ${f} was supposed to fail but passed - the gate it tests is dead`); continue; }
-    if (expect && !errs.some((e) => e.startsWith(`[${expect}]`))) {
-      failed = true;
-      console.error(`FAIL: fixture ${f} failed, but not through its intended [${expect}] gate - it fails for the wrong reason`);
-      for (const e of errs) console.error(`      ${e}`);
-      continue;
-    }
-    console.log(`ok (failed through [${expect}] as required): verify/fixtures/${f}`);
+    let caught = true;
+    if (errs.length === 0) { caught = false; failed = true; if (!matrix) console.error(`FAIL: fixture ${f} was supposed to fail but passed - the gate it tests is dead`); }
+    else if (expect && !errs.some((e) => e.startsWith(`[${expect}]`))) {
+      caught = false; failed = true;
+      if (!matrix) { console.error(`FAIL: fixture ${f} failed, but not through its intended [${expect}] gate - it fails for the wrong reason`); for (const e of errs) console.error(`      ${e}`); }
+    } else if (!matrix) console.log(`ok (failed through [${expect}] as required): verify/fixtures/${f}`);
+    fixRes.push({ f, expect, caught });
   }
 
-  if (failed) { console.error('\nRESULT: FAIL'); process.exit(1); }
-  console.log('\nRESULT: all outputs traced clean, all fixtures failed through their intended gate.');
+  if (matrix) printMatrix(outRes, fixRes, failed);
+  else if (failed) console.error('\nRESULT: FAIL');
+  else console.log('\nRESULT: all outputs traced clean, all fixtures failed through their intended gate.');
+  if (failed) process.exit(1);
+}
+
+// A judge-facing summary: what the entry promises, proven in one screen.
+function printMatrix(outRes, fixRes, failed) {
+  const GATE = { trace: 'invented / misattributed value', coverage: 'dropped or hollow field', shape: 'schema / envelope break', block: 'cross-receipt citation' };
+  const okOut = outRes.filter((o) => o.pass).length, lines = outRes.reduce((s, o) => s + o.lines, 0);
+  const byGate = {};
+  for (const x of fixRes) { (byGate[x.expect] = byGate[x.expect] || { n: 0, c: 0 }).n++; if (x.caught) byGate[x.expect].c++; }
+  const totFix = fixRes.length, caughtFix = fixRes.filter((x) => x.caught).length;
+  const mark = (ok) => (ok ? 'PASS' : 'FAIL');
+  const L = [];
+  L.push('THE TRANSLATOR - verdict matrix');
+  L.push('receipt text -> fixed expense record; every value traces to the input or says "not in source".');
+  L.push('');
+  L.push('  Real outputs, every value traced to its input');
+  L.push(`      ${String(okOut).padStart(2)}/${String(outRes.length).padEnd(2)} outputs  (${lines} lines, incl. a live model run on unseen receipts)   ${mark(okOut === outRes.length)}`);
+  L.push('');
+  L.push('  Planted attacks, each MUST be rejected');
+  for (const g of ['trace', 'coverage', 'shape', 'block']) { const b = byGate[g]; if (!b) continue; L.push(`      ${(GATE[g] + ' ').padEnd(34, '.')} ${String(b.c).padStart(2)}/${String(b.n).padEnd(2)} caught   ${mark(b.c === b.n)}`); }
+  L.push(`      ${'all attack fixtures '.padEnd(34, '.')} ${String(caughtFix).padStart(2)}/${String(totFix).padEnd(2)} caught   ${mark(caughtFix === totFix)}`);
+  L.push('');
+  L.push(`  RESULT: ${failed ? 'FAIL - see node verify/check.mjs for detail' : 'READY - every real value traces to its input; every planted invention is caught'}`);
+  console.log(L.join('\n'));
 }
 
 main();

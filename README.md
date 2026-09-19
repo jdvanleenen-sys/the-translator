@@ -52,7 +52,15 @@ when the checker is run with `--input` (see below).
 ## The promise, and how to check it
 
 The point of this translator is that it does not make things up. That claim is checkable, offline,
-by a stranger, with no dependencies beyond Node:
+by a stranger, with no dependencies beyond Node. For a one-screen verdict:
+
+```
+node verify/check.mjs --matrix
+```
+
+prints a pass/fail matrix: real outputs (including a live model run on unseen receipts) all trace to
+their input, and every planted attack, by class (invented value / dropped field / schema break /
+cross-receipt citation), is caught. For the full per-file detail:
 
 ```
 node verify/check.mjs
