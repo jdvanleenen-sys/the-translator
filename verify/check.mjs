@@ -377,22 +377,47 @@ function currencyBindingCheck(out, schema, inputLines, errs) {
 function labelGovernsAValue(lineNorm, labels, valuePat) {
   return labels.some((kw) => kw && kw.trim() && new RegExp('(^|[^a-z0-9])' + esc(kw) + '[\\s:$€£¥₹()\\-]*(' + valuePat + ')').test(lineNorm));
 }
+// A line "prints a fillable transaction date": some date-shaped token on it sits in valid
+// date-context (bare, or governed by a date label). Uses the SAME authorities the trace gate uses
+// to ACCEPT a date (looksLikeDate + dateContextOk), so the drop guard and the accept rule agree.
+const DATE_CAND = /[a-z]{3,9}\.?\s*\d{1,2}(?:,?\s*\d{2,4})?|\d{1,4}[./\-]\d{1,2}(?:[./\-]\d{2,4})?/gi;
+function linePrintsFillableDate(lineNorm, dateCtx) {
+  const cands = lineNorm.match(DATE_CAND) || [];
+  return cands.some((t) => looksLikeDate(t) && dateContextOk(lineNorm, norm(t), dateCtx));
+}
 function fieldDropCheck(out, schema, inputLines, errs) {
   const marker = schema.not_in_source_marker;
   const blocks = computeBlocks(inputLines);
   out.lines.forEach((line, i) => {
     const b = blocks[i] || { start: 1, end: inputLines.length };
+    let header = null;
+    for (let n = b.start; n <= b.end; n++) if (!isExemptLine(inputLines[n - 1])) { header = n; break; }
     for (const f of schema.fields) {
       const c = f.constraints || {};
-      if (!Array.isArray(c.require_label)) continue;
       const cell = line[f.name];
       if (!cell || cell.value !== marker) continue;
-      const valuePat = c.numeric ? '-?\\d' : '[a-z0-9]';
-      for (let n = b.start; n <= b.end; n++) {
-        if (labelGovernsAValue(norm(inputLines[n - 1]), c.require_label, valuePat)) {
-          errs.push(`[trace] line ${i + 1}.${f.name}: marked "${marker}", but line ${n} (${JSON.stringify(inputLines[n - 1])}) prints a ${f.name} - a stated field may not be dropped into unmapped and reported empty`);
-          break;
+      // (a) labelled fields (amount/tax/category): a stated, label-governed value may not be dropped.
+      if (Array.isArray(c.require_label)) {
+        const valuePat = c.numeric ? '-?\\d' : '[a-z0-9]';
+        for (let n = b.start; n <= b.end; n++) {
+          if (labelGovernsAValue(norm(inputLines[n - 1]), c.require_label, valuePat)) {
+            errs.push(`[trace] line ${i + 1}.${f.name}: marked "${marker}", but line ${n} (${JSON.stringify(inputLines[n - 1])}) prints a ${f.name} - a stated field may not be dropped into unmapped and reported empty`);
+            break;
+          }
         }
+      }
+      // (b) date: a printed transaction date (labelled or bare) may not be dropped.
+      else if (Array.isArray(c.date_context)) {
+        for (let n = b.start; n <= b.end; n++) {
+          if (linePrintsFillableDate(norm(inputLines[n - 1]), c.date_context)) {
+            errs.push(`[trace] line ${i + 1}.${f.name}: marked "${marker}", but line ${n} (${JSON.stringify(inputLines[n - 1])}) prints a transaction date - a stated date may not be dropped into unmapped and reported empty`);
+            break;
+          }
+        }
+      }
+      // (c) vendor: the merchant is the block header; if a header line exists it may not be dropped.
+      else if (c.header_full_line && header !== null) {
+        errs.push(`[trace] line ${i + 1}.${f.name}: marked "${marker}", but line ${header} (${JSON.stringify(inputLines[header - 1])}) is the receipt header - the merchant may not be dropped into unmapped and reported empty`);
       }
     }
   });

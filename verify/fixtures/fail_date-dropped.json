@@ -1,0 +1,8 @@
+{
+  "_fixture": "a printed transaction date (Invoice Date: 2026-03-14) marked not-in-source and dumped to unmapped. A silent drop of a stated field; must fail [trace].",
+  "_expect_gate": "trace",
+  "conversion": "expense-report",
+  "source_file": "verify/fixtures/sample-receipt-datedrop.txt",
+  "lines": [{"line_no":1,"date":{"value":"not in source"},"vendor":{"value":"Bistro Nine","cite":[1]},"amount":{"value":"40.00","cite":[3]},"currency":{"value":"not in source"},"category":{"value":"not in source"},"tax":{"value":"not in source"}}],
+  "unmapped_input_lines": [{"line":2,"code":"other","note":"Invoice Date: 2026-03-14"}]
+}

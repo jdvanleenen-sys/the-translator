@@ -1,0 +1,8 @@
+{
+  "_fixture": "the merchant (receipt header) marked not-in-source and dumped to unmapped as 'header'. The header is always the merchant; dropping it is a silent fail; must fail [trace].",
+  "_expect_gate": "trace",
+  "conversion": "expense-report",
+  "source_file": "verify/fixtures/sample-receipt-vendordrop.txt",
+  "lines": [{"line_no":1,"date":{"value":"not in source"},"vendor":{"value":"not in source"},"amount":{"value":"40.00","cite":[2]},"currency":{"value":"not in source"},"category":{"value":"not in source"},"tax":{"value":"not in source"}}],
+  "unmapped_input_lines": [{"line":1,"code":"header","note":"Joe's Cafe"}]
+}
