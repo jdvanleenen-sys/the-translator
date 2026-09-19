@@ -1,0 +1,18 @@
+{
+  "_fixture": "a printed 'Total Amount 40.00' marked not-in-source and dumped to unmapped. Before F1 the checker did not recognize 'total amount' as a total label, so it rejected the CORRECT answer and blessed this dropped one. Must now fail [trace] via the field-drop guard.",
+  "_expect_gate": "trace",
+  "conversion": "expense-report",
+  "source_file": "verify/fixtures/sample-receipt-totalamount.txt",
+  "lines": [
+    {
+      "line_no": 1,
+      "date": {"value": "not in source"},
+      "vendor": {"value": "City Hardware", "cite": [1]},
+      "amount": {"value": "not in source"},
+      "currency": {"value": "not in source"},
+      "category": {"value": "not in source"},
+      "tax": {"value": "not in source"}
+    }
+  ],
+  "unmapped_input_lines": [{"line": 2, "code": "other", "note": "Total Amount 40.00"}]
+}

@@ -91,6 +91,7 @@ function stripLabelTail(seg) {
     s = s.replace(/\([^()]*\)$/, '');                                   // a trailing complete (parenthetical)
     s = s.replace(/[:$€£¥₹.,\-]+$/u, '');                               // trailing punctuation / currency symbols
     s = s.replace(new RegExp('(^|[^a-z0-9])(' + CUR_CODES + ')$'), '$1'); // a trailing currency code
+    s = s.replace(/(^|[^a-z0-9])(included|inclusive|incl)$/, '$1');       // a trailing "included"/"incl" modifier so "GST included 0.42" binds to "gst"
   } while (s !== prev);
   return s.replace(/\s+$/, '');
 }
