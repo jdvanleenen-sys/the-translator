@@ -358,10 +358,42 @@ function currencyBindingCheck(out, schema, inputLines, errs) {
   out.lines.forEach((line, i) => {
     const a = line.amount, cur = line.currency;
     if (!a || !cur || a.value === marker || cur.value === marker || !Array.isArray(a.cite) || !Array.isArray(cur.cite)) return;
-    const shared = a.cite.filter((n) => cur.cite.includes(n));
-    if (shared.length === 0) return; // amount and currency on different lines: not bound here
-    const ok = shared.some((n) => n >= 1 && n <= inputLines.length && currencyAdjacentToAmount(norm(inputLines[n - 1]), norm(a.value), norm(cur.value)));
-    if (!ok) errs.push(`[trace] line ${i + 1}.currency: ${JSON.stringify(cur.value)} is not adjacent to the amount ${JSON.stringify(a.value)} on their shared line - a currency must belong to the amount's own number, not another number's`);
+    // If the amount's own line carries any currency token, the currency MUST be the one adjacent to
+    // the amount there - so a currency lifted from a disclaimer/header (or a second currency on the
+    // line) cannot be paired with an amount whose line states a different currency. If the amount's
+    // line has no currency token, the currency may legitimately come from a header declaration.
+    const amountLinesWithCurrency = a.cite.filter((n) => n >= 1 && n <= inputLines.length && CURRENCY_TOKEN.test(norm(inputLines[n - 1])));
+    if (amountLinesWithCurrency.length === 0) return;
+    const ok = amountLinesWithCurrency.some((n) => currencyAdjacentToAmount(norm(inputLines[n - 1]), norm(a.value), norm(cur.value)));
+    if (!ok) errs.push(`[trace] line ${i + 1}.currency: the amount's line prints a currency, so currency must be the code adjacent to ${JSON.stringify(a.value)} there, not ${JSON.stringify(cur.value)} taken from elsewhere`);
+  });
+}
+
+// Under-reporting guard: a field may be "not in source" only if the receipt truly does not state it.
+// If a required label GOVERNS a value of the right kind somewhere in the record's block (a real
+// "Total 40.00", "GST 0.25", or "Category: Meals"), the field may not be marked "not in source" and
+// the value quietly dumped into unmapped. Symmetric to the currency-drop guard.
+function labelGovernsAValue(lineNorm, labels, valuePat) {
+  return labels.some((kw) => kw && kw.trim() && new RegExp('(^|[^a-z0-9])' + esc(kw) + '[\\s:$€£¥₹()\\-]*(' + valuePat + ')').test(lineNorm));
+}
+function fieldDropCheck(out, schema, inputLines, errs) {
+  const marker = schema.not_in_source_marker;
+  const blocks = computeBlocks(inputLines);
+  out.lines.forEach((line, i) => {
+    const b = blocks[i] || { start: 1, end: inputLines.length };
+    for (const f of schema.fields) {
+      const c = f.constraints || {};
+      if (!Array.isArray(c.require_label)) continue;
+      const cell = line[f.name];
+      if (!cell || cell.value !== marker) continue;
+      const valuePat = c.numeric ? '-?\\d' : '[a-z0-9]';
+      for (let n = b.start; n <= b.end; n++) {
+        if (labelGovernsAValue(norm(inputLines[n - 1]), c.require_label, valuePat)) {
+          errs.push(`[trace] line ${i + 1}.${f.name}: marked "${marker}", but line ${n} (${JSON.stringify(inputLines[n - 1])}) prints a ${f.name} - a stated field may not be dropped into unmapped and reported empty`);
+          break;
+        }
+      }
+    }
   });
 }
 
@@ -386,6 +418,7 @@ function validateOutput(out, schema, id, pinnedInput = null) {
   blockCheck(out, schema, inputLines, errs);
   currencyDropCheck(out, schema, inputLines, errs);
   currencyBindingCheck(out, schema, inputLines, errs);
+  fieldDropCheck(out, schema, inputLines, errs);
   return errs;
 }
 

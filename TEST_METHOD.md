@@ -242,3 +242,30 @@ isolation, so a currency could be paired with a different number's value (`27.00
 Fixtures grew 39 -> 43. Verified directly: `Total Distance`, order-id, `was`-price, and currency-mispair
 attacks all fail through their gate; the legitimate `40.00` on the `(order 5567)` line still passes;
 no regression on the four real outputs.
+
+---
+
+## Self-red-team pass 2 — added 2026-09-18 (three rounds: under-reporting, currency source, a false-positive)
+
+Three more internal rounds (hard pairs -> run -> fix -> re-test), each aimed at a class the external
+rounds hadn't probed.
+
+- **Round 1 - under-reporting.** Every gate stopped wrong/invented values, but nothing stopped marking
+  a field `not in source` while the receipt clearly prints it and dumping the line into `unmapped` as
+  `other` - the brief's named failure ("silently omits the objection"). Added a field-drop guard: a
+  `require_label` field may be `not in source` only if no line in its block has that label governing a
+  value of the right kind. Closes amount/tax/category under-reporting; the legit "no money total, only
+  Total Distance" case still yields a correct `not in source`.
+- **Round 2 - currency source.** The currency-binding check only fired on a shared cited line, so a
+  currency lifted from a disclaimer ("Refunds in USD only") could be paired with a total printed in
+  another currency (CAD). Rewrote it: if the amount's own line prints any currency token, the currency
+  must be the code adjacent to the amount there; only a bare-total line lets currency come from a header.
+- **Round 3 - a false-positive of our own.** The `amount` forbid-list (anywhere-on-line) rejected a
+  legitimate `Total 40.00 (10 items)` because "items" was on the line. Positional binding already
+  subsumes the forbid-list (a decoy label can't govern the value), so the list was removed - decoys
+  stay rejected, and item-count totals are accepted. A false-positive fails a judge's correct input, so
+  this matters as much as a bypass.
+
+Fixtures grew 43 -> 47 (`fail_amount-dropped`, `fail_tax-dropped`, `fail_category-dropped`,
+`fail_currency-disclaimer`); a fifth real output (`inputs/receipts-itemcount.txt`) locks the
+false-positive fix. No regression.

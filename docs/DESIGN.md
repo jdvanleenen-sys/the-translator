@@ -132,6 +132,17 @@ amount. Fixtures 39 -> 43; the legitimate `40.00` on a parenthetical order line 
 regression. This is the same principle applied everywhere: a value's kind must be bound to the label
 that governs it, on one line.
 
+## Self-red-team pass 2 (2026-09-18, under-reporting + currency source + a false-positive)
+
+Three internal rounds on classes the external rounds hadn't probed. (1) Under-reporting: a field could
+be marked `not in source` while the receipt printed it (dumped to `unmapped`) - added a field-drop
+guard (a require-label field may be `not in source` only if no block line has its label governing a
+value). (2) Currency source: a currency from a disclaimer could pair with a total in another currency -
+currency must now be adjacent to the amount when the amount's line prints a currency. (3) A
+false-positive of our own: the amount forbid-list rejected a legit `Total 40.00 (10 items)`; positional
+binding subsumes the list, so it was removed - decoys stay rejected, item-count totals pass. Fixtures
+43 -> 47, plus a fifth real output locking the false-positive fix. No regression.
+
 ## Done (one sentence)
 
 One translator folder plus a forked checker that proves the output shape holds across three

@@ -1,0 +1,45 @@
+{
+  "_fixture": "category marked not in source while Category: Meals is printed",
+  "_expect_gate": "trace",
+  "conversion": "expense-report",
+  "source_file": "verify/fixtures/sample-receipt-catdrop.txt",
+  "lines": [
+    {
+      "line_no": 1,
+      "date": {
+        "value": "Jan 5",
+        "cite": [
+          2
+        ]
+      },
+      "vendor": {
+        "value": "Diner",
+        "cite": [
+          1
+        ]
+      },
+      "amount": {
+        "value": "12.00",
+        "cite": [
+          4
+        ]
+      },
+      "currency": {
+        "value": "not in source"
+      },
+      "category": {
+        "value": "not in source"
+      },
+      "tax": {
+        "value": "not in source"
+      }
+    }
+  ],
+  "unmapped_input_lines": [
+    {
+      "line": 3,
+      "code": "other",
+      "note": "Category: Meals"
+    }
+  ]
+}

@@ -56,7 +56,7 @@ This reads every output in `verify/outputs/`, opens the input file it names, and
   point its evidence at a `../` traversal or absolute path.
 - **coverage** - every non-blank input line is either cited by a field or listed as unmapped with a
   controlled reason code (and any note must quote its line), so nothing is dropped silently.
-- **fixtures** - forty-three planted flaws in `verify/fixtures/fail_*.json` (computed total,
+- **fixtures** - forty-seven planted flaws in `verify/fixtures/fail_*.json` (computed total,
   inferred category, assumed currency, invented year, expanded vendor, dropped line, missing field,
   hollow `not in source`, extra field, wrong conversion, cross-line value, subtotal-as-amount,
   line-item-as-amount, tax-total-as-amount, tax from a non-tax line, item-as-category, number-as-date,
@@ -68,8 +68,10 @@ This reads every output in `verify/outputs/`, opens the input file it names, and
   co-citing a clean line), a taxi fare as tax, a co-cited processor footer as vendor, a truncated
   vendor, a check-in date on a hotel folio, a previous balance as the amount, a `Total Distance`
   measurement as the amount, an order id embedded on the total line as the amount, a `was` (pre-discount)
-  price as the amount, and a currency paired with a different number's value) that MUST fail - and
-  each must fail **through the gate it declares**, so a fixture cannot pass by failing for the wrong reason.
+  price as the amount, a currency paired with a different number's value, an amount/tax/category marked
+  `not in source` while the receipt prints it, and a currency lifted from a disclaimer while the total
+  is in another currency) that MUST fail - and each must fail **through the gate it declares**, so a
+  fixture cannot pass by failing for the wrong reason.
 
 Beyond field-kind checks, the gates enforce **positional binding**: a value's kind comes from **one
 line**, and the required label must *govern* the value - sit immediately to its left. So a kind may
@@ -81,7 +83,12 @@ real total/date labels, not denylists of decoys. `vendor` must equal the **recei
 verbatim**. `currency` must be **adjacent to the amount** (so a second currency on the line can't be
 paired with it) and is rejected as `not in source` when a currency token sits on a cited line. `date`
 must be a **bare date or governed by a date label** (invoice/issued/…), not a check-in/expiry/auth
-date. Duplicate JSON keys are rejected at the raw-text level.
+date. A field may **not be marked `not in source` when its label governs a value in the block** - a
+printed total/tax/category can't be dropped into `unmapped` and reported empty. When the amount's line
+prints a currency, the `currency` must be the code **adjacent to the amount** there (so a currency from
+a disclaimer can't be paired with a total in another currency). Duplicate JSON keys are rejected at the
+raw-text level. (Because the label must *govern* the value, a legitimate total that mentions an item
+count - `Total 40.00 (10 items)` - is accepted; the gate does not blanket-ban money-adjacent words.)
 
 To check a single output: `node verify/check.mjs --output verify/outputs/receipts-coffee.json`.
 

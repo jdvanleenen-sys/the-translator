@@ -212,3 +212,20 @@ label/date gates, and currency-must-be-adjacent-to-amount. Suite re-run green.
 - order id `5567` on `Grand Total (order 5567) 40.00` as amount - and the legitimate `40.00` still passes.
 - `was` pre-discount price `89.99` (`TOTAL 59.99 was 89.99`) as amount.
 - currency `CAD` paired with the USD amount `20.00` on a two-currency line - currency must be adjacent to the amount.
+
+---
+
+## Self-red-team run - 2026-09-18 (v9, under-reporting + currency source + a false-positive)
+
+Three internal rounds probing classes the external rounds missed. Suite re-run green.
+
+- 5 outputs clean (added an item-count total that must not be false-rejected); 47 fixtures each through
+  its gate; fresh-clone green; CI green.
+- **Under-reporting fixed:** amount/tax/category marked `not in source` while the receipt prints them
+  (dumped to `unmapped`) now fail `[trace]`; the legit "only a Total Distance, no money total" case
+  still yields `not in source`.
+- **Currency source fixed:** a currency lifted from a disclaimer while the total is in another currency
+  fails `[trace]`; a header currency-declaration with a bare total still passes.
+- **False-positive fixed:** `Total 40.00 (10 items)` (a legit total mentioning an item count) was being
+  rejected by the amount forbid-list; positional binding subsumes that list, so it was removed - decoys
+  stay rejected and the item-count total passes.

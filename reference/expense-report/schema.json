@@ -52,10 +52,9 @@
       "constraints": {
         "numeric": true,
         "exact_token": true,
-        "require_label": ["total", "amount due", "balance due", "amount payable", "grand total", "amount paid", "total paid"],
-        "forbid_label": ["subtotal", "sub-total", "sub total", "tax", "gst", "hst", "pst", "qst", "vat", "savings", "saved", "discount", "coupon", "tip", "gratuity", "change", "rounding", "points", "loyalty", "tender", "cash", "item", "items", "qty", "quantity", "count", "unit", "previous", "prior", "opening", "forward"]
+        "require_label": ["total", "amount due", "balance due", "amount payable", "grand total", "amount paid", "total paid"]
       },
-      "description": "The transaction total exactly as printed on a total-labeled line (Total, Amount Due, Balance Due...). Never computed, never the subtotal, never a tax line, never a line-item or fare. If no total-labeled line is printed, 'not in source' - an unlabeled number is not assumed to be the total."
+      "description": "The transaction total exactly as printed, taken from the number a total label GOVERNS (the label sits immediately before it). Never computed, never a subtotal/tax/line-item/fare/savings line (those labels do not govern the total). If no total-labeled line is printed, 'not in source' - an unlabeled number is not assumed to be the total."
     },
     {
       "name": "currency",

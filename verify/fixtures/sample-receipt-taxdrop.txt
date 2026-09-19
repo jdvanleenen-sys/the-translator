@@ -1,0 +1,5 @@
+Cafe
+Jan 5
+Coffee 5.00
+GST 0.25
+Total 5.25

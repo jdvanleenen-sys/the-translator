@@ -223,6 +223,24 @@ const usdBase = () => ({ conversion: 'expense-report', source_file: USD,
     unmapped_input_lines: [] };
   fixtures['fail_currency-mispair'] = f; }
 
+// --- v9 fixtures (self-red-team round: under-reporting + currency-from-disclaimer) ---
+{ const f = { _expect_gate: 'trace', _fixture: 'amount marked not in source while a real Total 40.00 is printed and dumped to unmapped', conversion: 'expense-report', source_file: 'verify/fixtures/sample-receipt-amountdrop.txt',
+    lines: [{ line_no: 1, date: { value: 'Jan 5', cite: [2] }, vendor: { value: 'Corner Store', cite: [1] }, amount: nis, currency: nis, category: nis, tax: nis }],
+    unmapped_input_lines: [{ line: 3, code: 'line_item', note: 'Widget 40.00' }, { line: 4, code: 'other', note: 'Total 40.00' }] };
+  fixtures['fail_amount-dropped'] = f; }
+{ const f = { _expect_gate: 'trace', _fixture: 'tax marked not in source while GST 0.25 is printed', conversion: 'expense-report', source_file: 'verify/fixtures/sample-receipt-taxdrop.txt',
+    lines: [{ line_no: 1, date: { value: 'Jan 5', cite: [2] }, vendor: { value: 'Cafe', cite: [1] }, amount: { value: '5.25', cite: [5] }, currency: nis, category: nis, tax: nis }],
+    unmapped_input_lines: [{ line: 3, code: 'line_item', note: 'Coffee 5.00' }, { line: 4, code: 'other', note: 'GST 0.25' }] };
+  fixtures['fail_tax-dropped'] = f; }
+{ const f = { _expect_gate: 'trace', _fixture: 'category marked not in source while Category: Meals is printed', conversion: 'expense-report', source_file: 'verify/fixtures/sample-receipt-catdrop.txt',
+    lines: [{ line_no: 1, date: { value: 'Jan 5', cite: [2] }, vendor: { value: 'Diner', cite: [1] }, amount: { value: '12.00', cite: [4] }, currency: nis, category: nis, tax: nis }],
+    unmapped_input_lines: [{ line: 3, code: 'other', note: 'Category: Meals' }] };
+  fixtures['fail_category-dropped'] = f; }
+{ const f = { _expect_gate: 'trace', _fixture: 'currency USD lifted from a disclaimer while the total is printed in CAD', conversion: 'expense-report', source_file: 'verify/fixtures/sample-receipt-disclaimer.txt',
+    lines: [{ line_no: 1, date: nis, vendor: { value: 'Airport Shop', cite: [1] }, amount: { value: '40.00', cite: [3] }, currency: { value: 'USD', cite: [2] }, category: nis, tax: nis }],
+    unmapped_input_lines: [{ line: 2, code: 'other', note: 'Refunds in USD only' }] };
+  fixtures['fail_currency-disclaimer'] = f; }
+
 let count = 0;
 for (const [name, obj] of Object.entries(fixtures)) {
   // key order: annotations first, then conversion/source_file/lines/unmapped

@@ -1,0 +1,16 @@
+{
+  "conversion": "expense-report",
+  "source_file": "inputs/receipts-itemcount.txt",
+  "lines": [
+    {
+      "line_no": 1,
+      "date":     { "value": "Jan 5", "cite": [2] },
+      "vendor":   { "value": "Grocery Mart", "cite": [1] },
+      "amount":   { "value": "40.00", "cite": [3] },
+      "currency": { "value": "not in source" },
+      "category": { "value": "not in source" },
+      "tax":      { "value": "not in source" }
+    }
+  ],
+  "unmapped_input_lines": []
+}
