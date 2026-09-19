@@ -5,7 +5,10 @@
   {
    "line_no": 1,
    "date": {
-    "value": "not in source"
+    "value": "09/25/2024",
+    "cite": [
+     23
+    ]
    },
    "vendor": {
     "value": "save-on-foods #6634",
@@ -131,11 +134,6 @@
    "line": 22,
    "code": "other",
    "note": "CARD NUMBER: ***********1446"
-  },
-  {
-   "line": 23,
-   "code": "other",
-   "note": "DATE/TIME: 09/25/2024 09:02:38"
   },
   {
    "line": 24,

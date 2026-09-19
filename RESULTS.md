@@ -477,8 +477,15 @@ still refused because the correct value is reachable. Guarded by `fail_tax-base-
 27.98 must not bind); schema.json gains `columnar_tax` on the tax field; rules.md and input-grammar note
 the Tax-Value rule. Save-On shipped as `inputs/receipts-saveon.txt` + `verify/outputs/receipts-saveon.json`.
 
-Still open (compound date labels): `DateTime:` / `DATE/TIME:` are not recognized date labels, so date is
-`not in source` on the Superstore and Save-On receipts (both accepted as honest refusals - not forced).
-A candidate safe fix (recognize these explicit compound labels) is noted for decision.
-
 11 valid outputs, 65 fixtures. Suite green; fresh-clone green.
+
+## Compound date labels recognized - 2026-09-19 (v19)
+
+`DateTime:` (Superstore) and `DATE/TIME:` (Save-On) were not recognized date labels, so date came out
+`not in source` on both grocery receipts (accepted as honest refusals, but a visible miss). Decision:
+recognize them - reading an explicit label is not guessing. Added `datetime` and `date/time` to the date
+label set. Date now fills: Superstore cites its `DateTime:` line (`24/09/14`), Save-On its `DATE/TIME:`
+line (`09/25/2024`). The labeled date takes priority over a bare footer date, so no ambiguity is
+introduced. Guarded by `fail_datetime-date-dropped` (a `DateTime:` date may not be dropped to empty).
+
+11 valid outputs, 66 fixtures. Suite green; fresh-clone green.

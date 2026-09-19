@@ -1,0 +1,4 @@
+{ "_fixture": "The only date is on a 'DateTime:' line, an explicit compound date label. The output drops date to 'not in source'. A printed, label-governed transaction date may not be reported empty; must fail [trace]. Locks that 'datetime' stays a recognized date label.", "_expect_gate": "trace",
+  "conversion": "expense-report", "source_file": "verify/fixtures/sample-receipt-datetime.txt",
+  "lines": [{"line_no":1,"date":{"value":"not in source"},"vendor":{"value":"Nord Cafe","cite":[1]},"amount":{"value":"6.75","cite":[3]},"currency":{"value":"not in source"},"category":{"value":"not in source"},"tax":{"value":"not in source"}}],
+  "unmapped_input_lines": [{"line":2,"code":"other","note":"DateTime: 03/04/25 10:00"}] }

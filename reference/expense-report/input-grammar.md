@@ -68,8 +68,10 @@ the one common layout the same-line rule does not yet cover. Do not work around 
   human against that line; the mechanical check bounds it to declaration/monetary/bare lines but cannot
   prove the declaration governs *this* receipt.
 - **Date** is the transaction date, exactly as printed (never normalized): a bare date line, or one a
-  date label governs (`Date`, `Invoice`, `Issued`, `Sale`, `Order`, ...). A check-in, expiry, or
-  auth-ref date does not qualify and is `not in source`.
+  date label governs (`Date`, `DateTime`, `DATE/TIME`, `Invoice`, `Issued`, `Sale`, `Order`, ...). A
+  label-governed date outranks a bare footer date, so a receipt that prints the date twice is not
+  ambiguous. A check-in, expiry, or auth-ref date does not qualify and is `not in source`; a date sharing
+  a line with a register/terminal number but no date label (`0253 01/04/25 13:25`) is also `not in source`.
 
 ## What the checker proves, and what it does not
 

@@ -33,7 +33,7 @@
       "order": 2,
       "role": "source",
       "traceable": true,
-      "constraints": { "shape": "date", "exact_token": true, "date_context": ["date", "dated", "invoice", "issued", "issue", "receipt", "sale", "sold", "transaction", "order", "purchased", "posted"] },
+      "constraints": { "shape": "date", "exact_token": true, "date_context": ["date", "dated", "datetime", "date/time", "invoice", "issued", "issue", "receipt", "sale", "sold", "transaction", "order", "purchased", "posted"] },
       "description": "The transaction date exactly as printed. Not normalized. 'Jan 3' with no year stays 'Jan 3'; the year is not invented. The value must look like a date, and its line must be a bare date or governed by a date label (date/invoice/issued/...) - a check-in, expiry, or auth-ref date does not qualify."
     },
     {
