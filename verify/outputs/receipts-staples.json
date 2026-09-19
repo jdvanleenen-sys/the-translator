@@ -1,0 +1,46 @@
+{
+  "conversion": "expense-report",
+  "source_file": "inputs/receipts-staples.txt",
+  "lines": [
+    {
+      "line_no": 1,
+      "date": {"value":"not in source"},
+      "vendor": {"value":"STAPLES CANADA","cite":[1]},
+      "amount": {"value":"234.18","cite":[26]},
+      "currency": {"value":"$","cite":[29]},
+      "category": {"value":"not in source"},
+      "tax": {"value":"11.15","cite":[25]}
+    }
+  ],
+  "unmapped_input_lines": [
+    {"line":2,"code":"location","note":"Coventry Hills"},
+    {"line":3,"code":"location","note":"130 Country Village Road NE, Unit 307"},
+    {"line":4,"code":"location","note":"Calgary, AB T3K 6B8"},
+    {"line":5,"code":"other","note":"Phone [redacted]"},
+    {"line":6,"code":"other","note":"00011 001 011 51050"},
+    {"line":7,"code":"other","note":"0253 01/04/25 13:25"},
+    {"line":8,"code":"other","note":"SALE"},
+    {"line":9,"code":"other","note":"2078307"},
+    {"line":10,"code":"loyalty","note":"***Preferred Member***"},
+    {"line":11,"code":"loyalty","note":"BDP Number: [redacted]"},
+    {"line":12,"code":"line_item","note":"2 LT ADVANCED COMBO"},
+    {"line":13,"code":"line_item","note":"9785138125 69.99 139.98 G"},
+    {"line":14,"code":"discount","note":"Preferred Price 67.89 -4.20"},
+    {"line":15,"code":"line_item","note":"1 SHARPIE S-GEL .7MM B"},
+    {"line":16,"code":"line_item","note":"71641186767 9.39 G"},
+    {"line":17,"code":"discount","note":"Preferred Price 9.11 -0.28"},
+    {"line":18,"code":"line_item","note":"2 GRIP BRITELINR 5pk"},
+    {"line":19,"code":"line_item","note":"70330312579 5.49 10.98 G"},
+    {"line":20,"code":"discount","note":"Preferred Price 5.33 -0.32"},
+    {"line":21,"code":"line_item","note":"4 CAMBRIDGE LTD NOTEBO"},
+    {"line":22,"code":"line_item","note":"3857686915 17.39 69.56 G"},
+    {"line":23,"code":"discount","note":"Preferred Price 16.87 -2.08"},
+    {"line":24,"code":"subtotal","note":"SubTotal 223.03"},
+    {"line":27,"code":"other","note":"TRANSACTION RECORD"},
+    {"line":28,"code":"card_mask","note":"************1446"},
+    {"line":30,"code":"other","note":"Purchase"},
+    {"line":31,"code":"other","note":"Authorization Number 010012J"},
+    {"line":32,"code":"greeting_footer","note":"APPROVED - THANK YOU"},
+    {"line":33,"code":"payment_method","note":"MASTERCARD"}
+  ]
+}
