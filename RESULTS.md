@@ -489,3 +489,15 @@ line (`09/25/2024`). The labeled date takes priority over a bare footer date, so
 introduced. Guarded by `fail_datetime-date-dropped` (a `DateTime:` date may not be dropped to empty).
 
 11 valid outputs, 66 fixtures. Suite green; fresh-clone green.
+
+## Earls (tipped restaurant) - clean pass, no fix - 2026-09-19 (v20)
+
+A two-slip Earls dinner with a tip, run through the checker: **no change needed.** It leads with the
+merchant (`EARLS RESTAURANTS`, in-grammar), so vendor binds; the apostrophe date `Sep23'24` binds as a
+bare date; tax `6.85` from `GST Tax`; and - the point of the test - the **tip (25.89) went to unmapped**
+and `amount` stayed the labeled meal `Total 143.85`, not the unlabeled `169.74` grand total on the card
+line, and not via the time-wedged `Total @ 1:14PM 143.85`. Currency is `not in source` (none printed).
+Shipped as `inputs/receipts-earls.txt` + `verify/outputs/receipts-earls.json`.
+
+Five real photographed receipts now ship in the checked suite (Staples, Superstore, Save-On, Earls, plus
+the earlier corpus): 12 valid outputs, 66 fixtures. Suite green; fresh-clone green.

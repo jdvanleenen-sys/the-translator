@@ -1,0 +1,156 @@
+{
+ "conversion": "expense-report",
+ "source_file": "inputs/receipts-earls.txt",
+ "lines": [
+  {
+   "line_no": 1,
+   "date": {
+    "value": "Sep23'24",
+    "cite": [
+     7
+    ]
+   },
+   "vendor": {
+    "value": "EARLS RESTAURANTS",
+    "cite": [
+     1
+    ]
+   },
+   "amount": {
+    "value": "143.85",
+    "cite": [
+     25
+    ]
+   },
+   "currency": {
+    "value": "not in source"
+   },
+   "category": {
+    "value": "not in source"
+   },
+   "tax": {
+    "value": "6.85",
+    "cite": [
+     16
+    ]
+   }
+  }
+ ],
+ "unmapped_input_lines": [
+  {
+   "line": 2,
+   "code": "other",
+   "note": "Earls Southcentre"
+  },
+  {
+   "line": 3,
+   "code": "other",
+   "note": "100 Anderson Road SE"
+  },
+  {
+   "line": 4,
+   "code": "other",
+   "note": "Calgary, AB"
+  },
+  {
+   "line": 5,
+   "code": "other",
+   "note": "T2J 3V1"
+  },
+  {
+   "line": 6,
+   "code": "other",
+   "note": "Tbl 323/1 Chk 1227 Gst 4"
+  },
+  {
+   "line": 8,
+   "code": "other",
+   "note": "3 POP 15.00"
+  },
+  {
+   "line": 9,
+   "code": "other",
+   "note": "2 SALMON FILET 63.50"
+  },
+  {
+   "line": 10,
+   "code": "other",
+   "note": "Cajun"
+  },
+  {
+   "line": 11,
+   "code": "other",
+   "note": "1 COBB SALAD/CHK 25.75"
+  },
+  {
+   "line": 12,
+   "code": "other",
+   "note": "1 ANGRY LETT/CHK 19.75"
+  },
+  {
+   "line": 13,
+   "code": "other",
+   "note": "4 POP REFILL 0.00"
+  },
+  {
+   "line": 14,
+   "code": "other",
+   "note": "1 1 PUMPKIN PIE 13.00"
+  },
+  {
+   "line": 15,
+   "code": "other",
+   "note": "SUBTOTAL 137.00"
+  },
+  {
+   "line": 17,
+   "code": "other",
+   "note": "Total @ 1:14PM 143.85"
+  },
+  {
+   "line": 18,
+   "code": "other",
+   "note": "Here all summer for your"
+  },
+  {
+   "line": 19,
+   "code": "other",
+   "note": "favourite new dishes,"
+  },
+  {
+   "line": 20,
+   "code": "other",
+   "note": "patio ready cocktails and"
+  },
+  {
+   "line": 21,
+   "code": "other",
+   "note": "twice daily happy hours!"
+  },
+  {
+   "line": 22,
+   "code": "other",
+   "note": "Earls Southcentre"
+  },
+  {
+   "line": 23,
+   "code": "other",
+   "note": "GST# [redacted]"
+  },
+  {
+   "line": 24,
+   "code": "other",
+   "note": "Transaction ID 13850201"
+  },
+  {
+   "line": 26,
+   "code": "other",
+   "note": "Tip 25.89"
+  },
+  {
+   "line": 27,
+   "code": "other",
+   "note": "MASTERCARD (1446) 169.74"
+  }
+ ]
+}
