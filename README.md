@@ -9,6 +9,21 @@ the input, so **a non-source value is a test failure, not a matter of trust**.
 Who does this by hand today: bookkeepers, admins, freelancers, and small-business owners turning a
 pile of receipts into an expense report at month end.
 
+## Start here (three-minute proof)
+
+If you are judging this, read **[`PROOF.md`](PROOF.md)** first — it is the cold walk: the one-page
+contract, one command that shows every real output tracing clean and every planted invention failing,
+one worked real receipt, and the full attack surface. Two commands are the whole proof:
+
+```
+node verify/check.mjs            # every output traces clean; all 68 planted inventions fail through their gate
+node verify/check.mjs --matrix   # the same result as a one-screen verdict
+```
+
+Every deliberately-wrong output lives in `verify/fixtures/fail_*.json`, grouped by how someone would
+cheat in [`verify/fixtures/THREAT-MODEL.md`](verify/fixtures/THREAT-MODEL.md). If any invention ever
+passed, the run goes red.
+
 ## Quick start
 
 1. Create a Claude project and add this folder to it (or paste `identity.md`, `rules.md`, and
