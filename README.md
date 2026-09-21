@@ -56,10 +56,9 @@ layouts it deliberately refuses, are in `reference/expense-report/input-grammar.
   accepted; the checker bounds this to declaration / monetary / bare-code lines but cannot prove the
   declaration governs this particular receipt. Verify it by eye.
 - **The checker audits the output, not the model.** It proves the emitted record against the input it
-  cites; the model's obedience to the rules is shown by the recorded runs in `RESULTS.md` and
-  `docs/DESIGN.md` (a cold run, a no-folder control run, and live model runs on unseen receipts, wired
-  into the checked suite as `verify/outputs/model-run-*.json`), with a recorded human walk to be added
-  under `receipts/human-walk/`.
+  cites; that the model itself obeys the rules is shown by the live model runs on unseen receipts (the
+  model-in-the-loop corpus), committed as `verify/outputs/model-run-*.json` and traced by the same
+  checker. A recorded human walk is a planned addition under `receipts/human-walk/`.
 
 ## The structural envelope (nothing hides here)
 

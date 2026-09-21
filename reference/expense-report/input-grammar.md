@@ -78,6 +78,6 @@ the one common layout the same-line rule does not yet cover. Do not work around 
 
 `verify/check.mjs` validates the OUTPUT artifact against the input it cites: shape, span-and-kind trace,
 coverage (nothing dropped), block isolation. It does not execute the model; the rules the model follows
-are prose, and the live evidence for the model obeying them is the recorded runs in `RESULTS.md` and
-`docs/DESIGN.md` (a cold run, a no-folder control run, and live model runs on unseen receipts checked
-in `verify/outputs/model-run-*.json`); a recorded human walk will be added under `receipts/human-walk/`.
+are prose, and the live evidence for the model obeying them is the live model runs on unseen receipts
+(the model-in-the-loop corpus) checked in `verify/outputs/model-run-*.json`. A recorded human walk will
+be added under `receipts/human-walk/`.
