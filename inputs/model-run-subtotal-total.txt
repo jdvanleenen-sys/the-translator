@@ -1,0 +1,7 @@
+Ace Hardware
+04/15/2026
+Hammer 18.00
+Nails 6.99
+Subtotal 24.99
+Total 26.24
+VISA 26.24

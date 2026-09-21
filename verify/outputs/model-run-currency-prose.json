@@ -1,0 +1,53 @@
+{
+  "conversion": "expense-report",
+  "source_file": "inputs/model-run-currency-prose.txt",
+  "lines": [
+    {
+      "line_no": 1,
+      "date": {
+        "value": "March 3",
+        "cite": [
+          2
+        ]
+      },
+      "vendor": {
+        "value": "Blue Bottle Coffee",
+        "cite": [
+          1
+        ]
+      },
+      "amount": {
+        "value": "5.50",
+        "cite": [
+          4
+        ]
+      },
+      "currency": {
+        "value": "not in source"
+      },
+      "category": {
+        "value": "not in source"
+      },
+      "tax": {
+        "value": "not in source"
+      }
+    }
+  ],
+  "unmapped_input_lines": [
+    {
+      "line": 3,
+      "code": "line_item",
+      "note": "Latte 5.50"
+    },
+    {
+      "line": 5,
+      "code": "other",
+      "note": "All transactions processed in USD"
+    },
+    {
+      "line": 6,
+      "code": "greeting_footer",
+      "note": "Thank you"
+    }
+  ]
+}

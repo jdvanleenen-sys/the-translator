@@ -1,0 +1,58 @@
+{
+  "conversion": "expense-report",
+  "source_file": "inputs/model-run-subtotal-total.txt",
+  "lines": [
+    {
+      "line_no": 1,
+      "date": {
+        "value": "04/15/2026",
+        "cite": [
+          2
+        ]
+      },
+      "vendor": {
+        "value": "Ace Hardware",
+        "cite": [
+          1
+        ]
+      },
+      "amount": {
+        "value": "26.24",
+        "cite": [
+          6
+        ]
+      },
+      "currency": {
+        "value": "not in source"
+      },
+      "category": {
+        "value": "not in source"
+      },
+      "tax": {
+        "value": "not in source"
+      }
+    }
+  ],
+  "unmapped_input_lines": [
+    {
+      "line": 3,
+      "code": "line_item",
+      "note": "Hammer 18.00"
+    },
+    {
+      "line": 4,
+      "code": "line_item",
+      "note": "Nails 6.99"
+    },
+    {
+      "line": 5,
+      "code": "subtotal",
+      "note": "Subtotal 24.99"
+    },
+    {
+      "line": 7,
+      "code": "payment_method",
+      "note": "VISA 26.24"
+    }
+  ]
+}

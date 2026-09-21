@@ -48,7 +48,9 @@ the label and the value are tolerated (`Grand Total: $40.00`, `GST included 0.42
 **Stated limit - cross-line labels.** When a label is on one line and its value on the next
 (`AMOUNT DUE` / `47.83`), the translator does **not** stitch them together; that total is reported
 `not in source`. This is a deliberate, fidelity-safe refusal (a refusal is not an invention), and it is
-the one common layout the same-line rule does not yet cover. Do not work around it by guessing.
+the one common layout the same-line rule does not yet cover. Do not work around it by guessing. The
+orphaned value line still exists, so it goes to `unmapped_input_lines` - refusing to bind it is not a
+reason to drop it (coverage still requires every line be cited or unmapped).
 
 ## Totals, taxes, currency, dates - the disambiguation rules
 

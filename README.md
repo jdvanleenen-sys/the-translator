@@ -94,9 +94,11 @@ order, reason codes, per-field constraints), `field-definitions.md`, and `format
   claim; the guarantee begins at the text. This is why the committed `inputs/*.txt` are readable
   transcriptions.
 - **The checker audits the output, not the model.** It proves the emitted record against the input it
-  cites; that the model itself obeys the rules is shown by live runs on unseen receipts
-  (`verify/outputs/model-run-*.json`), traced by the same checker. A recorded human walk is a planned
-  addition under `receipts/human-walk/`.
+  cites. That the model *itself* obeys the rules is shown by live runs on unseen adversarial receipts
+  across models (Haiku, Sonnet, Opus) — currency-declared-in-prose, cross-line totals, subtotal-vs-total,
+  ambiguous totals, foreign VAT, a card-expiry-vs-date trap — each traced clean by the same checker
+  (`verify/outputs/model-run-*.json`). A recorded human walk is a planned addition under
+  `receipts/human-walk/`.
 - **Cross-line labels.** A total whose label is on one line and value on the next (`AMOUNT DUE` /
   `47.83`) is reported `not in source`, not stitched — a fidelity-safe refusal, never an invention.
 - **Vendor header assumption.** `vendor` must equal the block's first line verbatim, which blocks a

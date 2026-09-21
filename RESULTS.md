@@ -854,3 +854,30 @@ leading minus, which is handled). A fresh `git clone` from GitHub runs green (th
 
 23 valid outputs (2 real photographed receipts + diverse real-world formats: UK VAT, Nordic kr, columnar
 HST, hotel folio, space/apostrophe thousands), 92 fixtures. Four attack classes closed; no fifth found.
+
+## v35 - model-compliance pass: the folder, not just the checker (COMP #13 re-grade)
+
+A re-grade against the actual COMP #13 brief (a separate session with the brief in hand) confirmed every
+requirement met and named the one real exposure precisely: the judged artifact is the MODEL reading the
+folder, then traced by hand - the checker validates a given output but is not itself in the judging path.
+Prior model-compliance evidence was thin (two model-run files). Closed it directly.
+
+Ran the actual folder (identity.md + rules.md + reference/ + examples.md, nothing else) across Haiku,
+Sonnet, and Opus on six adversarial UNSEEN receipts, each aimed at an invention temptation: currency
+declared only in prose, subtotal-vs-total with computed-tax bait, a cross-line label (AMOUNT DUE / value
+on the next line), foreign TVA + a tip-inclusive total, two ambiguous totals, and a printed category
+beside a card-expiry date. Result: 6/6 no invention - not one model laundered a currency, stitched a
+cross-line total, computed a tax, inferred a category, added a year, took a tip-inclusive total, or picked
+an ambiguous total. The weak model (Haiku) held on the subtle traps - the "structure carries it, not the
+brain" proof.
+
+One slip, and not an invention: Haiku refused the cross-line total correctly but dropped the orphaned
+value line ("12.00") from unmapped - a Prop-3 coverage miss. Root cause: rules.md told the model to refuse
+the binding but not that the leftover value line still must be disclosed. Fixed the prose - rules.md
+(law 3, "Never drop") and input-grammar.md (the cross-line limit) now state that a refused value's line
+still goes to unmapped. Two Haiku retests on cross-line variants then passed with the orphan disclosed:
+converged.
+
+The six clean runs are committed as model-compliance evidence (inputs/model-run-*.txt +
+verify/outputs/model-run-*.json), traced by the same checker, expanding the model-in-the-loop corpus from
+2 to 8 across three models. 30 outputs, 92 fixtures; suite green; fresh-clone green; CI green.

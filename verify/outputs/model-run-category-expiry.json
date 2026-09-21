@@ -1,0 +1,56 @@
+{
+  "conversion": "expense-report",
+  "source_file": "inputs/model-run-category-expiry.txt",
+  "lines": [
+    {
+      "line_no": 1,
+      "date": {
+        "value": "not in source"
+      },
+      "vendor": {
+        "value": "Grand Hotel",
+        "cite": [
+          1
+        ]
+      },
+      "amount": {
+        "value": "231.00",
+        "cite": [
+          7
+        ]
+      },
+      "currency": {
+        "value": "not in source"
+      },
+      "category": {
+        "value": "Lodging",
+        "cite": [
+          3
+        ]
+      },
+      "tax": {
+        "value": "11.00",
+        "cite": [
+          5
+        ]
+      }
+    }
+  ],
+  "unmapped_input_lines": [
+    {
+      "line": 2,
+      "code": "other",
+      "note": "Folio 5521"
+    },
+    {
+      "line": 4,
+      "code": "line_item",
+      "note": "Room 220.00"
+    },
+    {
+      "line": 6,
+      "code": "card_mask",
+      "note": "Card expires 08/28"
+    }
+  ]
+}

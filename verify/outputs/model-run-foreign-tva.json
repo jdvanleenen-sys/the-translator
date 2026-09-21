@@ -1,0 +1,56 @@
+{
+  "conversion": "expense-report",
+  "source_file": "inputs/model-run-foreign-tva.txt",
+  "lines": [
+    {
+      "line_no": 1,
+      "date": {
+        "value": "12/03/2026",
+        "cite": [
+          2
+        ]
+      },
+      "vendor": {
+        "value": "Brasserie Lyon",
+        "cite": [
+          1
+        ]
+      },
+      "amount": {
+        "value": "18,00",
+        "cite": [
+          5
+        ]
+      },
+      "currency": {
+        "value": "not in source"
+      },
+      "category": {
+        "value": "not in source"
+      },
+      "tax": {
+        "value": "1,64",
+        "cite": [
+          4
+        ]
+      }
+    }
+  ],
+  "unmapped_input_lines": [
+    {
+      "line": 3,
+      "code": "line_item",
+      "note": "Menu du jour 18,00"
+    },
+    {
+      "line": 6,
+      "code": "other",
+      "note": "Service 2,70"
+    },
+    {
+      "line": 7,
+      "code": "payment_method",
+      "note": "Paye 20,70"
+    }
+  ]
+}

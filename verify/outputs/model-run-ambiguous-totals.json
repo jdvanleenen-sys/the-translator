@@ -1,0 +1,55 @@
+{
+  "conversion": "expense-report",
+  "source_file": "inputs/model-run-ambiguous-totals.txt",
+  "lines": [
+    {
+      "line_no": 1,
+      "date": {
+        "value": "Mar 5",
+        "cite": [
+          2
+        ]
+      },
+      "vendor": {
+        "value": "Popup Market",
+        "cite": [
+          1
+        ]
+      },
+      "amount": {
+        "value": "not in source"
+      },
+      "currency": {
+        "value": "not in source"
+      },
+      "category": {
+        "value": "not in source"
+      },
+      "tax": {
+        "value": "not in source"
+      }
+    }
+  ],
+  "unmapped_input_lines": [
+    {
+      "line": 3,
+      "code": "line_item",
+      "note": "Item 10.00"
+    },
+    {
+      "line": 4,
+      "code": "line_item",
+      "note": "Item 12.00"
+    },
+    {
+      "line": 5,
+      "code": "other",
+      "note": "Total 10.00"
+    },
+    {
+      "line": 6,
+      "code": "other",
+      "note": "Total 12.00"
+    }
+  ]
+}

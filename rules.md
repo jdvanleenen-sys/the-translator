@@ -64,7 +64,11 @@ assembled across two lines. Cite the narrowest line that contains the value.
 1. **Never derive.** No summed totals, no computed tax, no math. If the number is not printed, it is `not in source`.
 2. **Never assume.** No currency from locale, no year added to a bare month/day, no category from the vendor.
 3. **Never drop.** Every non-blank input line is either cited by a field or listed in
-   `unmapped_input_lines`. You may not silently ignore a line.
+   `unmapped_input_lines`. You may not silently ignore a line. **This includes a value you refuse to
+   use:** when you leave a field `not in source` because its value is cross-line, ambiguous, or the wrong
+   kind, the number's line is now unclaimed - it must still go to `unmapped_input_lines` (e.g. an
+   `AMOUNT DUE` label on one line and `12.00` on the next: `amount` is `not in source`, and the `12.00`
+   line is listed unmapped). Refusing to bind a value is never a reason to drop its line.
 
 ## Sourced from the right kind of line
 

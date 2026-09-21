@@ -1,0 +1,50 @@
+{
+  "conversion": "expense-report",
+  "source_file": "inputs/model-run-crossline-orphan.txt",
+  "lines": [
+    {
+      "line_no": 1,
+      "date": {
+        "value": "2026-03-04",
+        "cite": [
+          2
+        ]
+      },
+      "vendor": {
+        "value": "City Parking",
+        "cite": [
+          1
+        ]
+      },
+      "amount": {
+        "value": "not in source"
+      },
+      "currency": {
+        "value": "not in source"
+      },
+      "category": {
+        "value": "not in source"
+      },
+      "tax": {
+        "value": "not in source"
+      }
+    }
+  ],
+  "unmapped_input_lines": [
+    {
+      "line": 3,
+      "code": "other",
+      "note": "AMOUNT DUE"
+    },
+    {
+      "line": 4,
+      "code": "other",
+      "note": "12.00"
+    },
+    {
+      "line": 5,
+      "code": "payment_method",
+      "note": "Paid"
+    }
+  ]
+}
