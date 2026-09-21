@@ -1,0 +1,39 @@
+{
+  "conversion": "expense-report",
+  "source_file": "inputs/receipts-firehouse.txt",
+  "lines": [
+    {
+      "line_no": 1,
+      "date": {"value":"20-Sept-2026","cite":[13]},
+      "vendor": {"value":"Langdon Firehouse Bar &","cite":[1]},
+      "amount": {"value":"33.98","cite":[8]},
+      "currency": {"value":"CA$","cite":[8]},
+      "category": {"value":"not in source"},
+      "tax": {"value":"not in source"}
+    }
+  ],
+  "unmapped_input_lines": [
+    {"line":2,"code":"location","note":"716 CENTRE ST N"},
+    {"line":3,"code":"location","note":"LANGDON, AB T0J 1X1"},
+    {"line":4,"code":"other","note":"587 555 0199"},
+    {"line":5,"code":"other","note":"WWW.LANGDONFIREHOUSE.COM"},
+    {"line":6,"code":"other","note":"Cashier: Jana"},
+    {"line":7,"code":"other","note":"Transaction 300000"},
+    {"line":9,"code":"other","note":"Tip CA$10.19"},
+    {"line":10,"code":"payment_method","note":"CREDIT CARD SALE"},
+    {"line":11,"code":"payment_method","note":"VISA 0000 CA$44.17"},
+    {"line":12,"code":"greeting_footer","note":"Retain this copy for statement validation"},
+    {"line":14,"code":"payment_method","note":"CA$44.17 | Method:"},
+    {"line":15,"code":"payment_method","note":"CONTACTLESS"},
+    {"line":16,"code":"payment_method","note":"VISA CREDIT"},
+    {"line":17,"code":"card_mask","note":"XXXXXXXXXXXX0000"},
+    {"line":18,"code":"other","note":"Reference ID: 600000000000"},
+    {"line":19,"code":"other","note":"Auth ID: 000000"},
+    {"line":20,"code":"other","note":"MID: *******0000"},
+    {"line":21,"code":"other","note":"AID: A0000000031010"},
+    {"line":22,"code":"other","note":"AthNtwkNm: VISA"},
+    {"line":23,"code":"greeting_footer","note":"NO CARDHOLDER VERIFICATION"},
+    {"line":24,"code":"other","note":"Online: https://clover.com/p"},
+    {"line":25,"code":"other","note":"Clover ID: XXXXXXXXXXXX"}
+  ]
+}

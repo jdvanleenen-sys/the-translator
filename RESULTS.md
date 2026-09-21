@@ -766,3 +766,36 @@ adversarially-constructed novel modifier, which is what this red-team does, not 
 inverting-modifier sets are now enumerated for the realistic cases across total, tax, and date.
 
 17 valid outputs, 87 fixtures. Canonical `node verify/check.mjs` green; fresh-clone green.
+
+## v32 - two real photographed receipts + R12: CA$ currency, and the R11 numeric regression (adversary R12 + real receipts)
+
+Jeff supplied two real photographed receipts overnight. One (a Mobil gas slip) was already in the corpus.
+The other (a Langdon Firehouse bar card slip) surfaced a genuine plausibility-5 bug and is now shipped
+pseudonymized as `inputs/receipts-firehouse.txt` (+ output). Two things came together this round.
+
+REAL-RECEIPT BUG - the CA$ currency symbol. The Firehouse total prints `Total CA$33.98`. The checker
+rejected BOTH the amount and the currency: `CA$` is `CA` + `$`, and `stripLabelTail` stripped the `$` but
+left `CA`, so `endsWithLabel("total ca")` did not match the total label - a real Canadian receipt failed
+outright. Fix: `stripLabelTail` now strips a currency symbol with an optional country prefix
+(`CA$`/`US$`/`C$`/`R$`, and plain `$`) before the generic punctuation strip, so `Total CA$33.98` binds
+`33.98` to `total` and `CA$` is the currency. The Firehouse output also demonstrates the total-vs-charged
+distinction on a real slip: amount is `Total CA$33.98`, while `CA$44.17` (total + tip) is disclosed as
+payment, not taken as the amount (verified: reporting 44.17 fails [trace]).
+
+R12 (soundness HELD at plausibility 3+) but caught that the R11 `joinDigitGroups` fix introduced a
+plausibility-4 FALSE POSITIVE: it fused a columnar tax line when the tax was >= $100
+(`HST 900.00 117.00` -> `0 117` -> `0117`), rejecting a correct normal receipt. This is the worse failure
+direction (rejecting a valid conversion). Fix: `joinDigitGroups` now (a) only joins a `<digit>
+<exactly-3-digits>` run not followed by a digit, and (b) uses a `(?<![.,]\d*)` lookbehind so the left
+digit may not be the fraction of a decimal - so `900.00 117.00` is never fused while `1 234,56` still is.
+It is now applied in the guard scanners (`governedValues`, `labelGovernsAValue`) as well as the accept
+path, closing the accept-vs-guard drift R12 also flagged (two distinct space-grouped totals are now
+correctly ambiguous). Columnar tax >= $100 is locked by `outputs/columnar-hst.json`. Also broadened the
+date-modifier separator to `[\s.\-]*` so `Exp. Date` (dot) is denied like `Expiry Date`.
+
+Remaining sub-3 residue from R12 (Statement/Closing Date collisions, plausibility 2) left as-is: denying
+those risks over-denying legitimate statement/invoice dates, and they do not appear on photographed
+point-of-sale receipts.
+
+19 valid outputs (incl. 2 real photographed receipts: Mobil, Firehouse), 88 fixtures. Canonical
+`node verify/check.mjs` green; fresh-clone green.

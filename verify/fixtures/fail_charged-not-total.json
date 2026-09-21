@@ -1,0 +1,4 @@
+{ "_fixture": "The transaction total is 'Total CA$33.98'; 'VISA 0000 CA$44.17' is the amount CHARGED to the card (total + tip), not the transaction total. This output reports amount = 44.17 (the charged figure). A tender/charged line is not the total (no total label governs it). Also exercises the CA$ country-prefixed currency symbol on a real Canadian receipt shape. Must fail [trace].", "_expect_gate": "trace",
+  "conversion": "expense-report", "source_file": "verify/fixtures/sample-receipt-cadollar.txt",
+  "lines": [{"line_no":1,"date":{"value":"not in source"},"vendor":{"value":"Cafe Bar &","cite":[1]},"amount":{"value":"44.17","cite":[3]},"currency":{"value":"CA$","cite":[3]},"category":{"value":"not in source"},"tax":{"value":"not in source"}}],
+  "unmapped_input_lines": [{"line":2,"code":"other","note":"Total CA$33.98"}] }

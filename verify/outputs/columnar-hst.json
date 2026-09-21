@@ -1,0 +1,16 @@
+{
+  "conversion": "expense-report",
+  "source_file": "verify/fixtures/sample-receipt-columnar-hst.txt",
+  "lines": [
+    {
+      "line_no": 1,
+      "date": {"value":"Jan 5","cite":[2]},
+      "vendor": {"value":"Ontario Furniture","cite":[1]},
+      "amount": {"value":"1017.00","cite":[4]},
+      "currency": {"value":"not in source"},
+      "category": {"value":"not in source"},
+      "tax": {"value":"117.00","cite":[3]}
+    }
+  ],
+  "unmapped_input_lines": []
+}

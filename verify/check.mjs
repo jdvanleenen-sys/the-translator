@@ -71,10 +71,13 @@ const BOUNDARY = { numeric: /[0-9.,/\-]/, alpha: /[a-z]/ };
 // Join digit groups separated by a single space (a thousands separator: "1 234,56" -> "1234,56") so a
 // space-grouped number is ONE token. Without this, space is not a token-continuation char, so the leading
 // group ("1") reads as a complete value and a space-thousands total ("Total 1 234,56") silently truncates
-// to "1". Columnar money ("GST 27.98 1.40" - two separate numbers) is untouched: the join fires only on a
-// <digit> <exactly-3-digits> run not followed by another digit, which a separate number's decimal part
-// ("1.40") is not. Applied to both the value and the line before numeric matching so accept and reject agree.
-const joinDigitGroups = (s) => { let p; do { p = s; s = s.replace(/(\d) (\d{3})(?!\d)/g, '$1$2'); } while (s !== p); return s; };
+// to "1". Two guards keep it from corrupting a columnar money line ("GST 27.98 1.40", tax >= $100 like
+// "HST 900.00 117.00"): the right group must be EXACTLY 3 digits not followed by a digit (a separate
+// number's decimal part is not), and (?<![.,]\d*) means the left digit must NOT be the fraction of a
+// decimal - so the "0 117" inside "900.00 117.00" is never joined, while "1 234,56" (left "1" is a bare
+// integer) still is. Applied on both value and line in occursOnLine, and in the guard scanners, so the
+// accept path and the ambiguity/drop guards never drift on space-grouped numbers.
+const joinDigitGroups = (s) => { let p; do { p = s; s = s.replace(/(?<![.,]\d*)(\d) (\d{3})(?!\d)/g, '$1$2'); } while (s !== p); return s; };
 function occursOnLine(lineNorm, valNorm, boundaryRe) {
   if (valNorm === '') return false;
   if (!boundaryRe) return lineNorm.includes(valNorm);
@@ -110,6 +113,7 @@ function stripLabelTail(seg, opts = {}) {
     prev = s;
     s = s.replace(/\s+$/, '');
     s = s.replace(/\([^()]*\)$/, '');                                   // a trailing complete (parenthetical)
+    s = s.replace(/(^|[^a-z0-9])(ca|us|au|nz|hk|sg|mx|c|a|r)?[$€£¥₹]$/, '$1'); // a currency symbol with an optional country prefix (CA$, US$, C$, R$) - "$" alone strips too
     s = s.replace(/[:$€£¥₹.,\-]+$/u, '');                               // trailing punctuation / currency symbols
     s = s.replace(new RegExp('(^|[^a-z0-9])(' + CUR_CODES + ')$'), '$1'); // a trailing currency code
     s = s.replace(/(^|[^a-z0-9])(included|inclusive|incl|today|now)$/, '$1'); // a trailing modifier so "GST included 0.42" / "Balance Due Today 35.00" bind to the label
@@ -133,7 +137,7 @@ function stripLabelTail(seg, opts = {}) {
 const collapseModifier = (seg) => seg
   .replace(/(^|[^a-z0-9])(sub|item|line|running|tax)[\s-]*(total)$/, '$1$2$3')
   .replace(/(^|[^a-z0-9])(pre|post|after)[\s-]*(tax)$/, '$1$2$3')
-  .replace(/(^|[^a-z0-9])(expiry|expiration|exp|due|ship|shipped|shipping|delivery|delivered|valid|before|by|thru|through|until)[\s-]*(date)$/, '$1$2$3');
+  .replace(/(^|[^a-z0-9])(expiry|expiration|exp|due|ship|shipped|shipping|delivery|delivered|valid|before|by|thru|through|until)[\s.\-]*(date)$/, '$1$2$3');
 const endsWithLabel = (seg, labels) => { const s = collapseModifier(seg); return labels.some((kw) => kw && kw.trim() && new RegExp('(^|[^a-z0-9])' + esc(kw) + '$').test(s)); };
 // Positional binding: the value is valid only if a required label GOVERNS it - i.e. the label sits
 // immediately to the value's left. This is what "Total Distance 12.40" fails and "Total 41.90" passes:
@@ -515,6 +519,7 @@ function currencySourceCheck(out, schema, inputLines, errs) {
 // guards can never drift from what the accept path binds across the label-to-value tail (currency
 // codes/symbols, rates, modifiers, parentheticals). This closes the accept-vs-guard asymmetry at root.
 function labelGovernsAValue(lineNorm, labels, numeric) {
+  if (numeric) lineNorm = joinDigitGroups(lineNorm); // align with the accept path on space-grouped numbers
   const scan = numeric ? /-?\d[\d.,]*/g : /[a-z0-9]+/g;
   for (const m of lineNorm.matchAll(scan)) {
     if (numeric && lineNorm.slice(m.index + m[0].length).replace(/^\s*/, '').startsWith('%')) continue; // a rate, not a value
@@ -524,6 +529,7 @@ function labelGovernsAValue(lineNorm, labels, numeric) {
   return false;
 }
 function governedValues(lineNorm, labels) {
+  lineNorm = joinDigitGroups(lineNorm); // align with the accept path so ambiguity/drop guards see one grouped number
   const vals = [];
   for (const m of lineNorm.matchAll(/-?\d[\d.,]*/g)) {
     const num = m[0];
