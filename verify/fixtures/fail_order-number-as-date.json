@@ -1,0 +1,4 @@
+{ "_fixture": "'Order 11/12' is an order number/position, not a transaction date. 'order' is no longer a date label, so a date-shaped token after it does not bind; the output treats 11/12 as the date; must fail [trace]. Regression guard for the over-broad 'order' date_context label.", "_expect_gate": "trace",
+  "conversion": "expense-report", "source_file": "verify/fixtures/sample-receipt-order-not-date.txt",
+  "lines": [{"line_no":1,"date":{"value":"11/12","cite":[2]},"vendor":{"value":"Shop","cite":[1]},"amount":{"value":"8.00","cite":[3]},"currency":{"value":"not in source"},"category":{"value":"not in source"},"tax":{"value":"not in source"}}],
+  "unmapped_input_lines": [] }

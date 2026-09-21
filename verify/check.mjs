@@ -427,7 +427,11 @@ function currencyBindingCheck(out, schema, inputLines, errs) {
 // amount, a currency DECLARATION / monetary line (prices/amounts/total/tax/... in X), or a bare
 // currency line. This stops a currency laundered from unrelated ad copy ("Ask about our USD travel
 // card") while still allowing the legitimate remote declaration ("All prices in JPY").
-const CUR_DECL = /\b(currency|prices?|amounts?|totals?|subtotals?|tax|gst|hst|pst|qst|vat|duty|balance|due|payable|paid|charged|billed|grand|denominated|funds)\b/;
+// Only money-specific declaration anchors. Polysemous words (grand, paid, due, balance, duty, funds,
+// charged, billed, payable) were removed: they occur in ordinary prose ("grand opening ... win 500 EUR")
+// and let a currency be laundered from a non-monetary line. A currency adjacent to the amount, or on a
+// genuine declaration/total/tax line, still binds; a stray code in ad copy no longer does.
+const CUR_DECL = /\b(currency|prices?|amounts?|totals?|subtotals?|tax|gst|hst|pst|qst|vat|denominated)\b/;
 const CUR_STRIP = /[$€£¥₹]|\b(usd|cad|eur|gbp|aud|jpy|chf|cny|inr|mxn|nzd|sek|nok|dkk|zar|brl|rub|hkd|sgd)\b/g;
 function currencySourceCheck(out, schema, inputLines, errs) {
   const marker = schema.not_in_source_marker;

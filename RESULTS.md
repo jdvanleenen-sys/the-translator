@@ -574,3 +574,26 @@ Correction, again: "structurally immune" was wrong through rounds 1-3; this clas
 closed at the source (one shared governance routine), pending a clean adversary round to confirm.
 
 13 valid outputs, 73 fixtures. Suite green; fresh-clone green.
+
+## Adversary round 4: tail class HELD, new surface (currency laundering) - 2026-09-20 (v24)
+
+Round 4 confirmed the tail/total class is now clean (the root fix holds; no residual asymmetry survives),
+then broke a DIFFERENT surface:
+
+- **Currency laundered from prose (fixed).** `CUR_DECL` (the "this line declares the currency" fallback)
+  included polysemous words - `grand`, `paid`, `due`, `balance`, `duty`, `funds`, `charged`, `billed`,
+  `payable` - that occur in ordinary prose. `Grand opening raffle this week: win 500 EUR` was accepted as
+  the transaction currency because `\bgrand\b` matched "grand opening", even though the receipt's only
+  total was a bare `$12.50`. That is an invented transaction currency. Fix: `CUR_DECL` now keeps only
+  money-specific anchors (`currency`, `prices`, `amounts`, `totals`, `subtotals`, `tax`/`gst`/.../`vat`,
+  `denominated`); a currency still binds when adjacent to the amount or on a genuine declaration/total/tax
+  line, but not from ad copy. Legit `All prices in USD` still passes. Locked by `fail_currency-prose-launder`.
+- **Over-broad `order` date label (tightened).** `Order 11/12` (an order number/position) was read as the
+  date because `order` was a `date_context` label. Removed `order` from `date_context` (a real "Order
+  date" still binds via `date`). Locked by `fail_order-number-as-date`.
+
+Surfaces probed and HELD round 4: the trace gate (truncation, cross-line assembly, over-citation), vendor
+header verbatim, coverage drop, duplicate/stray keys, block isolation, currency adjacency binding, the
+currency drop guard. No false positives from the guard rewrite.
+
+13 valid outputs, 75 fixtures. Suite green; fresh-clone green.

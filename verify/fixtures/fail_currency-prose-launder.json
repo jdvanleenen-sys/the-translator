@@ -1,0 +1,4 @@
+{ "_fixture": "A currency code sitting in non-monetary prose ('Grand opening raffle this week: win 500 EUR') is not the transaction currency. The output launders EUR into the currency field. The receipt states no transaction currency (a bare $12.50 total); must fail [trace] (currency not adjacent to the amount, not on a genuine declaration line). Regression guard: CUR_DECL must not match polysemous prose words like 'grand'.", "_expect_gate": "trace",
+  "conversion": "expense-report", "source_file": "verify/fixtures/sample-receipt-prose-currency.txt",
+  "lines": [{"line_no":1,"date":{"value":"Jan 22","cite":[2]},"vendor":{"value":"Joe Diner","cite":[1]},"amount":{"value":"12.50","cite":[3]},"currency":{"value":"EUR","cite":[4]},"category":{"value":"not in source"},"tax":{"value":"not in source"}}],
+  "unmapped_input_lines": [] }
