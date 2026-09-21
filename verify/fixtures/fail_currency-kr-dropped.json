@@ -1,0 +1,4 @@
+{ "_fixture": "The total prints 'Total 100,00 kr' - the Scandinavian krona symbol 'kr' is adjacent to the total, so currency is stated and must not be dropped. This output marks currency 'not in source'. Guards the currency-drop check against non-Latin/alpha currency symbols (kr, zl, kc, fr, rm, ...) that the hardcoded [$EUR GBP JPY INR] set missed. Must fail [trace].", "_expect_gate": "trace",
+  "conversion": "expense-report", "source_file": "verify/fixtures/sample-receipt-kr.txt",
+  "lines": [{"line_no":1,"date":{"value":"Jan 5","cite":[2]},"vendor":{"value":"Oslo Kafe","cite":[1]},"amount":{"value":"100,00","cite":[3]},"currency":{"value":"not in source"},"category":{"value":"not in source"},"tax":{"value":"not in source"}}],
+  "unmapped_input_lines": [] }

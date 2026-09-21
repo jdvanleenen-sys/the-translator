@@ -1,0 +1,4 @@
+{ "_fixture": "A truncated model output where 'lines' is a string, not an array (a common partial-JSON shape). The checker must decline gracefully with a [shape] diagnostic, not run the trace pass on a non-array and crash. Guards the malformed-output graceful-failure contract. Must fail [shape].", "_expect_gate": "shape",
+  "conversion": "expense-report", "source_file": "verify/fixtures/sample-receipt-kr.txt",
+  "lines": "truncated",
+  "unmapped_input_lines": [] }

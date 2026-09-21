@@ -56,8 +56,9 @@ Open both files side by side:
 
 Every file in `verify/fixtures/fail_*.json` is a deliberately wrong output — an invented value, a
 mis-citation, a guessed field, a dropped line. Each one **must** fail, and through the specific gate it
-declares (`[shape] [trace] [coverage] [block]`). `verify/fixtures/THREAT-MODEL.md` lists all 68, grouped
-by how someone would cheat. If any planted invention ever passed, `node verify/check.mjs` would go red.
+declares (`[shape] [trace] [coverage] [block]`). `verify/fixtures/THREAT-MODEL.md` groups them by how
+someone would cheat (`node verify/check.mjs --matrix` prints the live count). If any planted invention
+ever passed, `node verify/check.mjs` would go red.
 
 ---
 

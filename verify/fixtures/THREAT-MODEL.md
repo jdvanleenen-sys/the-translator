@@ -10,7 +10,9 @@ Each item below is a `verify/fixtures/fail_<name>.json` output that is deliberat
 (`[shape] [trace] [coverage] [block]`). If any planted invention ever passed, the run goes red. That is
 what makes the guarantee executable rather than asserted.
 
-68 fixtures, grouped by how someone would cheat.
+The fixtures are grouped by how someone would cheat, below. For the live count, run
+`node verify/check.mjs --matrix` (it prints `N/N caught`); fixtures added in later hardening rounds are
+logged in `../../RESULTS.md`. The groups below name the representative cases in each class.
 
 ## 1. Invented value — a value that is nowhere in the receipt  ([trace])
 The core disqualifier: a number, currency, name, or year manufactured from thin air.

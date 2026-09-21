@@ -1,0 +1,16 @@
+{
+  "conversion": "expense-report",
+  "source_file": "verify/fixtures/sample-receipt-ukvat.txt",
+  "lines": [
+    {
+      "line_no": 1,
+      "date": {"value":"14 Mar 2026","cite":[2]},
+      "vendor": {"value":"The Corner Cafe","cite":[1]},
+      "amount": {"value":"7.50","cite":[4]},
+      "currency": {"value":"£","cite":[4]},
+      "category": {"value":"not in source"},
+      "tax": {"value":"1.25","cite":[3]}
+    }
+  ],
+  "unmapped_input_lines": []
+}

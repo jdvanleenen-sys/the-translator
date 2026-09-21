@@ -1,0 +1,4 @@
+{ "_fixture": "A lines[] entry that is a bare number (42), not a line object. The checker must decline gracefully with a [shape] diagnostic, not crash with a raw TypeError from the 'in' operator. Guards the malformed-output graceful-failure contract. Must fail [shape].", "_expect_gate": "shape",
+  "conversion": "expense-report", "source_file": "verify/fixtures/sample-receipt-kr.txt",
+  "lines": [42],
+  "unmapped_input_lines": [] }

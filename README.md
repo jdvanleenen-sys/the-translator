@@ -16,8 +16,8 @@ contract, one command that shows every real output tracing clean and every plant
 one worked real receipt, and the full attack surface. Two commands are the whole proof:
 
 ```
-node verify/check.mjs            # every output traces clean; all 68 planted inventions fail through their gate
-node verify/check.mjs --matrix   # the same result as a one-screen verdict
+node verify/check.mjs            # every output traces clean; every planted invention fails through its gate
+node verify/check.mjs --matrix   # the same result as a one-screen verdict (prints N/N caught)
 ```
 
 Every deliberately-wrong output lives in `verify/fixtures/fail_*.json`, grouped by how someone would

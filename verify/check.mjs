@@ -105,7 +105,7 @@ function labelOnLine(lineNorm, kw) {
   return new RegExp('(^|[^a-z0-9])' + esc(kw) + '([^a-z0-9]|$)').test(lineNorm);
 }
 
-const CUR_CODES = 'usd|cad|eur|gbp|aud|jpy|chf|cny|inr|mxn|nzd|sek|nok|dkk|zar|brl|rub|hkd|sgd';
+const CUR_CODES = 'usd|cad|eur|gbp|aud|jpy|chf|cny|inr|mxn|nzd|sek|nok|dkk|zar|brl|rub|hkd|sgd|pln|czk|huf|ron|try|ils|aed|sar|thb|myr|krw|idr|php|twd|isk|kr|kn|zl|kc|ft|fr|rm';
 // The label segment is the line text just before the value; strip trailing punctuation, currency
 // symbols, and a trailing currency code so "Total EUR " and "Total: $" both reduce to "total".
 function stripLabelTail(seg, opts = {}) {
@@ -114,11 +114,12 @@ function stripLabelTail(seg, opts = {}) {
     prev = s;
     s = s.replace(/\s+$/, '');
     s = s.replace(/\([^()]*\)$/, '');                                   // a trailing complete (parenthetical)
-    s = s.replace(/(^|[^a-z0-9])(ca|us|au|nz|hk|sg|mx|c|a|r)?[$€£¥₹]$/, '$1'); // a currency symbol with an optional country prefix (CA$, US$, C$, R$) - "$" alone strips too
-    s = s.replace(/[:$€£¥₹.,\-]+$/u, '');                               // trailing punctuation / currency symbols
+    s = s.replace(/(^|[^a-z0-9])(ca|us|au|nz|hk|sg|mx|c|a|r)?[$€£¥₹₩฿₪₫₴₦₱]$/, '$1'); // a currency symbol with an optional country prefix (CA$, US$, C$, R$) - "$" alone strips too
+    s = s.replace(/[:$€£¥₹₩฿₪₫₴₦₱.,\-]+$/u, '');                        // trailing punctuation / currency symbols
     s = s.replace(new RegExp('(^|[^a-z0-9])(' + CUR_CODES + ')$'), '$1'); // a trailing currency code
     s = s.replace(/(^|[^a-z0-9])(included|inclusive|incl|today|now)$/, '$1'); // a trailing modifier so "GST included 0.42" / "Balance Due Today 35.00" bind to the label
-    s = s.replace(/(^|[^a-z0-9])\d[\d.,]*\s*%$/, '$1');                  // a trailing rate token so "GST 5.00% 11.15" binds the amount to the label, never the rate
+    s = s.replace(/(^|[^a-z0-9])@?\s*\d[\d.,]*\s*%$/, '$1');             // a trailing rate token, optionally with the "@" idiom ("GST 5.00% 11.15", "VAT @ 20% 1.25") - binds the amount to the label, never the rate
+    s = s.replace(/([a-z0-9])@$/, '$1');                                 // a "@" glued to the label ("VAT@20% 1.25" -> after the rate strip, "vat@" -> "vat"); a spaced "@" (Total @ 1:14PM) is left so a time is not read as the total
     if (opts.baseNumber) s = s.replace(/(^|[^a-z0-9])-?\d[\d.,]*$/, '$1'); // a trailing taxable-value/base so a columnar "GST 27.98 1.40" reaches the label
   } while (s !== prev);
   return s.replace(/\s+$/, '');
@@ -194,8 +195,8 @@ function currencyOnTotal(lineNorm, av, curNorm, totalLabels) {
       curAdj = (beforeTrim.endsWith(curNorm) && (beforeTrim.length === curNorm.length || /[^a-z0-9]/.test(beforeTrim[beforeTrim.length - curNorm.length - 1])))
         || (afterTrim.startsWith(curNorm) && (afterTrim.length === curNorm.length || /[^a-z0-9]/.test(afterTrim[curNorm.length])));
     } else {
-      curAdj = /[$€£¥₹]$/.test(beforeTrim) || new RegExp('(^|[^a-z0-9])(' + CUR_CODES + ')$').test(beforeTrim)
-        || /^[$€£¥₹]/.test(afterTrim) || new RegExp('^(' + CUR_CODES + ')([^a-z0-9]|$)').test(afterTrim);
+      curAdj = /[$€£¥₹₩฿₪₫₴₦₱]$/.test(beforeTrim) || new RegExp('(^|[^a-z0-9])(' + CUR_CODES + ')$').test(beforeTrim)
+        || /^[$€£¥₹₩฿₪₫₴₦₱]/.test(afterTrim) || new RegExp('^(' + CUR_CODES + ')([^a-z0-9]|$)').test(afterTrim);
     }
     if (curAdj && endsWithLabel(stripLabelTail(before), totalLabels)) return true;
     idx = lineNorm.indexOf(av, idx + 1);
@@ -279,6 +280,7 @@ function shapeCheck(out, schema, id, errs) {
   const fieldNames = schema.fields.map((f) => f.name);
   out.lines.forEach((line, i) => {
     const where = `line ${i + 1}`;
+    if (typeof line !== 'object' || line === null || Array.isArray(line)) { errs.push(`[shape] ${where}: must be an object, got ${Array.isArray(line) ? 'an array' : JSON.stringify(line)}`); return; }
     for (const f of schema.fields) if (!(f.name in line)) errs.push(`[shape] ${where}: missing field "${f.name}"`);
     for (const k of Object.keys(line)) if (!fieldNames.includes(k)) errs.push(`[shape] ${where}: unexpected key "${k}" - the record shape is fixed to ${fieldNames.join(', ')}`);
     const orderedKeys = Object.keys(line).filter((k) => fieldNames.includes(k));
@@ -441,7 +443,7 @@ function blockCheck(out, schema, inputLines, errs) {
 
 // Currency must not be silently dropped: if it is marked "not in source" yet a currency token sits
 // on a line this record cites, the drop is caught (the disclosed shared-line hole, closed for currency).
-const CURRENCY_TOKEN = /[$€£¥₹]|\b(usd|cad|eur|gbp|aud|jpy|chf|cny|inr|mxn|nzd|sek|nok|dkk|zar|brl|rub|hkd|sgd)\b/;
+const CURRENCY_TOKEN = new RegExp('[$€£¥₹₩฿₪₫₴₦₱]|\\b(' + CUR_CODES + ')\\b');
 function currencyDropCheck(out, schema, inputLines, errs) {
   const marker = schema.not_in_source_marker;
   const af = schema.fields.find((f) => f.name === 'amount');
@@ -678,6 +680,18 @@ function totalPriorityCheck(out, schema, inputLines, errs) {
 function validateOutput(out, schema, id, pinnedInput = null) {
   const errs = [];
   shapeCheck(out, schema, id, errs);
+  // The trace/coverage/block passes below assume out.lines is an array of line OBJECTS and
+  // out.unmapped_input_lines (if present) is an array. If the record is not structurally that - a missing
+  // or non-array lines, a null/non-object line entry, a non-array unmapped - shapeCheck has already
+  // recorded the [shape] error; decline here rather than crash with a raw stack trace (a truncated model
+  // output must fail closed with a diagnostic, per this file's runner contract).
+  const structurallyTraceable = out && typeof out === 'object' && !Array.isArray(out)
+    && Array.isArray(out.lines) && out.lines.every((l) => l && typeof l === 'object' && !Array.isArray(l))
+    && (out.unmapped_input_lines === undefined || Array.isArray(out.unmapped_input_lines));
+  if (!structurallyTraceable) {
+    if (!errs.length) errs.push('[shape] record structure invalid - "lines" must be an array of line objects and "unmapped_input_lines" an array');
+    return errs;
+  }
   let sourceForTrace = out.source_file;
   if (pinnedInput) {
     if (typeof out.source_file !== 'string' || !samePath(out.source_file, pinnedInput)) {
@@ -720,7 +734,9 @@ function main() {
 
   if (fileArgIdx !== -1) {
     const path = process.argv[fileArgIdx + 1];
-    const raw = readFileSync(path, 'utf8');
+    let raw;
+    try { raw = readFileSync(path, 'utf8'); }
+    catch (e) { console.error(`FAIL: ${path}`); console.error(`  - [shape] cannot read output file - ${e.message}`); process.exit(1); }
     const parsed = tryParseJson(raw);
     if (!parsed.ok) { console.error(`FAIL: ${path}`); console.error(`  - ${parsed.msg}`); process.exit(1); }
     const out = parsed.value;
