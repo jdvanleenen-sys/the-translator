@@ -7,10 +7,13 @@ contract: it takes the text of one or more receipts and returns a fixed-shape ex
 record, the same way every time.
 
 - **From:** a text **transcription** of one or more receipts - the lines of the receipt, one item per
-  line, as a scanner (OCR) or a person typing it out produces. Not a free-form prose sentence
-  describing a receipt ("a crumpled receipt, total looks like $84"); that is out of scope, and the
-  fidelity rules will leave most fields `not in source` because a narration has no receipt lines to
-  cite. Feed it the receipt's lines, not a story about the receipt. See `reference/expense-report/input-grammar.md`.
+  line, as a scanner (OCR) or a person typing it out produces. **Or a receipt photo:** in image mode the
+  model first transcribes the photo verbatim into numbered lines and then translates that transcription,
+  showing both - so every value still traces to a citable line and the same checker still proves it (see
+  `reference/expense-report/image-input.md`). Not a free-form prose sentence describing a receipt ("a
+  crumpled receipt, total looks like $84"); that is out of scope, and the fidelity rules will leave most
+  fields `not in source` because a narration has no receipt lines to cite. See
+  `reference/expense-report/input-grammar.md`.
 - **To:** an expense-report record with one line per receipt and seven fixed fields per line
   (`line_no, date, vendor, amount, currency, category, tax`), emitted as JSON with a rendered
   table beneath it.

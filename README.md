@@ -89,10 +89,14 @@ order, reason codes, per-field constraints), `field-definitions.md`, and `format
 
 ## Limits, stated plainly (not hidden)
 
-- **Scope: transcription in, record out.** The input is the receipt's *text* — the lines a scanner or a
-  person typing produces. OCR (photo → text) is a separate, commodity step this tool does not do or
-  claim; the guarantee begins at the text. This is why the committed `inputs/*.txt` are readable
-  transcriptions.
+- **Two inputs: text, or a photo.** The core input is the receipt's *text* — the lines a scanner or a
+  person typing produces (the committed `inputs/*.txt`). A **photo** also works via image mode
+  (`reference/expense-report/image-input.md`): the model transcribes the photo verbatim into numbered
+  lines, then translates that transcription, and **shows both** — so every value still traces to a
+  citable line and the same checker still proves the record. The honest boundary is drawn where a machine
+  can't prove: the *structuring* is proven every time (record ↔ transcription); reading pixels into text
+  (OCR) is the one step shown-not-claimed, so an OCR misread is visible in the transcription, never
+  silent. The tool never claims a value its transcription doesn't contain.
 - **The checker audits the output, not the model.** It proves the emitted record against the input it
   cites. That the model *itself* obeys the rules is shown by live runs on unseen adversarial receipts
   across models (Haiku, Sonnet, Opus) — currency-declared-in-prose, cross-line totals, subtotal-vs-total,

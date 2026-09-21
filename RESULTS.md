@@ -881,3 +881,33 @@ converged.
 The six clean runs are committed as model-compliance evidence (inputs/model-run-*.txt +
 verify/outputs/model-run-*.json), traced by the same checker, expanding the model-in-the-loop corpus from
 2 to 8 across three models. 30 outputs, 92 fixtures; suite green; fresh-clone green; CI green.
+
+## v37 - image (photo) input mode + accented-preamble fix (real-photo test)
+
+Added an IMAGE INPUT MODE so the tool works from a receipt photo without giving up the guarantee, driven
+by the folder (not a hand-written prompt). New contract `reference/expense-report/image-input.md`, wired
+into identity.md, rules.md, README.md. The procedure: given a photo, the model transcribes it VERBATIM
+into numbered lines (an unreadable line is `[illegible]`), then translates that transcription by the same
+rules, and shows both. The transcription is the citable source, so the same checker still proves the
+record traces to a line - unchanged. The honest boundary is drawn where a machine cannot prove: the
+STRUCTURING is proven every time (record <-> transcription); reading pixels into text (OCR) is the one
+step shown-not-claimed, so an OCR misread is visible in the transcription, never silent.
+
+Tested on Jeff's two real photos, folder-driven, across models:
+- Sonnet, Mobil gas slip -> clean checker pass. Read `MOBIL@`, `CAD$`, date `2026-09-19` (not the
+  timestamp) correctly.
+- Opus, Firehouse bar (TWO overlapping slips, one transaction) -> clean pass. Recognized one
+  transaction/one row; the card slip physically occluded the bill's dollar column, and it marked the
+  covered figures `[illegible]` rather than guessing the cents (refusing to invent an occluded value);
+  took the owed `Total CA$33.98` over the tip-inclusive `CA$44.17`; `CA$` currency; refused `tax` (GST
+  amount occluded, GST registration number correctly not used).
+- Haiku, Mobil gas slip -> the checker CAUGHT its OCR errors (it read `CAD` instead of the printed
+  `CAD$`) rather than letting them pass - the shown-transcription boundary working as designed.
+
+The Haiku run also surfaced a real checker bug: a French `RELEVÉ DE` (accented É) was not recognized as a
+preamble decoration (the list held only the unaccented `releve de`), so the checker mistook it for the
+vendor header. The committed pseudonymized Mobil used the unaccented form, which had masked it. Fixed:
+`isPreambleLine` now strips diacritics before matching, so accented preambles are skipped. Verified;
+suite green.
+
+Text-in guarantee unchanged. 24 outputs, 92 fixtures; canonical `node verify/check.mjs` green.

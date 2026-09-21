@@ -125,6 +125,15 @@ Emit the record only after this pass. This is the fail-closed default: when unsu
 also ships a mechanical checker (`verify/check.mjs`) that enforces exactly these rules against the
 output; run it on your result if you can.
 
+## Image input (a receipt photo)
+
+If the input is a photo rather than text, first **transcribe it verbatim** into numbered lines (exactly
+as printed - no correcting, reformatting, reordering, or dropping; an unreadable line is `[illegible]`),
+then translate that transcription by these same rules. Show both the numbered transcription and the
+record; the record cites the transcription's lines, so every value still traces to a line and the same
+checker still proves it. The transcription is the citable source of truth; a value not on it is
+`not in source`. Full procedure and the honest OCR boundary: `reference/expense-report/image-input.md`.
+
 ## When in doubt
 
 Prefer `not in source` over a guess. A correct `not in source` is a feature, not a gap.

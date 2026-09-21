@@ -45,7 +45,9 @@ function isExemptLine(text) { const t = (text || '').trim(); return t === '' || 
 // punctuation) is a known preamble phrase - "Thank You Cafe" is NOT preamble, it is a merchant.
 const PREAMBLE = /^(customer copy|merchant copy|guest copy|guest receipt|customer receipt|gift receipt|return receipt|reprint|duplicate|duplicate receipt|copy|thank you|thanks|welcome|receipt|tax invoice|invoice|sales receipt|itemized receipt|order confirmation|e-receipt|transaction record|releve de transaction|releve de|transaction)$/;
 function isPreambleLine(text) {
-  const t = norm(text).replace(/[^a-z0-9 ]+/g, ' ').replace(/\s+/g, ' ').trim();
+  // Strip diacritics first so an accented preamble (a French "RELEVÉ DE TRANSACTION") is still recognized
+  // as a decoration and skipped, not mistaken for the merchant header.
+  const t = norm(text).normalize('NFD').replace(/[̀-ͯ]/g, '').replace(/[^a-z0-9 ]+/g, ' ').replace(/\s+/g, ' ').trim();
   return t !== '' && PREAMBLE.test(t);
 }
 // The merchant header of a block: the first line that is neither exempt (blank/---) nor a preamble.
