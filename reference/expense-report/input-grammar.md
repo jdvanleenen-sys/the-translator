@@ -63,11 +63,12 @@ the one common layout the same-line rule does not yet cover. Do not work around 
   `Tax-Code | Taxable-Value | Tax-Value`), the tax is the **Tax-Value column** - the last money value the
   label governs (`1.40`) - never the taxable base (`27.98`). A `<rate>%` between the label and the amount
   is skipped (`GST 5.00% 11.15` -> `11.15`).
-- **Currency** must be adjacent to the amount, or come from a currency declaration / monetary line
-  (`All prices in JPY`, `Currency: USD`, a bare code line). A currency lifted from unrelated text (an ad
-  line) is rejected. **Stated limit:** a currency stated only on a remote declaration line is read by a
-  human against that line; the mechanical check bounds it to declaration/monetary/bare lines but cannot
-  prove the declaration governs *this* receipt.
+- **Currency** must be printed **adjacent to the amount value** (`Total CAD 16.42`, `$39.36`). It is the
+  code on the money. **Stated limit (deliberate):** a currency that is only declared remotely
+  (`All prices in JPY` at the top), printed on a different line than the total, or mentioned in prose is
+  reported `not in source`, not attributed. This refuses more than a human would, on purpose: attributing
+  a non-adjacent currency is where currencies get laundered or guessed (a tourist-info `EUR`, one of two
+  declared currencies), so the checker binds currency only to the amount it sits on.
 - **Date** is the transaction date, exactly as printed (never normalized): a bare date line, or one a
   date label governs (`Date`, `DateTime`, `DATE/TIME`, `Invoice`, `Issued`, `Sale`, `Order`, ...). A
   label-governed date outranks a bare footer date, so a receipt that prints the date twice is not

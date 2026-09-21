@@ -63,7 +63,7 @@
       "role": "source",
       "traceable": true,
       "constraints": { "exact_token": true, "token_boundary": "alpha", "no_digits": true },
-      "description": "The currency symbol or code as printed, complete (USD, not US), and never containing digits (it is a symbol/code, not the amount). Never assumed from locale or amount format."
+      "description": "The currency symbol or code printed ADJACENT to the amount value, complete (USD, not US), never containing digits (it is a symbol/code, not the amount). It is the code on the money. A currency declared remotely, printed on a different line than the total, or mentioned in prose is NOT attributed - it is 'not in source'. Never assumed from locale or amount format."
     },
     {
       "name": "category",

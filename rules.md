@@ -45,10 +45,12 @@ assembled across two lines. Cite the narrowest line that contains the value.
   money handed over, not the transaction total - they go to `unmapped_input_lines`, never into `amount`.
   On `Total 84.12` / `Amount Paid 100.00` / `Change 15.88`, the amount is `84.12`. If a receipt shows
   only a tender and a `Balance Due`/`Amount Due`, the amount is that owed total, not the tender.
-- **`currency`** - the symbol or code as printed (`$`, `USD`, `CAD`, `EUR`, `£`). If none is
-  printed, `not in source`. Never assume it. When the total line prints the code and the number
-  together (e.g. `Total CAD 16.42`), `amount` is the numeric portion (`16.42`) and `currency` is the
-  code (`CAD`), each cited to that line.
+- **`currency`** - the symbol or code printed **adjacent to the amount value** (`$`, `USD`, `CAD`,
+  `EUR`, `£`). It is the code on the money: `Total CAD 16.42` gives `amount` `16.42` and `currency`
+  `CAD`, cited to that line. If the amount carries no currency, `not in source` - even if a currency
+  appears elsewhere. A currency declared remotely (`All prices in EUR` at the top), printed on a
+  different line (a subtotal, a card slip for a different figure), or mentioned in prose (`win 500 EUR`)
+  is **not** the transaction currency and is never attributed. Never assume it from locale.
 - **`category`** - filled **only if the receipt literally prints a category on a category-labeled
   line** (e.g. `Category: Lodging`). Otherwise `not in source`. Never infer it from the vendor or
   items. A coffee shop is not automatically "Meals".

@@ -597,3 +597,28 @@ header verbatim, coverage drop, duplicate/stray keys, block isolation, currency 
 currency drop guard. No false positives from the guard rewrite.
 
 13 valid outputs, 75 fixtures. Suite green; fresh-clone green.
+
+## Adversary round 5: currency made strict at the root - 2026-09-20 (v25)
+
+Round 5 confirmed the tail class stays dead, then broke currency twice more - the recurring weak
+subsystem (breaks in R1, R4, R5):
+
+- **Wrong currency (Break A).** `Subtotal USD 47.00 / Total 50.00 / Prices also shown in EUR for tourists`
+  -> the checker accepted `EUR` (from the tourist line) while USD sat on the subtotal. The currency binding
+  only inspected the amount's own line, and the source guard accepted any declaration line.
+- **Unguarded currency ambiguity (Break B).** `Total 80.00 / Prices in USD and EUR` -> it let the output
+  pick either currency; amount and date have ambiguity guards, currency had none.
+
+**Root fix (strict currency).** A filled currency must now be printed **adjacent to the amount value** on
+a cited line. The fuzzy "declaration line" and "bare currency line" acceptances (and the `CUR_DECL` /
+`CUR_STRIP` regexes) are gone; the drop guard mirrors it (a currency may be dropped unless one is adjacent
+to the amount). This closes the whole currency-laundering AND currency-ambiguity class at once: a code
+from prose, a tourist line, the subtotal-not-total, or one of two declared currencies can no longer be
+reported - if the total states no currency, it is `not in source`. All shipped currencies are
+amount-adjacent, so none regressed. Locked by `fail_currency-subtotal-not-amount`, `fail_currency-two-declared`
+(plus the prior currency fixtures). rules.md, input-grammar.md, schema.json updated to the adjacent-only rule.
+
+**Also fixed a self-inflicted hang:** the new adjacency scan (and the pre-existing `currencyAdjacentToAmount`)
+looped forever when the amount value normalized to empty (`indexOf("")` never returns -1). Guarded both.
+
+13 valid outputs, 77 fixtures. Suite green; fresh-clone green.

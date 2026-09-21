@@ -1,0 +1,4 @@
+{ "_fixture": "USD is printed adjacent to the SUBTOTAL (47.00), not the amount/total (50.00). The output reports EUR laundered from a tourist-info line. A currency is the code on the amount; a code elsewhere (subtotal, prose) is not the transaction currency; must fail [trace]. If the total states no currency it is 'not in source'.", "_expect_gate": "trace",
+  "conversion": "expense-report", "source_file": "verify/fixtures/sample-receipt-cur-subtotal.txt",
+  "lines": [{"line_no":1,"date":{"value":"Jan 6","cite":[2]},"vendor":{"value":"Harbor Bistro","cite":[1]},"amount":{"value":"50.00","cite":[4]},"currency":{"value":"EUR","cite":[5]},"category":{"value":"not in source"},"tax":{"value":"not in source"}}],
+  "unmapped_input_lines": [{"line":3,"code":"subtotal","note":"Subtotal USD 47.00"}] }

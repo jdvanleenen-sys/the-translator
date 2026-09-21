@@ -135,6 +135,7 @@ function dateContextOk(lineNorm, valNorm, ctx) {
 // Currency must be immediately adjacent to the amount value (only whitespace between), so a second
 // currency printed elsewhere on the line (USD 20.00 (CAD 27.00)) cannot be paired with the amount.
 function currencyAdjacentToAmount(lineNorm, amountNorm, curNorm) {
+  if (!amountNorm || !curNorm) return false; // indexOf("") never returns -1 -> guard against an empty value
   let idx = lineNorm.indexOf(amountNorm);
   while (idx !== -1) {
     const before = lineNorm.slice(0, idx).replace(/\s+$/, '');
@@ -142,6 +143,20 @@ function currencyAdjacentToAmount(lineNorm, amountNorm, curNorm) {
     const bOk = before.endsWith(curNorm) && (before.length === curNorm.length || /[^a-z0-9]/.test(before[before.length - curNorm.length - 1]));
     const aOk = after.startsWith(curNorm) && (after.length === curNorm.length || /[^a-z0-9]/.test(after[curNorm.length]));
     if (bOk || aOk) return true;
+    idx = lineNorm.indexOf(amountNorm, idx + 1);
+  }
+  return false;
+}
+// Is ANY currency symbol/code printed immediately adjacent to the amount value on this line? Used by the
+// drop guard so the accept and drop rules agree: if a currency sits on the amount, it may not be dropped.
+function currencyAnyAdjacentToAmount(lineNorm, amountNorm) {
+  if (!amountNorm) return false; // indexOf("") never returns -1 -> guard against an empty value
+  let idx = lineNorm.indexOf(amountNorm);
+  while (idx !== -1) {
+    const before = lineNorm.slice(0, idx).replace(/\s+$/, '');
+    const after = lineNorm.slice(idx + amountNorm.length).replace(/^\s+/, '');
+    if (/[$€£¥₹]$/.test(before) || new RegExp('(^|[^a-z0-9])(' + CUR_CODES + ')$').test(before)) return true;
+    if (/^[$€£¥₹]/.test(after) || new RegExp('^(' + CUR_CODES + ')([^a-z0-9]|$)').test(after)) return true;
     idx = lineNorm.indexOf(amountNorm, idx + 1);
   }
   return false;
@@ -389,13 +404,15 @@ const CURRENCY_TOKEN = /[$€£¥₹]|\b(usd|cad|eur|gbp|aud|jpy|chf|cny|inr|mxn
 function currencyDropCheck(out, schema, inputLines, errs) {
   const marker = schema.not_in_source_marker;
   out.lines.forEach((line, i) => {
-    const cur = line.currency;
+    const cur = line.currency, a = line.amount;
     if (!cur || cur.value !== marker) return;
+    if (!a || a.value === marker || !Array.isArray(a.cite)) return; // no amount -> nothing to bind a currency to
+    const av = norm(a.value);
     const cited = new Set();
     for (const f of schema.fields) { const c = line[f.name]; if (c && Array.isArray(c.cite)) for (const n of c.cite) cited.add(n); }
     for (const n of cited) {
-      if (n >= 1 && n <= inputLines.length && CURRENCY_TOKEN.test(norm(inputLines[n - 1]))) {
-        errs.push(`[trace] line ${i + 1}.currency: marked "${marker}" but a currency token appears on cited line ${n} (${JSON.stringify(inputLines[n - 1])}) - a printed currency may not be dropped`);
+      if (n >= 1 && n <= inputLines.length && currencyAnyAdjacentToAmount(norm(inputLines[n - 1]), av)) {
+        errs.push(`[trace] line ${i + 1}.currency: marked "${marker}" but a currency is printed adjacent to the amount ${JSON.stringify(a.value)} on cited line ${n} (${JSON.stringify(inputLines[n - 1])}) - it may not be dropped`);
         break;
       }
     }
@@ -423,30 +440,20 @@ function currencyBindingCheck(out, schema, inputLines, errs) {
   });
 }
 
-// Currency source guard: a filled currency must come from a line that is either adjacent to the
-// amount, a currency DECLARATION / monetary line (prices/amounts/total/tax/... in X), or a bare
-// currency line. This stops a currency laundered from unrelated ad copy ("Ask about our USD travel
-// card") while still allowing the legitimate remote declaration ("All prices in JPY").
-// Only money-specific declaration anchors. Polysemous words (grand, paid, due, balance, duty, funds,
-// charged, billed, payable) were removed: they occur in ordinary prose ("grand opening ... win 500 EUR")
-// and let a currency be laundered from a non-monetary line. A currency adjacent to the amount, or on a
-// genuine declaration/total/tax line, still binds; a stray code in ad copy no longer does.
-const CUR_DECL = /\b(currency|prices?|amounts?|totals?|subtotals?|tax|gst|hst|pst|qst|vat|denominated)\b/;
-const CUR_STRIP = /[$€£¥₹]|\b(usd|cad|eur|gbp|aud|jpy|chf|cny|inr|mxn|nzd|sek|nok|dkk|zar|brl|rub|hkd|sgd)\b/g;
+// Currency source guard (strict): a filled currency must be printed ADJACENT to the amount value on a
+// cited line - it is the code ON the money, never one declared elsewhere or floating in prose. Dropping
+// the fuzzy "declaration line" and "bare currency line" acceptances closes the currency-laundering and
+// currency-ambiguity class at the root: a code from ad copy, a tourist-info line, a currency on the
+// subtotal but not the total, or one of two declared currencies can no longer be reported. If no
+// currency sits on the amount, currency is "not in source".
 function currencySourceCheck(out, schema, inputLines, errs) {
   const marker = schema.not_in_source_marker;
   out.lines.forEach((line, i) => {
     const cur = line.currency, a = line.amount;
     if (!cur || cur.value === marker || !Array.isArray(cur.cite)) return;
-    const ok = cur.cite.some((n) => {
-      if (n < 1 || n > inputLines.length) return false;
-      const ln = norm(inputLines[n - 1]);
-      if (a && a.value !== marker && currencyAdjacentToAmount(ln, norm(a.value), norm(cur.value))) return true;
-      if (CUR_DECL.test(ln)) return true;                                   // a monetary/declaration line
-      if (ln.replace(CUR_STRIP, ' ').replace(/[^a-z0-9]+/g, '') === '') return true; // a bare currency line
-      return false;
-    });
-    if (!ok) errs.push(`[trace] line ${i + 1}.currency: ${JSON.stringify(cur.value)} is taken from a line that is neither adjacent to the amount, a currency declaration (prices/amounts/total/tax/...), nor a bare currency line - a currency may not be laundered from unrelated text`);
+    const ok = a && a.value !== marker && cur.cite.some((n) =>
+      n >= 1 && n <= inputLines.length && currencyAdjacentToAmount(norm(inputLines[n - 1]), norm(a.value), norm(cur.value)));
+    if (!ok) errs.push(`[trace] line ${i + 1}.currency: ${JSON.stringify(cur.value)} is not printed adjacent to the amount value on a cited line - a currency is the code on the amount, never one declared elsewhere or lifted from prose; if the total states no currency it is "not in source"`);
   });
 }
 
