@@ -149,17 +149,27 @@ function currencyAdjacentToAmount(lineNorm, amountNorm, curNorm) {
   }
   return false;
 }
-// Is ANY currency symbol/code printed immediately adjacent to the amount value on this line? Used by the
-// drop guard so the accept and drop rules agree: if a currency sits on the amount, it may not be dropped.
-function currencyAnyAdjacentToAmount(lineNorm, amountNorm) {
-  if (!amountNorm) return false; // indexOf("") never returns -1 -> guard against an empty value
-  let idx = lineNorm.indexOf(amountNorm);
+// The currency of the total, tied to a SINGLE occurrence: is there one occurrence of the amount value on
+// this line that is BOTH governed by a total label AND has a currency adjacent to it? Both conditions on
+// the SAME occurrence - so "Total $40.00 deposit refund EUR 40.00" (two occurrences of 40.00) cannot pair
+// the total's occurrence with the other occurrence's currency. curNorm null = match any currency (drop guard).
+function currencyOnTotal(lineNorm, av, curNorm, totalLabels) {
+  if (!av) return false; // indexOf("") never returns -1 -> guard against an empty value
+  let idx = lineNorm.indexOf(av);
   while (idx !== -1) {
-    const before = lineNorm.slice(0, idx).replace(/\s+$/, '');
-    const after = lineNorm.slice(idx + amountNorm.length).replace(/^\s+/, '');
-    if (/[$€£¥₹]$/.test(before) || new RegExp('(^|[^a-z0-9])(' + CUR_CODES + ')$').test(before)) return true;
-    if (/^[$€£¥₹]/.test(after) || new RegExp('^(' + CUR_CODES + ')([^a-z0-9]|$)').test(after)) return true;
-    idx = lineNorm.indexOf(amountNorm, idx + 1);
+    const before = lineNorm.slice(0, idx);
+    const beforeTrim = before.replace(/\s+$/, '');
+    const afterTrim = lineNorm.slice(idx + av.length).replace(/^\s+/, '');
+    let curAdj;
+    if (curNorm) {
+      curAdj = (beforeTrim.endsWith(curNorm) && (beforeTrim.length === curNorm.length || /[^a-z0-9]/.test(beforeTrim[beforeTrim.length - curNorm.length - 1])))
+        || (afterTrim.startsWith(curNorm) && (afterTrim.length === curNorm.length || /[^a-z0-9]/.test(afterTrim[curNorm.length])));
+    } else {
+      curAdj = /[$€£¥₹]$/.test(beforeTrim) || new RegExp('(^|[^a-z0-9])(' + CUR_CODES + ')$').test(beforeTrim)
+        || /^[$€£¥₹]/.test(afterTrim) || new RegExp('^(' + CUR_CODES + ')([^a-z0-9]|$)').test(afterTrim);
+    }
+    if (curAdj && endsWithLabel(stripLabelTail(before), totalLabels)) return true;
+    idx = lineNorm.indexOf(av, idx + 1);
   }
   return false;
 }
@@ -417,7 +427,7 @@ function currencyDropCheck(out, schema, inputLines, errs) {
     for (const n of cited) {
       if (n < 1 || n > inputLines.length) continue;
       const ln = norm(inputLines[n - 1]);
-      if (labelGovernsValue(ln, av, totalLabels) && currencyAnyAdjacentToAmount(ln, av)) { // currency ON the total line
+      if (currencyOnTotal(ln, av, null, totalLabels)) { // a currency sits on the SAME occurrence a total label governs
         errs.push(`[trace] line ${i + 1}.currency: marked "${marker}" but a currency is printed on the total line adjacent to ${JSON.stringify(a.value)} (line ${n}) - it may not be dropped`);
         break;
       }
@@ -462,8 +472,7 @@ function currencySourceCheck(out, schema, inputLines, errs) {
     const av = a && a.value !== marker ? norm(a.value) : null;
     const ok = av && cur.cite.some((n) => {
       if (n < 1 || n > inputLines.length) return false;
-      const ln = norm(inputLines[n - 1]);
-      return currencyAdjacentToAmount(ln, av, norm(cur.value)) && labelGovernsValue(ln, av, totalLabels);
+      return currencyOnTotal(norm(inputLines[n - 1]), av, norm(cur.value), totalLabels);
     });
     if (!ok) errs.push(`[trace] line ${i + 1}.currency: ${JSON.stringify(cur.value)} is not printed adjacent to the amount value on the total line - a currency is the code on the total itself ("Total CAD 16.42"); a code on a payment line, a coincidentally-equal figure, a declaration, or prose is not attributed; if the total line states no currency it is "not in source"`);
   });

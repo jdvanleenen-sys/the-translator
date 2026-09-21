@@ -659,3 +659,27 @@ never returns -1, so an empty amount value spun the new currency checks; the `em
 surfaced it under the run-with-timeout discipline.
 
 13 valid outputs, 79 fixtures. Suite green; fresh-clone green.
+
+## v28 - currency predicates tied to the same occurrence (adversary R8)
+
+R8 found the last seam in the currency rule: the two predicates that guard a currency - "a total label
+governs the amount value" and "a currency is adjacent to the amount value" - each scanned the whole line
+for *any* occurrence of the value string, independently. So when the same number appears twice on one
+line, they can be satisfied by *different* occurrences. `Total $40.00 deposit refund EUR 40.00`: the
+total's occurrence is governed by `Total` (and its currency is `$`), the *second* `40.00` sits beside
+`EUR` - and the output reported `EUR`, a currency that directly contradicts the `$` printed on the total.
+The value-string over-citation defense from v27 did not cover it, because here there is only one cited
+line; the split is *within* the line.
+
+Fix: both conditions must hold on the **same occurrence**. Replaced the two independent line-wide scans
+(`labelGovernsValue` + `currencyAdjacentToAmount` / `currencyAnyAdjacentToAmount`) with one
+occurrence-tied helper, `currencyOnTotal(line, amountValue, currency, totalLabels)`: it walks each
+position of the amount value on the line and returns true only if, at a single position, a total label
+governs that occurrence AND a currency (the specific one, or any, for the drop guard) is adjacent to that
+same occurrence. `currencySourceCheck` and `currencyDropCheck` both route through it. This is not another
+special case - it is the correct shape for these checks (a predicate about "the currency on the total"
+must be about one occurrence, not the line as a set). The softer variant (total prints no currency, EUR
+on a same-valued deposit) is caught by the same rule. Reverse-checked: a legit currency glued to the
+total (`Total USD 40.00`) still passes - no false positive. Locked by `fail_currency-twoocc-deposit`.
+
+13 valid outputs, 80 fixtures. Canonical `node verify/check.mjs` green; fresh-clone green.
