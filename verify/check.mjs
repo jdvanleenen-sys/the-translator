@@ -68,16 +68,17 @@ const insideRepo = (p) => { const abs = resolve(root, p); return abs === resolve
 // code/word continues through letters (so "US" can't match inside "USD"), while a symbol like "$"
 // glued to digits still matches because a digit is not a letter.
 const BOUNDARY = { numeric: /[0-9.,/\-]/, alpha: /[a-z]/ };
-// Join digit groups separated by a single space (a thousands separator: "1 234,56" -> "1234,56") so a
-// space-grouped number is ONE token. Without this, space is not a token-continuation char, so the leading
-// group ("1") reads as a complete value and a space-thousands total ("Total 1 234,56") silently truncates
-// to "1". Two guards keep it from corrupting a columnar money line ("GST 27.98 1.40", tax >= $100 like
-// "HST 900.00 117.00"): the right group must be EXACTLY 3 digits not followed by a digit (a separate
-// number's decimal part is not), and (?<![.,]\d*) means the left digit must NOT be the fraction of a
-// decimal - so the "0 117" inside "900.00 117.00" is never joined, while "1 234,56" (left "1" is a bare
-// integer) still is. Applied on both value and line in occursOnLine, and in the guard scanners, so the
-// accept path and the ambiguity/drop guards never drift on space-grouped numbers.
-const joinDigitGroups = (s) => { let p; do { p = s; s = s.replace(/(?<![.,]\d*)(\d) (\d{3})(?!\d)/g, '$1$2'); } while (s !== p); return s; };
+// Join digit groups separated by a thousands separator (a space "1 234,56" or a Swiss apostrophe
+// "1'234.56" -> "1234,56"/"1234.56") so a grouped number is ONE token. Without this, neither separator is
+// a token-continuation char, so the leading group ("1") reads as a complete value and the total silently
+// truncates to "1". Two guards keep it from corrupting a columnar money line ("GST 27.98 1.40", tax >=
+// $100 like "HST 900.00 117.00"): the right group must be EXACTLY 3 digits not followed by a digit (a
+// separate number's decimal part is not), and (?<![.,]\d*) means the left digit must NOT be the fraction
+// of a decimal - so the "0 117" inside "900.00 117.00" is never joined, while "1 234,56" (left "1" is a
+// bare integer) still is. Dot/comma are left alone (locale decimal/grouping, already single-token-safe).
+// Narrow/no-break spaces are folded to a normal space by norm() first. Applied on both value and line in
+// occursOnLine, and in the guard scanners, so the accept path and the ambiguity/drop guards never drift.
+const joinDigitGroups = (s) => { let p; do { p = s; s = s.replace(/(?<![.,]\d*)(\d)[ '](\d{3})(?!\d)/g, '$1$2'); } while (s !== p); return s; };
 function occursOnLine(lineNorm, valNorm, boundaryRe) {
   if (valNorm === '') return false;
   if (!boundaryRe) return lineNorm.includes(valNorm);
@@ -93,7 +94,7 @@ function occursOnLine(lineNorm, valNorm, boundaryRe) {
 }
 // A monetary value is digits with optional leading minus (a refund), grouping, and decimal - never a
 // word like "Due", never empty.
-const isNumericValue = (v) => /^-?\d[\d.,]*$/.test(norm(v).replace(/\s+/g, ''));
+const isNumericValue = (v) => /^-?\d[\d.,]*$/.test(norm(v).replace(/[\s']/g, '')); // strip thousands separators (space, Swiss apostrophe) before the shape test
 
 // Does a label word appear on the line as a WHOLE word (bounded by start/end or a non-alphanumeric)?
 // Word-boundary matching, not substring: "total" must not match inside "subtotal", "tax" must not

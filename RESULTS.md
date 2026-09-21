@@ -799,3 +799,18 @@ point-of-sale receipts.
 
 19 valid outputs (incl. 2 real photographed receipts: Mobil, Firehouse), 88 fixtures. Canonical
 `node verify/check.mjs` green; fresh-clone green.
+
+## v33 - Swiss apostrophe thousands (adversary R13)
+
+R13 re-verified all v32 fixes hold (no columnar false-reject reintroduced, the currency-prefix strip is
+contained by its `(^|[^a-z0-9])` anchor, no fifth class) and found one plausibility-3 residue of the
+numeric-tokenization class: Switzerland/Liechtenstein group thousands with an APOSTROPHE (`1'234.56`),
+which `joinDigitGroups` (space-only) did not cover, so the total truncated to `1`. Fix: the separator is
+now `[ ']` (space or apostrophe) with the same decimal lookbehind, and `isNumericValue` strips the
+apostrophe as a grouping separator before its shape test. Verified: `1'234.56` truncated to `1` fails
+[trace] (`fail_apostrophe-truncated`), the full value passes (`outputs/apostrophe-thousands.json`), and
+space-thousands + columnar tax are unaffected. Narrow/no-break spaces were already folded by norm; dot and
+comma remain single-token-safe. The numeric-tokenization class is now closed for the real-world thousands
+separators (space, narrow space, apostrophe).
+
+20 valid outputs, 89 fixtures. Canonical `node verify/check.mjs` green; fresh-clone green.

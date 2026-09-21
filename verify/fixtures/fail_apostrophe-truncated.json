@@ -1,0 +1,4 @@
+{ "_fixture": "The total is '1'234.56' (Swiss apostrophe thousands = 1234.56). This output reports amount = '1' - the leading group only, a truncation. Same numeric-tokenization class as the space-thousands case (R11), different separator: Switzerland/Liechtenstein group with an apostrophe. joinDigitGroups now joins a digit-<space-or-apostrophe>-3digit run (with the decimal lookbehind), so '1' is rejected as a truncation while the full '1'234.56' is accepted. Must fail [trace].", "_expect_gate": "trace",
+  "conversion": "expense-report", "source_file": "verify/fixtures/sample-receipt-apostrophe.txt",
+  "lines": [{"line_no":1,"date":{"value":"Jan 5","cite":[2]},"vendor":{"value":"Zurich Kaffee","cite":[1]},"amount":{"value":"1","cite":[3]},"currency":{"value":"not in source"},"category":{"value":"not in source"},"tax":{"value":"not in source"}}],
+  "unmapped_input_lines": [] }
