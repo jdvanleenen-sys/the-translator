@@ -58,7 +58,8 @@ the one common layout the same-line rule does not yet cover. Do not work around 
   `Total Due 22.95` yields `22.95`). If the receipt names **more than one distinct total** and none is
   a single final-owed total, the amount is **`not in source`** - the receipt does not identify one, and
   choosing is a guess.
-- **Tax** comes from a tax-labelled line (`Tax`, `GST`, `HST`, `PST`, `QST`, `VAT`, `Duty`, `Levy`),
+- **Tax** comes from a tax-labelled line (`Tax`, `GST`, `HST`, `PST`, `QST`, `VAT`, `Duty`, `Levy`, and
+  international VAT names: `TVA`, `MwSt`/`USt`, `IVA`, `BTW`, `moms`/`MVA`/`ALV`, `CGST`/`SGST`/`IGST`),
   never computed as total minus subtotal. On a **columnar** grocery layout (`GST 27.98 1.40`, i.e.
   `Tax-Code | Taxable-Value | Tax-Value`), the tax is the **Tax-Value column** - the last money value the
   label governs (`1.40`) - never the taxable base (`27.98`). A `<rate>%` between the label and the amount

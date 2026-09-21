@@ -1,0 +1,16 @@
+{
+  "conversion": "expense-report",
+  "source_file": "verify/fixtures/sample-receipt-eu-vat.txt",
+  "lines": [
+    {
+      "line_no": 1,
+      "date": {"value":"05/03/2026","cite":[2]},
+      "vendor": {"value":"Cafe de Paris","cite":[1]},
+      "amount": {"value":"15,00","cite":[4]},
+      "currency": {"value":"not in source"},
+      "category": {"value":"not in source"},
+      "tax": {"value":"2,50","cite":[3]}
+    }
+  ],
+  "unmapped_input_lines": []
+}

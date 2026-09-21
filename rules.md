@@ -55,7 +55,8 @@ assembled across two lines. Cite the narrowest line that contains the value.
   line** (e.g. `Category: Lodging`). Otherwise `not in source`. Never infer it from the vendor or
   items. A coffee shop is not automatically "Meals".
 - **`tax`** - the tax amount as printed **on a tax-labeled line** (GST, VAT, HST, PST, Sales Tax,
-  City tax, duty, levy), the complete printed number. Never compute it as total minus subtotal, never
+  City tax, duty, levy, and international VAT names: TVA, MwSt/USt, IVA, BTW, moms/MVA/ALV,
+  CGST/SGST/IGST), the complete printed number. Never compute it as total minus subtotal, never
   pull it from a non-tax line.
 
 ## The three laws (this is what makes it a translator, not a writer)

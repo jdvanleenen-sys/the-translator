@@ -78,8 +78,8 @@
       "order": 7,
       "role": "source",
       "traceable": true,
-      "constraints": { "numeric": true, "exact_token": true, "columnar_tax": true, "require_label": ["tax", "gst", "hst", "pst", "qst", "vat", "duty", "levy"] },
-      "description": "The tax amount exactly as printed on a tax-labeled line. Never computed as total minus subtotal, never pulled from a non-tax line. On a columnar line (GST <taxable-value> <tax-value>) the tax is the Tax-Value column, i.e. the last money value the tax label governs, never the taxable base."
+      "constraints": { "numeric": true, "exact_token": true, "columnar_tax": true, "require_label": ["tax", "gst", "hst", "pst", "qst", "vat", "duty", "levy", "tva", "mwst", "ust", "iva", "btw", "moms", "mva", "alv", "dph", "pdv", "ddv", "pvm", "ptu", "áfa", "cgst", "sgst", "igst", "ugst"] },
+      "description": "The tax amount exactly as printed on a tax-labeled line. Never computed as total minus subtotal, never pulled from a non-tax line. The label set covers the international VAT/sales-tax names (English GST/HST/PST/VAT/... plus TVA, MwSt/USt, IVA, BTW, moms/MVA/ALV, and India's CGST/SGST/IGST), so a clearly-printed foreign tax line is captured, not left 'not in source'. On a columnar line (GST <taxable-value> <tax-value>) the tax is the Tax-Value column, i.e. the last money value the tax label governs, never the taxable base."
     }
   ]
 }
