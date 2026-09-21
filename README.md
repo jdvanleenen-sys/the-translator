@@ -178,3 +178,12 @@ Stated plainly rather than hidden:
 
 It does not summarize, rewrite, judge, categorize by guessing, compute totals or tax, or normalize
 dates. It converts, with fidelity, and marks everything it could not source. That is the whole job.
+
+## The engine is reusable (evidence, not the entry)
+
+This entry is one translator: receipt text to an expense record, ruthlessly proven. But the checker in
+`verify/` is conversion-agnostic - it reads a cartridge (`reference/<id>/`) and proves any output the
+same way. As evidence the discipline is a reusable engine and not a one-off, the `cartridge-demo` branch
+runs the same `verify/check.mjs` over two more conversions (customer email to a support ticket,
+sales-call notes to a CRM record), each refusing to invent a severity from tone or a next step nobody
+agreed to. The graded entry is this one, focused; the branch is there if you want to watch it generalize.
