@@ -54,98 +54,18 @@ honest disclosure of the walker's relationship to the author).
 A `not in source` field whose value sits on a line another field already cites is not caught
 mechanically. Disclosed in `README.md` and `TEST_METHOD.md` rather than hidden.
 
-## Hardening pass (2026-09-18, after two cross-brain reviews)
+## Hardening
 
-Perplexity and ChatGPT, run independently, converged on one weakness: the checker proved lexical
-provenance (the value is on the cited line) but not semantic mapping (it is the right value, from
-the right kind of line, in the right field). Both reproduced the correct rideshare output and
-confirmed the shipped outputs were clean, so the instructions held; the gap was in the checker's
-strength claim. Response: line-kind trace (category/tax label-scoped, amount not from a subtotal/tax
-line, date must be date-shaped), single-line containment, a closed envelope (no stray keys,
-conversion pinned to the schema id, field order enforced), block-scoped citations, controlled
-`unmapped_input_lines` reason codes, and per-fixture intended-gate assertion. Fixtures grew 8 -> 16.
-The reviewers' own exploit outputs now fail. This deepens the #12-winning move: the mechanical gate
-now engineers out semantic mis-mapping, not just invention. `vendor` semantic correctness remains a
-disclosed reading-only limit (a vendor name is free text).
+The design held through sustained adversarial hardening — self- and external cross-brain red-team, then
+an independent cold-eyes entry audit. Four attack classes were found and closed at the root: currency
+attribution, meaning-inverting label collisions, numeric-locale tokenization, and accept-vs-guard drift,
+with two independent convergence confirmations. The full round-by-round record — root cause, fix, and the
+fixture that locks each — is in `../RESULTS.md`.
 
-## Hardening pass 2 (2026-09-18, third cross-brain round)
+## Done
 
-A second review round confirmed round-1 and converged on: `amount` was a blacklist (forbid
-subtotal/tax) without a positive total-label requirement, so a fare could pose as the total; a cell
-object could carry invented keys; underscore keys leaked past validation; and `source_file` was not
-externally pinned. Fixes: `amount` now requires a total-labeled line (unlabeled -> `not in source`);
-cells are closed to `value`/`cite`; the annotation exemption is removed from production (only the two
-harness keys are stripped from fixtures); and `--input` binds the evidence file so an output cannot
-choose its own input. Fixtures 16 -> 19. Both reviewers' new exploits now fail. Disclosed limit:
-duplicate JSON keys resolve last-wins as in any reader, so the single judged artifact has no
-reader-vs-checker gap; not rejected at raw-text level.
-
-## Hardening pass 3 (2026-09-18, fourth cross-brain round)
-
-Two independent v3 reviews converged on the last structural class: the trace primitive was substring
-containment, so a truncated numeric/date value (`8` of `8.25`) or an empty string passed; and in the
-unpinned mode an output's `source_file` could use a `../` traversal to prove claims from outside the
-repo. Fixes: complete-token matching for numeric/date fields (flank-char boundary), a numeric-shape
-and empty-value guard, repo-containment for `source_file`, and an explicit root-object-type guard.
-Fixtures 19 -> 23. Both reviewers' exploits now fail; one reviewer stated it saw no remaining
-structural escape hatch. The residual limits are `vendor` (free text, read-verified), a `not in
-source` sharing a cited line, and duplicate JSON keys (last-wins, no reader-vs-checker gap).
-
-## Self-red-team pass (2026-09-18, three internal rounds)
-
-Between external reviews, three rounds of internal adversarial testing (devise hard pairs -> run ->
-fix -> re-test) found and fixed six bugs: currency/category truncation (extended complete-token to
-text fields with an alpha boundary), a wrongly-rejected refund total (numeric allows a leading minus),
-a `Total Tax` line feeding amount (added `tax` to amount forbid), currency capturing the amount
-(no-digits on currency), and category holding its own label word (require-label value may not be a
-label word). Fixtures 23 -> 28; a passing refund receipt locks negative handling. No regression.
-
-## External red-team pass 3 (2026-09-18, keyword-substring root cause)
-
-A fresh external review submitted eight passing-but-wrong outputs, correctly diagnosing the root:
-`String.includes(keyword)` proves a keyword is on the cited line, not that the value is what the
-keyword labels. Five fixed - amount decoy-forbid (`Total Savings`), date forbid (`Auth Ref`), vendor
-must be the block header (processor footer), currency-drop detection (dropped `CAD`), and raw-text
-duplicate-key rejection. Three disclosed as inherent keyword ambiguity (read by eye): a line with both
-a total and a tax word (`Total incl. tax`), two total-labeled lines, and two printed currencies.
-Fixtures 28 -> 33; no regression.
-
-## External red-team pass 4 (2026-09-18, kind-assembly root cause)
-
-A fourth external review submitted five bypasses whose root cause was that the checker quantified
-require/forbid independently over the citation set (so a kind could be assembled from two lines) and
-matched labels as substrings (`subtotal`⊃`total`, `taxi`⊃`tax`). Fixed with one architectural change -
-a value's kind is decided on a **single cited line** that must hold the value, carry a require-word,
-and carry no forbid-word - plus **word-boundary** label matching, **vendor = header line verbatim**, an
-extended date denylist (check-in/check-out/valid/...), and dropping bare `balance` from amount's
-require list. Fixtures 33 -> 39; all five bypasses and the previous-balance torture now fail; no
-regression. Only genuinely-ambiguous same-label multiples (`Total` vs `Total Due`) remain read-by-eye.
-
-## External red-team pass 5 (2026-09-18, positional binding)
-
-A fifth external review showed the label gate proved a require-word was on the line, not that it
-governed the value - so `Total Distance 12.40`, `Grand Total (order 5567) 40.00`, and
-`TOTAL 59.99 was 89.99` passed, and currency/amount weren't bound. Fixed with positional binding: the
-required label must sit immediately to the value's left (stripping currency/punctuation/parentheticals),
-label and date gates became allowlists rather than denylists, and currency must be adjacent to the
-amount. Fixtures 39 -> 43; the legitimate `40.00` on a parenthetical order line still passes; no
-regression. This is the same principle applied everywhere: a value's kind must be bound to the label
-that governs it, on one line.
-
-## Self-red-team pass 2 (2026-09-18, under-reporting + currency source + a false-positive)
-
-Three internal rounds on classes the external rounds hadn't probed. (1) Under-reporting: a field could
-be marked `not in source` while the receipt printed it (dumped to `unmapped`) - added a field-drop
-guard (a require-label field may be `not in source` only if no block line has its label governing a
-value). (2) Currency source: a currency from a disclaimer could pair with a total in another currency -
-currency must now be adjacent to the amount when the amount's line prints a currency. (3) A
-false-positive of our own: the amount forbid-list rejected a legit `Total 40.00 (10 items)`; positional
-binding subsumes the list, so it was removed - decoys stay rejected, item-count totals pass. Fixtures
-43 -> 47, plus a fifth real output locking the false-positive fix. No regression.
-
-## Done (one sentence)
-
-One translator folder plus a forked checker that proves the output shape holds across three
-different receipt-text inputs, every filled field traces to the specific input line it cites, and
-eight invention fixtures fail as required - with a frozen method file, a recorded human walk, and a
-fresh-clone-green public repo. Zero invented facts.
+One translator folder plus a forked, conversion-agnostic checker: the output shape holds across diverse
+receipt inputs (including two real photographed receipts), every filled field traces to the specific
+input line it cites, and every kept-red invention fixture fails through its declared gate — backed by a
+frozen method file, a fresh-clone-green public repo, CI on every push, and a recorded human walk (Jeff's
+action). Zero invented facts.
