@@ -35,7 +35,8 @@ assembled across two lines. Cite the narrowest line that contains the value.
   number, do not shorten it, and do not take a footer, address, or payment-processor line as the merchant.
 - **`amount`** - the transaction **total** exactly as printed on a **total-labeled line** (`Total`,
   `Total Due`, `Total Amount`, `Total Payable`, `Amount Due`, `Balance Due`, `Amount Payable`,
-  `Grand Total`). It must **not** be taken
+  `Grand Total`, and international total words: `Totale`, `Totaal`, `Gesamt`/`Gesamtbetrag`, `Importe`,
+  `Summa`/`Suma`, `Toplam`). It must **not** be taken
   from a subtotal line, a tax line, or a line item/fare. If no total-labeled line is printed, `not in
   source` - a bare unlabeled number is not assumed to be the total. Never sum the items. It is the
   **complete printed number** (`8.25`), never a truncation (`8`), and never a **rate** (`8.25%` is a

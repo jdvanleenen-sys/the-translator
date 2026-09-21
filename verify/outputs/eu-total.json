@@ -1,0 +1,20 @@
+{
+  "conversion": "expense-report",
+  "source_file": "verify/fixtures/sample-receipt-eu-total.txt",
+  "lines": [
+    {
+      "line_no": 1,
+      "date": {"value":"14/08/2026","cite":[2]},
+      "vendor": {"value":"Trattoria Roma","cite":[1]},
+      "amount": {"value":"11,50","cite":[6]},
+      "currency": {"value":"€","cite":[6]},
+      "category": {"value":"not in source"},
+      "tax": {"value":"2,08","cite":[5]}
+    }
+  ],
+  "unmapped_input_lines": [
+    {"line":3,"code":"line_item","note":"Pizza Margherita 9,50"},
+    {"line":4,"code":"line_item","note":"Acqua 2,00"},
+    {"line":7,"code":"greeting_footer","note":"Grazie"}
+  ]
+}

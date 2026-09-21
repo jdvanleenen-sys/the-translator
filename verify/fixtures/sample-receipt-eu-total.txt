@@ -1,0 +1,7 @@
+Trattoria Roma
+14/08/2026
+Pizza Margherita 9,50
+Acqua 2,00
+IVA 22% 2,08
+Totale € 11,50
+Grazie
