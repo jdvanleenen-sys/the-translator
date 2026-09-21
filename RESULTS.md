@@ -814,3 +814,43 @@ comma remain single-token-safe. The numeric-tokenization class is now closed for
 separators (space, narrow space, apostrophe).
 
 20 valid outputs, 89 fixtures. Canonical `node verify/check.mjs` green; fresh-clone green.
+
+## v34 - two real receipts, a cold-eyes entry audit, and re-converge (adversary R12-R15 + independent audit)
+
+After the numeric class closed (v33), a final push covered the dimensions a break-loop does not: real
+receipts, exposure, graceful failure, doc accuracy, and real-world format breadth.
+
+Real receipts (Jeff's photos). The Mobil gas slip was already in the corpus (its real GST#/card/txn IDs
+were pseudonymized this round after an exposure scan - no real PII, secrets, or private paths remain in
+the repo). The Langdon Firehouse bar slip is now shipped pseudonymized (`inputs/receipts-firehouse.txt`)
+and exposed a real bug: `Total CA$33.98` (a CA$ country-prefixed symbol) failed amount+currency binding;
+`stripLabelTail` now strips `CA$`/`US$`/`C$`/`R$`. The Firehouse output also proves the total-vs-charged
+distinction (amount is the `Total`, not the larger `CA$44.17` total+tip).
+
+An independent cold-eyes reviewer (no knowledge of R1-R14) then found four real issues, all fixed:
+- FALSE POSITIVE (plausibility 4): `VAT @ 20% GBP1.25` was rejected. `stripLabelTail` now consumes the
+  `@` rate idiom (spaced and glued) while leaving a spaced `@` before a non-rate, so `Total @ 1:14PM` does
+  not read the hour as the total. Locked by `outputs/uk-vat.json`.
+- DROP leak (plausibility 4): a currency printed as `kr`/`zl`/`kc`/`fr`/... adjacent to the total could be
+  silently dropped. Extended the currency symbol set (won/baht/shekel/... glyphs) and codes (more ISO +
+  common alpha abbreviations). Locked by `fail_currency-kr-dropped` + `outputs/kr-currency.json`.
+- Graceful failure: malformed outputs (missing/non-array `lines`, a null/non-object line entry, non-array
+  `unmapped`, an unreadable `--output` path) crashed with raw stack traces; they now decline with a
+  `[shape]` diagnostic and exit 1. Locked by `fail_line-not-object`, `fail_lines-not-array`.
+- Docs: removed the stale hardcoded "68" fixture count (actual 92) from README/PROOF/THREAT-MODEL; they
+  now point to `--matrix` for the live count so it cannot drift again.
+
+Also shipped `outputs/hotel-folio.json` (category = Lodging, first-tax-to-tax with the second to
+tax_additional, check-in/out correctly excluded as non-dates). R15 then regression-attacked all of the
+changed accept-path code (the `@` idiom, the extended currency set, the graceful-decline bail) and a fresh
+independent sweep: HELD / CONVERGED, no plausibility-3+ break, no new false-reject, no crash. Two
+independent convergence confirmations now stand (R14 pre-edit, R15 post-edit).
+
+Remaining sub-plausibility-3 residues, left by design (closing them adds surface/risk against no realistic
+gain): a total fused with a timestamp on one line where the total is dropped (plausibility 2, and a
+defensible conservative refusal), and parenthesized-negative totals (plausibility 2; refund receipts use a
+leading minus, which is handled). A fresh `git clone` from GitHub runs green (the judges' procedure):
+`node verify/check.mjs` -> READY, `--matrix` -> 92/92 caught.
+
+23 valid outputs (2 real photographed receipts + diverse real-world formats: UK VAT, Nordic kr, columnar
+HST, hotel folio, space/apostrophe thousands), 92 fixtures. Four attack classes closed; no fifth found.
