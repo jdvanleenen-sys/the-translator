@@ -640,6 +640,12 @@ function validateOutput(out, schema, id, pinnedInput = null) {
 
 // ---------- runner ----------
 
+// A malformed output should decline gracefully with a [shape] diagnostic, not crash with a stack trace.
+function tryParseJson(raw) {
+  try { return { ok: true, value: JSON.parse(raw) }; }
+  catch (e) { return { ok: false, msg: `[shape] not valid JSON - ${e.message}` }; }
+}
+
 function main() {
   const { schema, id } = loadSchema();
   const inIdx = process.argv.indexOf('--input');
@@ -649,7 +655,9 @@ function main() {
   if (fileArgIdx !== -1) {
     const path = process.argv[fileArgIdx + 1];
     const raw = readFileSync(path, 'utf8');
-    const out = JSON.parse(raw);
+    const parsed = tryParseJson(raw);
+    if (!parsed.ok) { console.error(`FAIL: ${path}`); console.error(`  - ${parsed.msg}`); process.exit(1); }
+    const out = parsed.value;
     const errs = validateOutput(out, schema, id, pinnedInput);
     const dup = firstDuplicateKey(raw);
     if (dup) errs.unshift(`[shape] duplicate key "${dup}" in the JSON - a record must not repeat a key, or a reader and the parser could see different values`);
