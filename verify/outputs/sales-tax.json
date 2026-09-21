@@ -1,0 +1,16 @@
+{
+  "conversion": "expense-report",
+  "source_file": "verify/fixtures/sample-receipt-salestax.txt",
+  "lines": [
+    {
+      "line_no": 1,
+      "date": {"value":"Jan 6","cite":[2]},
+      "vendor": {"value":"Shop Y","cite":[1]},
+      "amount": {"value":"40.00","cite":[4]},
+      "currency": {"value":"not in source"},
+      "category": {"value":"not in source"},
+      "tax": {"value":"2.00","cite":[3]}
+    }
+  ],
+  "unmapped_input_lines": []
+}

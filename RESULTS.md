@@ -710,3 +710,29 @@ judge-facing regression), and a subtotal-only receipt reporting the subtotal as 
 (`fail_subtotal-as-total`, hyphenated form). No false positive on the corpus.
 
 14 valid outputs, 82 fixtures. Canonical `node verify/check.mjs` green; fresh-clone green.
+
+## v30 - the label-collision CLASS closed, not just sub-total (adversary R10)
+
+R10 confirmed the R9 fix was an instance patch: `collapseSubtotal` normalized only `sub[\s-]*total`, so
+the same space/hyphen boundary collision still let other compounds match a label's tail. Two more DQ
+shapes: `Pre-Tax 38.00` / `After-Tax 40.00` read as the TAX (the pre-tax base and the after-tax total
+attributed as tax), and `Item Total 5.00` (a per-item line total) re-opening the total-drop by
+manufacturing fake ambiguity - byte-identical to the fixed sub-total drop, just a different prefix.
+
+Root, as the adversary named it: the accept path (`endsWithLabel`, suffix match `(^|[^a-z0-9])kw$`) and
+the drop/priority guard (`labelGovernsAValue`, exact-segment match) DISAGREE on compounds, and that
+asymmetry is the enabler. Fixed at the one chokepoint: `collapseModifier` glues a small CLOSED set of
+meaning-INVERTING modifiers to their label - `sub/item/line/running/tax` before `total`, `pre/after`
+before `tax` - so the word-bounded label no longer matches the compound's tail. Every total/tax consumer
+routes through `endsWithLabel`, so accept and guards now decide compounds identically.
+
+The design choice is deliberate: a denylist of meaning-inverting modifiers, NOT an allowlist of good
+prefixes. Kind/scope prefixes that name the SAME quantity - `grand total`, `sales/state/room/city/eco
+tax` - are an OPEN set; an allowlist would silently DROP real named taxes (a false negative that rejects
+a correct conversion, the worse failure). Verified: `Pre-Tax`/`After-Tax`/`Item Total` now fail [trace],
+while `Sales Tax`, `State Tax`, `Grand Total` still pass. Locked: `fail_pretax-as-tax`,
+`fail_itemtotal-total-dropped`, and the judge-facing positive `outputs/sales-tax.json` (proves a real
+named tax converts and passes). Full non-collision sweep (tender, columnar tax, date ambiguity, vendor,
+category, coverage, block, shape) held; currency (R8) and sub-total (R9) fixes still hold.
+
+15 valid outputs, 84 fixtures. Canonical `node verify/check.mjs` green; fresh-clone green.

@@ -1,0 +1,4 @@
+{ "_fixture": "'Pre-Tax 38.00' is the pre-tax subtotal, not the tax. This output reports tax = 38.00. The bug it guards: 'pre-tax' ends with 'tax' across a hyphen, so the word-bounded 'tax' label matched its tail and a meaning-inverting compound was read as the tax (same class as the R9 sub-total, different label). 'pre'/'after' before 'tax' name a different quantity (the base and the grand total) and must not match the tax label - while genuine named taxes ('sales tax', 'state tax') still do. Must fail [trace].", "_expect_gate": "trace",
+  "conversion": "expense-report", "source_file": "verify/fixtures/sample-receipt-pretax.txt",
+  "lines": [{"line_no":1,"date":{"value":"Jan 5","cite":[2]},"vendor":{"value":"Cafe Uno","cite":[1]},"amount":{"value":"40.00","cite":[4]},"currency":{"value":"not in source"},"category":{"value":"not in source"},"tax":{"value":"38.00","cite":[3]}}],
+  "unmapped_input_lines": [{"line":3,"code":"subtotal","note":"Pre-Tax 38.00"}] }

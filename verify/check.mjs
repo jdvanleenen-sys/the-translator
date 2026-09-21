@@ -110,13 +110,17 @@ function stripLabelTail(seg, opts = {}) {
   } while (s !== prev);
   return s.replace(/\s+$/, '');
 }
-// "Sub Total" / "Sub-Total" (spaced or hyphenated) is a SUBTOTAL, not the total. The word-bounded
-// "total" label would otherwise match its tail ("sub total" ends with "total" after a space, which the
-// [^a-z0-9] boundary allows), reading a subtotal as a second total. Collapse it to the concatenated
-// "subtotal" - which no label list contains - so it is correctly not a total. This is the one place
-// suffix-matched total labels are decided, so accept and guards stay aligned.
-const collapseSubtotal = (seg) => seg.replace(/(^|[^a-z0-9])sub[\s-]*total$/, '$1subtotal');
-const endsWithLabel = (seg, labels) => { const s = collapseSubtotal(seg); return labels.some((kw) => kw && kw.trim() && new RegExp('(^|[^a-z0-9])' + esc(kw) + '$').test(s)); };
+// A modifier placed before a label word across a space or hyphen can NAME A DIFFERENT QUANTITY than the
+// label: "sub/item/line/running total" is not the transaction total, and "pre-/after-tax" is not the tax
+// (they are the base and the grand total). The word boundary ([^a-z0-9]) would otherwise let the label
+// match the compound's tail ("sub total" ends with "total"), reading the wrong number as the field. Glue
+// such a modifier to its label so the word-bounded label no longer matches. This is a small CLOSED set of
+// meaning-INVERTING modifiers; a kind/scope prefix that names the SAME quantity ("grand total", "sales/
+// state/room/city/eco tax") is deliberately NOT here, so genuine named totals and taxes still match -
+// an allowlist of good prefixes would be open-ended and would drop real taxes. One chokepoint, so the
+// accept path and the guards decide compound labels the same way.
+const collapseModifier = (seg) => seg.replace(/(^|[^a-z0-9])(sub|item|line|running|tax|pre|after)[\s-]*(total|tax)$/, '$1$2$3');
+const endsWithLabel = (seg, labels) => { const s = collapseModifier(seg); return labels.some((kw) => kw && kw.trim() && new RegExp('(^|[^a-z0-9])' + esc(kw) + '$').test(s)); };
 // Positional binding: the value is valid only if a required label GOVERNS it - i.e. the label sits
 // immediately to the value's left. This is what "Total Distance 12.40" fails and "Total 41.90" passes:
 // the number must be the one the label quantifies, not merely present on a line that has the word.
