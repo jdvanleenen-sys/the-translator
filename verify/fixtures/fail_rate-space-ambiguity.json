@@ -1,0 +1,4 @@
+{ "_fixture": "A rate with a SPACE before the percent ('Total 5 % 40.00') must be skipped by the guards exactly as the accept path skips it, or the guard captures the rate digit and two distinct totals collapse to one. The receipt names two distinct totals (40.00 and 90.00); the output picks 40.00; must fail [trace] (ambiguous totals -> not in source). Regression guard for the rate-space accept/guard asymmetry (LBL_GAP must mirror stripLabelTail's \\s*% rate strip).", "_expect_gate": "trace",
+  "conversion": "expense-report", "source_file": "verify/fixtures/sample-receipt-ratespace-ambig.txt",
+  "lines": [{"line_no":1,"date":{"value":"Jan 12","cite":[2]},"vendor":{"value":"Bistro","cite":[1]},"amount":{"value":"40.00","cite":[3]},"currency":{"value":"not in source"},"category":{"value":"not in source"},"tax":{"value":"not in source"}}],
+  "unmapped_input_lines": [{"line":4,"code":"other","note":"Total 5 % 90.00"}] }

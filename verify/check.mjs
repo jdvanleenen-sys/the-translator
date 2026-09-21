@@ -98,12 +98,14 @@ function labelOnLine(lineNorm, kw) {
 }
 
 const CUR_CODES = 'usd|cad|eur|gbp|aud|jpy|chf|cny|inr|mxn|nzd|sek|nok|dkk|zar|brl|rub|hkd|sgd';
-// The run of tail tokens stripLabelTail() removes between a label and its number: whitespace,
-// punctuation, currency SYMBOLS and CODES, a modifier word, a rate, a (parenthetical). The total /
-// ambiguity / drop guards must skip exactly this run, or a currency code (or paren, or rate) between a
-// label and its number blinds the guards while the accept path still binds it - an exploitable
-// asymmetry (a currency-coded "Amount Due USD 22.95" slipping every total guard).
-const LBL_GAP = '(?:[\\s:.,$€£¥₹()\\-]|\\b(?:' + CUR_CODES + ')\\b|\\b(?:today|now|included|incl|inclusive)\\b|\\d[\\d.,]*%|\\([^()]*\\))*';
+// The run of tail tokens stripLabelTail() removes between a label and its number. The total /
+// ambiguity / drop guards must skip EXACTLY this run, or the accept path binds a total the guards cannot
+// see - an exploitable asymmetry (a currency code, a rate, or a parenthetical between "Amount Due" and
+// its number slipping every total guard). INVARIANT: this must mirror stripLabelTail's tail strips
+// element-for-element. Audited against stripLabelTail: whitespace; punctuation/symbols [:.,$€£¥₹()-];
+// currency codes; modifier words (today/now/included/incl/inclusive); a rate with OPTIONAL space before
+// the % (\d[\d.,]*\s*%, matching stripLabelTail); a (parenthetical). Change one, change both.
+const LBL_GAP = '(?:[\\s:.,$€£¥₹()\\-]|\\b(?:' + CUR_CODES + ')\\b|\\b(?:today|now|included|incl|inclusive)\\b|\\d[\\d.,]*\\s*%|\\([^()]*\\))*';
 // The label segment is the line text just before the value; strip trailing punctuation, currency
 // symbols, and a trailing currency code so "Total EUR " and "Total: $" both reduce to "total".
 function stripLabelTail(seg, opts = {}) {
