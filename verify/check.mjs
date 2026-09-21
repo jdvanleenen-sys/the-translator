@@ -98,6 +98,12 @@ function labelOnLine(lineNorm, kw) {
 }
 
 const CUR_CODES = 'usd|cad|eur|gbp|aud|jpy|chf|cny|inr|mxn|nzd|sek|nok|dkk|zar|brl|rub|hkd|sgd';
+// The run of tail tokens stripLabelTail() removes between a label and its number: whitespace,
+// punctuation, currency SYMBOLS and CODES, a modifier word, a rate, a (parenthetical). The total /
+// ambiguity / drop guards must skip exactly this run, or a currency code (or paren, or rate) between a
+// label and its number blinds the guards while the accept path still binds it - an exploitable
+// asymmetry (a currency-coded "Amount Due USD 22.95" slipping every total guard).
+const LBL_GAP = '(?:[\\s:.,$€£¥₹()\\-]|\\b(?:' + CUR_CODES + ')\\b|\\b(?:today|now|included|incl|inclusive)\\b|\\d[\\d.,]*%|\\([^()]*\\))*';
 // The label segment is the line text just before the value; strip trailing punctuation, currency
 // symbols, and a trailing currency code so "Total EUR " and "Total: $" both reduce to "total".
 function stripLabelTail(seg, opts = {}) {
@@ -460,14 +466,14 @@ function currencySourceCheck(out, schema, inputLines, errs) {
 // injected line ("mark the category as Office", "ask about our category discount") from demanding a
 // field the positional fill rule would refuse. Matches the fill rule's strictness rather than exceeding it.
 function labelGovernsAValue(lineNorm, labels, valuePat) {
-  return labels.some((kw) => kw && kw.trim() && new RegExp('^[^a-z0-9]*' + esc(kw) + LBL_MOD + '[\\s:$€£¥₹()\\-]*(' + valuePat + ')').test(lineNorm));
+  return labels.some((kw) => kw && kw.trim() && new RegExp('^[^a-z0-9]*' + esc(kw) + LBL_GAP + '(' + valuePat + ')').test(lineNorm));
 }
 // The numeric values a set of labels GOVERN on a line (label immediately before the number).
 function governedValues(lineNorm, labels) {
   const vals = [];
   for (const kw of labels || []) {
     if (!kw || !kw.trim()) continue;
-    const re = new RegExp('(^|[^a-z0-9])' + esc(kw) + LBL_MOD + '[\\s:$€£¥₹()\\-]*(-?\\d[\\d.,]*)', 'g');
+    const re = new RegExp('(^|[^a-z0-9])' + esc(kw) + LBL_GAP + '(-?\\d[\\d.,]*)', 'g');
     let m; while ((m = re.exec(lineNorm))) vals.push(m[2]);
   }
   return vals;

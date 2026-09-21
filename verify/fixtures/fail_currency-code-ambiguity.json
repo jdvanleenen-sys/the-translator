@@ -1,0 +1,4 @@
+{ "_fixture": "A currency code between a total label and its number ('Total USD 50.00') must not blind the ambiguity guard. The receipt names two distinct totals (50.00 and 90.00); the output picks 50.00 as THE total; must fail [trace] (ambiguous totals -> not in source). Regression guard for the currency-code asymmetry.", "_expect_gate": "trace",
+  "conversion": "expense-report", "source_file": "verify/fixtures/sample-receipt-curcode-ambig.txt",
+  "lines": [{"line_no":1,"date":{"value":"Jan 9","cite":[2]},"vendor":{"value":"Cafe Roma","cite":[1]},"amount":{"value":"50.00","cite":[3]},"currency":{"value":"USD","cite":[3]},"category":{"value":"not in source"},"tax":{"value":"not in source"}}],
+  "unmapped_input_lines": [{"line":4,"code":"other","note":"Total 90.00"}] }

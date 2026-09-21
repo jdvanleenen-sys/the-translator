@@ -1,0 +1,4 @@
+{ "_fixture": "A currency code between the label and its number ('Amount Due USD 40.00') must not blind the under-report guard. The receipt states exactly one total; the output drops it to 'not in source' and dumps the line to unmapped; must fail [trace] (a stated total may not be dropped). Regression guard for the currency-code asymmetry.", "_expect_gate": "trace",
+  "conversion": "expense-report", "source_file": "verify/fixtures/sample-receipt-curcode-drop.txt",
+  "lines": [{"line_no":1,"date":{"value":"Jan 10","cite":[2]},"vendor":{"value":"Kiosk","cite":[1]},"amount":{"value":"not in source"},"currency":{"value":"not in source"},"category":{"value":"not in source"},"tax":{"value":"not in source"}}],
+  "unmapped_input_lines": [{"line":3,"code":"other","note":"Amount Due USD 40.00"}] }

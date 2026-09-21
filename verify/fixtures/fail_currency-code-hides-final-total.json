@@ -1,0 +1,4 @@
+{ "_fixture": "A currency code between a final-owed label and its number ('Amount Due USD 22.95') must not blind the total-priority guard. The output takes the plain 'Total 22.94' even though a final-owed 'Amount Due' total is printed; must fail [trace] (final-total priority). Regression guard for the accept-vs-guard currency-code asymmetry.", "_expect_gate": "trace",
+  "conversion": "expense-report", "source_file": "verify/fixtures/sample-receipt-curcode-final.txt",
+  "lines": [{"line_no":1,"date":{"value":"Jan 8","cite":[2]},"vendor":{"value":"Corner Store","cite":[1]},"amount":{"value":"22.94","cite":[3]},"currency":{"value":"not in source"},"category":{"value":"not in source"},"tax":{"value":"not in source"}}],
+  "unmapped_input_lines": [{"line":4,"code":"other","note":"Amount Due USD 22.95"}] }

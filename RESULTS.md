@@ -522,3 +522,28 @@ Everything else bound correctly: amount `100.00` (TOTAL), currency `CAD$`, tax `
 `inputs/receipts-mobil.txt` + `verify/outputs/receipts-mobil.json`.
 
 Six real photographed receipts now ship: 13 valid outputs, 68 fixtures. Suite green; fresh-clone green.
+
+## Adversary break + fix: the accept-vs-guard currency-code asymmetry - 2026-09-20 (v22)
+
+An independent adversarial subagent (blind to the build, tasked only with fabricating a value that
+passes) found a real disqualifier-class bug, reproduced three ways:
+
+- **Root cause.** The accept path `stripLabelTail()` strips a trailing currency CODE (so it binds
+  `Amount Due USD 22.95`), but the total guards (`governedValues`, `labelGovernsAValue`, which power
+  `totalPriorityCheck` / `amountAmbiguityCheck` / the amount branch of `fieldDropCheck`) matched only a
+  separator class with no currency code. So a currency code between a total label and its number was
+  invisible to every total guard while the accept path still bound it.
+- **Three passing exploits (all fixed):** (1) `Total 22.94` + `Amount Due USD 22.95` -> output `22.94`
+  accepted (the exact wrong-total misattribution the tool exists to prevent); (2) a lone
+  `Amount Due USD 40.00` dropped to `not in source`; (3) `Total USD 50.00` + `Total 90.00` -> `50.00`
+  accepted as THE total despite two distinct totals.
+- **Fix.** A shared `LBL_GAP` pattern lets the guards skip exactly what `stripLabelTail` strips -
+  whitespace, punctuation, currency symbols AND codes, modifier words, a rate, a parenthetical - so the
+  accept path and the guards can no longer disagree. All three now fail through `[trace]`
+  (total-priority, under-report, ambiguity). Locked by `fail_currency-code-hides-final-total`,
+  `fail_currency-code-total-dropped`, `fail_currency-code-ambiguity`.
+
+Correction to an earlier overconfident claim: the entry was NOT "structurally immune" before this fix -
+this asymmetry was a live hole. It is closed now, with the same accept/guard routine reading one gap.
+
+13 valid outputs, 71 fixtures. Suite green; fresh-clone green.
