@@ -683,3 +683,30 @@ on a same-valued deposit) is caught by the same rule. Reverse-checked: a legit c
 total (`Total USD 40.00`) still passes - no false positive. Locked by `fail_currency-twoocc-deposit`.
 
 13 valid outputs, 80 fixtures. Canonical `node verify/check.mjs` green; fresh-clone green.
+
+## v29 - "Sub Total" / "Sub-Total" is a subtotal, not the total (adversary R9)
+
+R9 confirmed currency has converged (the same-occurrence coupling could not be re-split) and pivoted to
+amount, finding a plausibility-5, DQ-class hole on the most common receipt shape in the world:
+`Sub Total 38.00 / Tax 2.00 / Total 40.00`. Root cause: the total label was suffix-matched with a word
+boundary (`(^|[^a-z0-9])total$`), and a space or hyphen before "total" satisfies `[^a-z0-9]` - so
+`sub total` and `sub-total` matched the "total" label. Only the concatenated `subtotal` was excluded.
+
+This produced two DQ outcomes at once. (A) An invalid output that DROPS the real total passed: with the
+subtotal misread as a second total, the candidate set was size 2, which silenced the single-total drop
+guard (it only fires at size 1), so `amount: "not in source"` slipped through on a receipt that plainly
+states `Total 40.00`. (B) Worse, a twin FALSE POSITIVE: the CORRECT output (`amount 40.00`) was rejected
+as "2 distinct totals (38.00, 40.00)" - a judge running a normal subtotal-bearing receipt would hit this
+immediately. The shipped corpus missed it by luck: `receipts-saveon` has `Sub Total $33.09` but also a
+`BALANCE DUE`, so the final-owed set wins and the subtotal misread never surfaces.
+
+Fix: one line, at the single suffix-match chokepoint. `endsWithLabel` now collapses `sub[\s-]*total` to
+`subtotal` before matching, so the word-bounded "total" no longer matches its tail. Because every total
+consumer (accept via `governedValues`/`labelGovernsValue`, and the guards) routes through `endsWithLabel`,
+accept and guards stay aligned, and `labelGovernsAValue` (which uses exact-segment matching) already
+excluded "sub total", so the two now agree. Verified all three outcomes: the drop now fails [trace]
+(`fail_subtotal-total-dropped`), the correct output now passes (`outputs/subtotal-total.json`, the
+judge-facing regression), and a subtotal-only receipt reporting the subtotal as the total fails [trace]
+(`fail_subtotal-as-total`, hyphenated form). No false positive on the corpus.
+
+14 valid outputs, 82 fixtures. Canonical `node verify/check.mjs` green; fresh-clone green.

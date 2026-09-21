@@ -110,7 +110,13 @@ function stripLabelTail(seg, opts = {}) {
   } while (s !== prev);
   return s.replace(/\s+$/, '');
 }
-const endsWithLabel = (seg, labels) => labels.some((kw) => kw && kw.trim() && new RegExp('(^|[^a-z0-9])' + esc(kw) + '$').test(seg));
+// "Sub Total" / "Sub-Total" (spaced or hyphenated) is a SUBTOTAL, not the total. The word-bounded
+// "total" label would otherwise match its tail ("sub total" ends with "total" after a space, which the
+// [^a-z0-9] boundary allows), reading a subtotal as a second total. Collapse it to the concatenated
+// "subtotal" - which no label list contains - so it is correctly not a total. This is the one place
+// suffix-matched total labels are decided, so accept and guards stay aligned.
+const collapseSubtotal = (seg) => seg.replace(/(^|[^a-z0-9])sub[\s-]*total$/, '$1subtotal');
+const endsWithLabel = (seg, labels) => { const s = collapseSubtotal(seg); return labels.some((kw) => kw && kw.trim() && new RegExp('(^|[^a-z0-9])' + esc(kw) + '$').test(s)); };
 // Positional binding: the value is valid only if a required label GOVERNS it - i.e. the label sits
 // immediately to the value's left. This is what "Total Distance 12.40" fails and "Total 41.90" passes:
 // the number must be the one the label quantifies, not merely present on a line that has the word.

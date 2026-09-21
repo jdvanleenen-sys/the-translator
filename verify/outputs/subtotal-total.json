@@ -1,0 +1,18 @@
+{
+  "conversion": "expense-report",
+  "source_file": "verify/fixtures/sample-receipt-subtotal.txt",
+  "lines": [
+    {
+      "line_no": 1,
+      "date": {"value":"Jan 12","cite":[2]},
+      "vendor": {"value":"Depot Store","cite":[1]},
+      "amount": {"value":"40.00","cite":[5]},
+      "currency": {"value":"not in source"},
+      "category": {"value":"not in source"},
+      "tax": {"value":"2.00","cite":[4]}
+    }
+  ],
+  "unmapped_input_lines": [
+    {"line":3,"code":"subtotal","note":"Sub Total 38.00"}
+  ]
+}
