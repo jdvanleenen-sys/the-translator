@@ -68,17 +68,17 @@
   {
    "line": 8,
    "code": "other",
-   "note": "TRANS #: 975198"
+   "note": "TRANS #: 900000"
   },
   {
    "line": 9,
    "code": "other",
-   "note": "Station#: 00324349"
+   "note": "Station#: 00000000"
   },
   {
    "line": 10,
    "code": "other",
-   "note": "GST #: R733514327"
+   "note": "GST #: R000000000"
   },
   {
    "line": 11,
@@ -108,7 +108,7 @@
   {
    "line": 18,
    "code": "other",
-   "note": "************4199"
+   "note": "************0000"
   },
   {
    "line": 19,
@@ -118,17 +118,17 @@
   {
    "line": 20,
    "code": "other",
-   "note": "****6885 0011332770C"
+   "note": "****0000 0000000000C"
   },
   {
    "line": 21,
    "code": "other",
-   "note": "INVOICE NO: 271610"
+   "note": "INVOICE NO: 000000"
   },
   {
    "line": 22,
    "code": "other",
-   "note": "AUTH: 055124"
+   "note": "AUTH: 000000"
   },
   {
    "line": 23,
@@ -163,7 +163,7 @@
   {
    "line": 29,
    "code": "other",
-   "note": "1375021"
+   "note": "0000000"
   },
   {
    "line": 30,
