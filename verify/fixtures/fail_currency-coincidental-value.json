@@ -1,0 +1,4 @@
+{ "_fixture": "The total (40.00) states no currency; EUR sits next to a gift-card balance that is coincidentally also 40.00. The output launders EUR by matching the amount value as a string on an unrelated line. Currency must be adjacent to the amount value on a line the AMOUNT cites (the total, or a payment line for that same figure); a coincidentally-equal non-total number does not qualify; must fail [trace]. Regression guard for the same-valued-number currency bypass.", "_expect_gate": "trace",
+  "conversion": "expense-report", "source_file": "verify/fixtures/sample-receipt-cur-coincide.txt",
+  "lines": [{"line_no":1,"date":{"value":"Jan 8","cite":[2]},"vendor":{"value":"Cafe Lyon","cite":[1]},"amount":{"value":"40.00","cite":[3]},"currency":{"value":"EUR","cite":[4]},"category":{"value":"not in source"},"tax":{"value":"not in source"}}],
+  "unmapped_input_lines": [] }

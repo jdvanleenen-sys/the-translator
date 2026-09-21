@@ -451,9 +451,9 @@ function currencySourceCheck(out, schema, inputLines, errs) {
   out.lines.forEach((line, i) => {
     const cur = line.currency, a = line.amount;
     if (!cur || cur.value === marker || !Array.isArray(cur.cite)) return;
-    const ok = a && a.value !== marker && cur.cite.some((n) =>
-      n >= 1 && n <= inputLines.length && currencyAdjacentToAmount(norm(inputLines[n - 1]), norm(a.value), norm(cur.value)));
-    if (!ok) errs.push(`[trace] line ${i + 1}.currency: ${JSON.stringify(cur.value)} is not printed adjacent to the amount value on a cited line - a currency is the code on the amount, never one declared elsewhere or lifted from prose; if the total states no currency it is "not in source"`);
+    const ok = a && a.value !== marker && Array.isArray(a.cite) && cur.cite.some((n) =>
+      a.cite.includes(n) && n >= 1 && n <= inputLines.length && currencyAdjacentToAmount(norm(inputLines[n - 1]), norm(a.value), norm(cur.value)));
+    if (!ok) errs.push(`[trace] line ${i + 1}.currency: ${JSON.stringify(cur.value)} is not printed adjacent to the amount value on a line the amount itself cites - a currency is the code on the total (or a payment line for that same figure, which the amount then cites), never one beside a coincidentally-equal figure, declared elsewhere, or in prose; if the total states no currency it is "not in source"`);
   });
 }
 

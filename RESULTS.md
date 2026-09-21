@@ -622,3 +622,16 @@ amount-adjacent, so none regressed. Locked by `fail_currency-subtotal-not-amount
 looped forever when the amount value normalized to empty (`indexOf("")` never returns -1). Guarded both.
 
 13 valid outputs, 77 fixtures. Suite green; fresh-clone green.
+
+## Adversary round 6: currency bound to the amount's own line - 2026-09-20 (v26)
+
+Round 6 confirmed everything prior holds, then found one more currency edge (narrow but real): the strict
+rule matched the amount VALUE as a string anywhere it occurred. `Total 40.00` (no currency) +
+`Gift card balance EUR 40.00` -> `EUR` accepted, because 40.00 also appears next to EUR on the gift-card
+line (a coincidentally-equal, unrelated figure). Fix: the currency must be adjacent to the amount value on
+a line the AMOUNT ITSELF CITES - the total, or a payment line for that same figure (which the amount then
+cites). A coincidentally-equal non-total number no longer qualifies. Staples (whose `$` is on the card
+line, same 234.18 as the total) was re-cited so its amount cites both the total and the card line; all 13
+outputs still pass. Locked by `fail_currency-coincidental-value`.
+
+13 valid outputs, 78 fixtures. Suite green; fresh-clone green.
