@@ -736,3 +736,33 @@ named tax converts and passes). Full non-collision sweep (tender, columnar tax, 
 category, coverage, block, shape) held; currency (R8) and sub-total (R9) fixes still hold.
 
 15 valid outputs, 84 fixtures. Canonical `node verify/check.mjs` green; fresh-clone green.
+
+## v31 - close the collision class on dates, plug the denylist gap, and a 4th class (adversary R11)
+
+R11 landed three real breaks. Two were the label-collision class still leaking: `Post-Tax` -> tax (the
+denylist had `pre`/`after` but not `post`, a direct synonym) and, more importantly, the ENTIRE date-label
+sub-class was untouched - `collapseModifier` only handled `total`/`tax` suffixes, so `Expiry Date`,
+`Due Date`, `Best Before Date`, `Ship Date` all end in `date` and matched the date-context label,
+defeating the schema's stated "an expiry ... date does not qualify". Fixes: add `post` to the tax
+modifiers, and add a date branch to `collapseModifier` denying non-transaction date-event modifiers
+(expiry/expiration/exp/due/ship/shipped/shipping/delivery/delivered/valid/before/by/thru/through/until)
+while `invoice/sale/order/transaction/posting date` still match. Verified `Post-Tax`, `Expiry Date`,
+`Best Before Date` now fail [trace]; `Invoice Date` still passes (`outputs/invoice-date.json`).
+
+The third was a genuine FOURTH class, numeric tokenization: on a European space-grouped total
+(`Total 1 234,56`) the checker accepted `amount = "1"` - space is not a token-continuation char, so the
+leading digit group read as a complete token and a total silently truncated to `1`. Fix: `joinDigitGroups`
+joins a `<digit> <exactly-3-digits>` run (a thousands separator) on both the value and the line before
+numeric matching. It rejects the `1` truncation AND makes the full `1 234,56` representable
+(`outputs/space-thousands.json` passes), and it deliberately does not touch columnar money
+(`GST 27.98 1.40` - the second group is not 3 digits before a decimal), verified intact.
+
+On the structural question the adversary raised (denylist vs exact-match+allowlist): kept the denylist by
+design. A false negative (miss a real label -> "not in source") is the tool's fail-closed direction; a
+false positive (attribute a wrong value) is the disqualifying one. Exact-match+allowlist would reject
+correct conversions of receipts with unlisted-but-real tax names (Occupancy/Room/Resort Tax) - the
+failure a judge running a normal receipt would actually hit. The denylist only leaks against an
+adversarially-constructed novel modifier, which is what this red-team does, not what judges do. The
+inverting-modifier sets are now enumerated for the realistic cases across total, tax, and date.
+
+17 valid outputs, 87 fixtures. Canonical `node verify/check.mjs` green; fresh-clone green.

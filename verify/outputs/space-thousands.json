@@ -1,0 +1,16 @@
+{
+  "conversion": "expense-report",
+  "source_file": "verify/fixtures/sample-receipt-spacethousands.txt",
+  "lines": [
+    {
+      "line_no": 1,
+      "date": {"value":"Jan 5","cite":[2]},
+      "vendor": {"value":"Paris Bistro","cite":[1]},
+      "amount": {"value":"1 234,56","cite":[3]},
+      "currency": {"value":"not in source"},
+      "category": {"value":"not in source"},
+      "tax": {"value":"not in source"}
+    }
+  ],
+  "unmapped_input_lines": []
+}

@@ -68,9 +68,17 @@ const insideRepo = (p) => { const abs = resolve(root, p); return abs === resolve
 // code/word continues through letters (so "US" can't match inside "USD"), while a symbol like "$"
 // glued to digits still matches because a digit is not a letter.
 const BOUNDARY = { numeric: /[0-9.,/\-]/, alpha: /[a-z]/ };
+// Join digit groups separated by a single space (a thousands separator: "1 234,56" -> "1234,56") so a
+// space-grouped number is ONE token. Without this, space is not a token-continuation char, so the leading
+// group ("1") reads as a complete value and a space-thousands total ("Total 1 234,56") silently truncates
+// to "1". Columnar money ("GST 27.98 1.40" - two separate numbers) is untouched: the join fires only on a
+// <digit> <exactly-3-digits> run not followed by another digit, which a separate number's decimal part
+// ("1.40") is not. Applied to both the value and the line before numeric matching so accept and reject agree.
+const joinDigitGroups = (s) => { let p; do { p = s; s = s.replace(/(\d) (\d{3})(?!\d)/g, '$1$2'); } while (s !== p); return s; };
 function occursOnLine(lineNorm, valNorm, boundaryRe) {
   if (valNorm === '') return false;
   if (!boundaryRe) return lineNorm.includes(valNorm);
+  if (boundaryRe === BOUNDARY.numeric) { lineNorm = joinDigitGroups(lineNorm); valNorm = joinDigitGroups(valNorm); }
   let idx = lineNorm.indexOf(valNorm);
   while (idx !== -1) {
     const before = idx > 0 ? lineNorm[idx - 1] : '';
@@ -111,15 +119,21 @@ function stripLabelTail(seg, opts = {}) {
   return s.replace(/\s+$/, '');
 }
 // A modifier placed before a label word across a space or hyphen can NAME A DIFFERENT QUANTITY than the
-// label: "sub/item/line/running total" is not the transaction total, and "pre-/after-tax" is not the tax
-// (they are the base and the grand total). The word boundary ([^a-z0-9]) would otherwise let the label
-// match the compound's tail ("sub total" ends with "total"), reading the wrong number as the field. Glue
-// such a modifier to its label so the word-bounded label no longer matches. This is a small CLOSED set of
-// meaning-INVERTING modifiers; a kind/scope prefix that names the SAME quantity ("grand total", "sales/
-// state/room/city/eco tax") is deliberately NOT here, so genuine named totals and taxes still match -
-// an allowlist of good prefixes would be open-ended and would drop real taxes. One chokepoint, so the
-// accept path and the guards decide compound labels the same way.
-const collapseModifier = (seg) => seg.replace(/(^|[^a-z0-9])(sub|item|line|running|tax|pre|after)[\s-]*(total|tax)$/, '$1$2$3');
+// label: "sub/item/line/running total" is not the transaction total, "pre-/post-/after-tax" is not the tax
+// (they are the base and the grand total), and "expiry/due/best before/ship date" is not the transaction
+// date. The word boundary ([^a-z0-9]) would otherwise let the label match the compound's tail ("sub total"
+// ends with "total"), reading the wrong number as the field. Glue such a modifier to its label so the
+// word-bounded label no longer matches. These are small CLOSED sets of meaning-INVERTING modifiers; a
+// kind/scope prefix that names the SAME quantity ("grand/net/gross total", "sales/state/room/city/eco tax",
+// "invoice/sale/order date") is deliberately NOT here, so genuine named totals, taxes, and dates still
+// match. This is a denylist by design, not an allowlist: the good-prefix set is open-ended (every tax
+// jurisdiction), so an allowlist would drop real labels - a false negative that rejects a correct
+// conversion, which is worse than an adversarially-constructed novel modifier leaking. One chokepoint, so
+// the accept path and the guards decide compound labels the same way.
+const collapseModifier = (seg) => seg
+  .replace(/(^|[^a-z0-9])(sub|item|line|running|tax)[\s-]*(total)$/, '$1$2$3')
+  .replace(/(^|[^a-z0-9])(pre|post|after)[\s-]*(tax)$/, '$1$2$3')
+  .replace(/(^|[^a-z0-9])(expiry|expiration|exp|due|ship|shipped|shipping|delivery|delivered|valid|before|by|thru|through|until)[\s-]*(date)$/, '$1$2$3');
 const endsWithLabel = (seg, labels) => { const s = collapseModifier(seg); return labels.some((kw) => kw && kw.trim() && new RegExp('(^|[^a-z0-9])' + esc(kw) + '$').test(s)); };
 // Positional binding: the value is valid only if a required label GOVERNS it - i.e. the label sits
 // immediately to the value's left. This is what "Total Distance 12.40" fails and "Total 41.90" passes:

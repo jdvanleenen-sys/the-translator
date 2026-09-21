@@ -1,0 +1,4 @@
+{ "_fixture": "'Expiry Date 12/28' is a card expiry, not the transaction date. This output reports date = 12/28. Guards the date-label collision R11 found: the collapse fix originally covered only total/tax suffixes, but 'expiry/due/best before/ship date' all end in 'date' and matched the date-context label - defeating the schema's stated exclusion ('an expiry ... date does not qualify'). Non-transaction date-event modifiers are now denied while 'invoice/sale/order date' still match. Must fail [trace].", "_expect_gate": "trace",
+  "conversion": "expense-report", "source_file": "verify/fixtures/sample-receipt-expirydate.txt",
+  "lines": [{"line_no":1,"date":{"value":"12/28","cite":[2]},"vendor":{"value":"Card Shop","cite":[1]},"amount":{"value":"20.00","cite":[3]},"currency":{"value":"not in source"},"category":{"value":"not in source"},"tax":{"value":"not in source"}}],
+  "unmapped_input_lines": [{"line":2,"code":"other","note":"Expiry Date 12/28"}] }

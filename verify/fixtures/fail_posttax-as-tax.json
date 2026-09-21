@@ -1,0 +1,4 @@
+{ "_fixture": "'Post-Tax 40.00' is the after-tax total, not the tax. This output reports tax = 40.00. Guards the denylist gap R11 found: 'post' is a synonym of the already-denied 'after' before 'tax'. 'pre'/'post'/'after' before 'tax' name a different quantity (the base and the grand total) and must not match the tax label; genuine named taxes still do. Must fail [trace].", "_expect_gate": "trace",
+  "conversion": "expense-report", "source_file": "verify/fixtures/sample-receipt-posttax.txt",
+  "lines": [{"line_no":1,"date":{"value":"Jan 5","cite":[2]},"vendor":{"value":"Cafe Uno","cite":[1]},"amount":{"value":"not in source"},"currency":{"value":"not in source"},"category":{"value":"not in source"},"tax":{"value":"40.00","cite":[3]}}],
+  "unmapped_input_lines": [{"line":3,"code":"other","note":"Post-Tax 40.00"}] }
