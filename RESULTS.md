@@ -635,3 +635,27 @@ line, same 234.18 as the total) was re-cited so its amount cites both the total 
 outputs still pass. Locked by `fail_currency-coincidental-value`.
 
 13 valid outputs, 78 fixtures. Suite green; fresh-clone green.
+
+## Adversary round 7: currency = the code on the total line, full stop - 2026-09-20 (v27)
+
+Round 7 found the deepest currency edge, and it is structurally unfixable by degree: an amount can cite
+its total line AND a coincidentally-equal line (over-citation is allowed when the value string is
+present), so a currency on that second line rides along. `Total 40.00` + `Deposit EUR 40.00 held`
+(amount cites both) -> `EUR` accepted. The adversary's key point: this is **byte-for-byte identical** to
+the legitimate Staples output (amount cites its total line and its card line, both 234.18; currency on
+the card line). A card payment for the total and a same-valued deposit cannot be told apart.
+
+So the currency rule is now absolute: **a currency is valid only printed adjacent to the amount value on
+a line a TOTAL label governs** - the code on the total itself. Payment lines, subtotals, deposits,
+declarations, prose: none are attributed. If the total line prints no currency, currency is
+`not in source`. This ends the entire currency-attribution class with no allowlist and no residual.
+Consequence: **Staples currency is now `not in source`** (its `$` sits on the Mastercard line, not the
+`Total 234.18` line) - superseding v16's "currency read from the card line". That is the honest answer:
+the total states no currency, and the tool refuses to attribute one from a payment line even though a `$`
+appears elsewhere. Locked by `fail_currency-overcite-deposit` (+ the R5/R6 currency fixtures).
+
+Also guarded two more empty-value infinite loops (`labelGovernsValue`, `dateContextOk`): `indexOf("")`
+never returns -1, so an empty amount value spun the new currency checks; the `empty-amount` fixture
+surfaced it under the run-with-timeout discipline.
+
+13 valid outputs, 79 fixtures. Suite green; fresh-clone green.

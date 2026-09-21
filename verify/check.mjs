@@ -115,6 +115,7 @@ const endsWithLabel = (seg, labels) => labels.some((kw) => kw && kw.trim() && ne
 // immediately to the value's left. This is what "Total Distance 12.40" fails and "Total 41.90" passes:
 // the number must be the one the label quantifies, not merely present on a line that has the word.
 function labelGovernsValue(lineNorm, valNorm, labels, opts = {}) {
+  if (!valNorm) return false; // indexOf("") never returns -1 -> guard against an empty value
   let idx = lineNorm.indexOf(valNorm);
   while (idx !== -1) { if (endsWithLabel(stripLabelTail(lineNorm.slice(0, idx), opts), labels)) return true; idx = lineNorm.indexOf(valNorm, idx + 1); }
   return false;
@@ -128,6 +129,7 @@ function lastMoneyToken(lineNorm) {
 }
 // Date: the line must be a bare date (nothing before the value) or governed by a date-context label.
 function dateContextOk(lineNorm, valNorm, ctx) {
+  if (!valNorm) return false; // indexOf("") never returns -1 -> guard against an empty value
   let idx = lineNorm.indexOf(valNorm);
   while (idx !== -1) { const seg = stripLabelTail(lineNorm.slice(0, idx)); if (seg === '' || endsWithLabel(seg, ctx)) return true; idx = lineNorm.indexOf(valNorm, idx + 1); }
   return false;
@@ -403,6 +405,8 @@ function blockCheck(out, schema, inputLines, errs) {
 const CURRENCY_TOKEN = /[$€£¥₹]|\b(usd|cad|eur|gbp|aud|jpy|chf|cny|inr|mxn|nzd|sek|nok|dkk|zar|brl|rub|hkd|sgd)\b/;
 function currencyDropCheck(out, schema, inputLines, errs) {
   const marker = schema.not_in_source_marker;
+  const af = schema.fields.find((f) => f.name === 'amount');
+  const totalLabels = (af && af.constraints && af.constraints.require_label) || [];
   out.lines.forEach((line, i) => {
     const cur = line.currency, a = line.amount;
     if (!cur || cur.value !== marker) return;
@@ -411,8 +415,10 @@ function currencyDropCheck(out, schema, inputLines, errs) {
     const cited = new Set();
     for (const f of schema.fields) { const c = line[f.name]; if (c && Array.isArray(c.cite)) for (const n of c.cite) cited.add(n); }
     for (const n of cited) {
-      if (n >= 1 && n <= inputLines.length && currencyAnyAdjacentToAmount(norm(inputLines[n - 1]), av)) {
-        errs.push(`[trace] line ${i + 1}.currency: marked "${marker}" but a currency is printed adjacent to the amount ${JSON.stringify(a.value)} on cited line ${n} (${JSON.stringify(inputLines[n - 1])}) - it may not be dropped`);
+      if (n < 1 || n > inputLines.length) continue;
+      const ln = norm(inputLines[n - 1]);
+      if (labelGovernsValue(ln, av, totalLabels) && currencyAnyAdjacentToAmount(ln, av)) { // currency ON the total line
+        errs.push(`[trace] line ${i + 1}.currency: marked "${marker}" but a currency is printed on the total line adjacent to ${JSON.stringify(a.value)} (line ${n}) - it may not be dropped`);
         break;
       }
     }
@@ -440,20 +446,26 @@ function currencyBindingCheck(out, schema, inputLines, errs) {
   });
 }
 
-// Currency source guard (strict): a filled currency must be printed ADJACENT to the amount value on a
-// cited line - it is the code ON the money, never one declared elsewhere or floating in prose. Dropping
-// the fuzzy "declaration line" and "bare currency line" acceptances closes the currency-laundering and
-// currency-ambiguity class at the root: a code from ad copy, a tourist-info line, a currency on the
-// subtotal but not the total, or one of two declared currencies can no longer be reported. If no
-// currency sits on the amount, currency is "not in source".
+// Currency source guard (total-line only): a filled currency must be printed ADJACENT to the amount value
+// on a line where a TOTAL label governs that value - the code on the total itself ("Total CAD 16.42").
+// It is never taken from a payment line, a coincidentally-equal figure (a deposit or gift-card balance),
+// a remote declaration, or prose. Those are byte-identical to a genuine source (a card payment for the
+// total looks exactly like a same-valued deposit), so the only rule that cannot be laundered is "the
+// currency printed on the total". If the total line states no currency, currency is "not in source".
 function currencySourceCheck(out, schema, inputLines, errs) {
   const marker = schema.not_in_source_marker;
+  const af = schema.fields.find((f) => f.name === 'amount');
+  const totalLabels = (af && af.constraints && af.constraints.require_label) || [];
   out.lines.forEach((line, i) => {
     const cur = line.currency, a = line.amount;
     if (!cur || cur.value === marker || !Array.isArray(cur.cite)) return;
-    const ok = a && a.value !== marker && Array.isArray(a.cite) && cur.cite.some((n) =>
-      a.cite.includes(n) && n >= 1 && n <= inputLines.length && currencyAdjacentToAmount(norm(inputLines[n - 1]), norm(a.value), norm(cur.value)));
-    if (!ok) errs.push(`[trace] line ${i + 1}.currency: ${JSON.stringify(cur.value)} is not printed adjacent to the amount value on a line the amount itself cites - a currency is the code on the total (or a payment line for that same figure, which the amount then cites), never one beside a coincidentally-equal figure, declared elsewhere, or in prose; if the total states no currency it is "not in source"`);
+    const av = a && a.value !== marker ? norm(a.value) : null;
+    const ok = av && cur.cite.some((n) => {
+      if (n < 1 || n > inputLines.length) return false;
+      const ln = norm(inputLines[n - 1]);
+      return currencyAdjacentToAmount(ln, av, norm(cur.value)) && labelGovernsValue(ln, av, totalLabels);
+    });
+    if (!ok) errs.push(`[trace] line ${i + 1}.currency: ${JSON.stringify(cur.value)} is not printed adjacent to the amount value on the total line - a currency is the code on the total itself ("Total CAD 16.42"); a code on a payment line, a coincidentally-equal figure, a declaration, or prose is not attributed; if the total line states no currency it is "not in source"`);
   });
 }
 

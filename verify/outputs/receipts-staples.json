@@ -6,8 +6,8 @@
       "line_no": 1,
       "date": {"value":"not in source"},
       "vendor": {"value":"STAPLES CANADA","cite":[1]},
-      "amount": {"value":"234.18","cite":[26,29]},
-      "currency": {"value":"$","cite":[29]},
+      "amount": {"value":"234.18","cite":[26]},
+      "currency": {"value":"not in source"},
       "category": {"value":"not in source"},
       "tax": {"value":"11.15","cite":[25]}
     }
@@ -38,6 +38,7 @@
     {"line":24,"code":"subtotal","note":"SubTotal 223.03"},
     {"line":27,"code":"other","note":"TRANSACTION RECORD"},
     {"line":28,"code":"card_mask","note":"************1446"},
+    {"line":29,"code":"payment_method","note":"Mastercard C $234.18"},
     {"line":30,"code":"other","note":"Purchase"},
     {"line":31,"code":"other","note":"Authorization Number 010012J"},
     {"line":32,"code":"greeting_footer","note":"APPROVED - THANK YOU"},

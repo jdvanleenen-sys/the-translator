@@ -1,0 +1,4 @@
+{ "_fixture": "The total (40.00) prints no currency; EUR is the currency of a DEPOSIT that coincidentally equals 40.00. The output over-cites the amount to the deposit line and rides its EUR. A currency is only the code on the TOTAL line itself (total-label governed); a payment line or coincidental figure does not qualify - those are byte-identical to a genuine source. Must fail [trace]. Regression guard for the amount-over-citation currency ride.", "_expect_gate": "trace",
+  "conversion": "expense-report", "source_file": "verify/fixtures/sample-receipt-cur-deposit.txt",
+  "lines": [{"line_no":1,"date":{"value":"Jan 9","cite":[2]},"vendor":{"value":"Bistro Nord","cite":[1]},"amount":{"value":"40.00","cite":[3,4]},"currency":{"value":"EUR","cite":[4]},"category":{"value":"not in source"},"tax":{"value":"not in source"}}],
+  "unmapped_input_lines": [] }
