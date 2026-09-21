@@ -1,0 +1,24 @@
+{
+  "conversion": "expense-report",
+  "source_file": "verify/fixtures/sample-receipt-hotel-folio.txt",
+  "lines": [
+    {
+      "line_no": 1,
+      "date": {"value":"not in source"},
+      "vendor": {"value":"Grandview Hotel","cite":[1]},
+      "amount": {"value":"217.35","cite":[11]},
+      "currency": {"value":"USD","cite":[11]},
+      "category": {"value":"Lodging","cite":[7]},
+      "tax": {"value":"18.90","cite":[9]}
+    }
+  ],
+  "unmapped_input_lines": [
+    {"line":2,"code":"location","note":"500 Harbor Blvd"},
+    {"line":3,"code":"location","note":"San Diego, CA 92101"},
+    {"line":4,"code":"other","note":"Folio 88213"},
+    {"line":5,"code":"other","note":"Check-in: 03/12/2026"},
+    {"line":6,"code":"other","note":"Check-out: 03/14/2026"},
+    {"line":8,"code":"line_item","note":"Room Charge 189.00"},
+    {"line":10,"code":"tax_additional","note":"State Tax 9.45"}
+  ]
+}

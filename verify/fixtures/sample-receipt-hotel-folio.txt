@@ -1,0 +1,11 @@
+Grandview Hotel
+500 Harbor Blvd
+San Diego, CA 92101
+Folio 88213
+Check-in: 03/12/2026
+Check-out: 03/14/2026
+Category: Lodging
+Room Charge 189.00
+Occupancy Tax 18.90
+State Tax 9.45
+Balance Due USD 217.35
