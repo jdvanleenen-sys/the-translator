@@ -547,3 +547,30 @@ Correction to an earlier overconfident claim: the entry was NOT "structurally im
 this asymmetry was a live hole. It is closed now, with the same accept/guard routine reading one gap.
 
 13 valid outputs, 71 fixtures. Suite green; fresh-clone green.
+
+## Adversary rounds 2-3: same class, then a durable fix - 2026-09-20 (v23)
+
+The accept-vs-guard asymmetry recurred twice more before it was closed at the root:
+
+- **Round 2 (rate spacing).** `stripLabelTail` strips a rate with an optional space before the percent
+  (`5 %`); the guard's parallel regex required the `%` glued. `Total 5 % 40.00` bound on accept but the
+  guard captured the rate digit, collapsing two distinct totals -> ambiguity guard blind. Fixed the rate
+  alternative, then audited all six tail elements.
+- **Round 3 (glued code/modifier).** A currency code or modifier glued to the number (`Total USD40.00`)
+  bound on accept (its strip is anchored only on the leading side) but the guard's `\b...\b` required a
+  trailing boundary too, so the guard went blind again -> a stated total silently dropped.
+
+Three rounds, three instances of the same class (a tail the accept path strips but the parallel guard
+regex did not). **Durable fix:** the guards (`governedValues`, `labelGovernsAValue`) no longer use a
+parallel regex - they derive directly from the accept path (`labelGovernsValue` -> `stripLabelTail`),
+scanning each number and asking the same routine. The two paths now cannot drift on the label-to-value
+tail by construction; any tail added to the accept path applies to the guards automatically. Removed the
+obsolete `LBL_GAP` / `LBL_MOD` regexes. Locked by `fail_currency-code-hides-final-total`,
+`fail_currency-code-total-dropped`, `fail_currency-code-ambiguity`, `fail_rate-space-ambiguity`,
+`fail_currency-code-glued-dropped`. Every round-1/2/3 attack now fails; a legit single-total-with-rate
+receipt still passes (no false positive).
+
+Correction, again: "structurally immune" was wrong through rounds 1-3; this class was live. It is now
+closed at the source (one shared governance routine), pending a clean adversary round to confirm.
+
+13 valid outputs, 73 fixtures. Suite green; fresh-clone green.

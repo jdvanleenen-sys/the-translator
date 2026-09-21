@@ -1,0 +1,4 @@
+{ "_fixture": "A currency code glued to the number ('Total USD40.00') must not blind the under-report guard. The accept path binds 40.00 (it strips the code); the guards must see it too. The receipt states one total; the output drops it to 'not in source'; must fail [trace]. Regression guard for the glued-code accept/guard boundary asymmetry (round-3 adversary find; closed by deriving the guards from stripLabelTail).", "_expect_gate": "trace",
+  "conversion": "expense-report", "source_file": "verify/fixtures/sample-receipt-curcode-glued.txt",
+  "lines": [{"line_no":1,"date":{"value":"Jan 15","cite":[2]},"vendor":{"value":"Depot","cite":[1]},"amount":{"value":"not in source"},"currency":{"value":"not in source"},"category":{"value":"not in source"},"tax":{"value":"not in source"}}],
+  "unmapped_input_lines": [{"line":3,"code":"other","note":"Total USD40.00"}] }

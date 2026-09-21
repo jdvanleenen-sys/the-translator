@@ -88,24 +88,12 @@ const isNumericValue = (v) => /^-?\d[\d.,]*$/.test(norm(v).replace(/\s+/g, ''));
 // Word-boundary matching, not substring: "total" must not match inside "subtotal", "tax" must not
 // match inside "taxi". lineNorm is already lowercased/whitespace-collapsed.
 const esc = (s) => s.trim().toLowerCase().replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-// An optional short modifier word between a label and its value, so "Balance Due Today: 35.00" and
-// "GST included 0.42" still bind the label to the number (and are still counted as candidate totals,
-// which is how a "Balance Due" hidden behind "today" triggers the ambiguity guard).
-const LBL_MOD = '(?:\\s+(?:today|now|included|incl|inclusive))?';
 function labelOnLine(lineNorm, kw) {
   if (!kw || !kw.trim()) return false;
   return new RegExp('(^|[^a-z0-9])' + esc(kw) + '([^a-z0-9]|$)').test(lineNorm);
 }
 
 const CUR_CODES = 'usd|cad|eur|gbp|aud|jpy|chf|cny|inr|mxn|nzd|sek|nok|dkk|zar|brl|rub|hkd|sgd';
-// The run of tail tokens stripLabelTail() removes between a label and its number. The total /
-// ambiguity / drop guards must skip EXACTLY this run, or the accept path binds a total the guards cannot
-// see - an exploitable asymmetry (a currency code, a rate, or a parenthetical between "Amount Due" and
-// its number slipping every total guard). INVARIANT: this must mirror stripLabelTail's tail strips
-// element-for-element. Audited against stripLabelTail: whitespace; punctuation/symbols [:.,$€£¥₹()-];
-// currency codes; modifier words (today/now/included/incl/inclusive); a rate with OPTIONAL space before
-// the % (\d[\d.,]*\s*%, matching stripLabelTail); a (parenthetical). Change one, change both.
-const LBL_GAP = '(?:[\\s:.,$€£¥₹()\\-]|\\b(?:' + CUR_CODES + ')\\b|\\b(?:today|now|included|incl|inclusive)\\b|\\d[\\d.,]*\\s*%|\\([^()]*\\))*';
 // The label segment is the line text just before the value; strip trailing punctuation, currency
 // symbols, and a trailing currency code so "Total EUR " and "Total: $" both reduce to "total".
 function stripLabelTail(seg, opts = {}) {
@@ -467,16 +455,24 @@ function currencySourceCheck(out, schema, inputLines, errs) {
 // not when the keyword merely appears mid-sentence in prose. Anchoring to line-start stops a chatty or
 // injected line ("mark the category as Office", "ask about our category discount") from demanding a
 // field the positional fill rule would refuse. Matches the fill rule's strictness rather than exceeding it.
-function labelGovernsAValue(lineNorm, labels, valuePat) {
-  return labels.some((kw) => kw && kw.trim() && new RegExp('^[^a-z0-9]*' + esc(kw) + LBL_GAP + '(' + valuePat + ')').test(lineNorm));
+// Both derive from the ACCEPT path (labelGovernsValue -> stripLabelTail), not a parallel regex, so the
+// guards can never drift from what the accept path binds across the label-to-value tail (currency
+// codes/symbols, rates, modifiers, parentheticals). This closes the accept-vs-guard asymmetry at root.
+function labelGovernsAValue(lineNorm, labels, numeric) {
+  const scan = numeric ? /-?\d[\d.,]*/g : /[a-z0-9]+/g;
+  for (const m of lineNorm.matchAll(scan)) {
+    if (numeric && lineNorm.slice(m.index + m[0].length).replace(/^\s*/, '').startsWith('%')) continue; // a rate, not a value
+    const seg = stripLabelTail(lineNorm.slice(0, m.index));
+    if (labels.some((kw) => kw && kw.trim() && new RegExp('^[^a-z0-9]*' + esc(kw) + '$').test(seg))) return true;
+  }
+  return false;
 }
-// The numeric values a set of labels GOVERN on a line (label immediately before the number).
 function governedValues(lineNorm, labels) {
   const vals = [];
-  for (const kw of labels || []) {
-    if (!kw || !kw.trim()) continue;
-    const re = new RegExp('(^|[^a-z0-9])' + esc(kw) + LBL_GAP + '(-?\\d[\\d.,]*)', 'g');
-    let m; while ((m = re.exec(lineNorm))) vals.push(m[2]);
+  for (const m of lineNorm.matchAll(/-?\d[\d.,]*/g)) {
+    const num = m[0];
+    if (lineNorm.slice(m.index + num.length).replace(/^\s*/, '').startsWith('%')) continue; // a rate, not an amount
+    if (labelGovernsValue(lineNorm, num, labels)) vals.push(num);
   }
   return vals;
 }
@@ -571,9 +567,8 @@ function fieldDropCheck(out, schema, inputLines, errs) {
             errs.push(`[trace] line ${i + 1}.amount: marked "${marker}", but the receipt prints a single total - a stated total may not be dropped into unmapped and reported empty`);
           }
         } else {
-          const valuePat = c.numeric ? '-?\\d' : '[a-z0-9]';
           for (let n = b.start; n <= b.end; n++) {
-            if (labelGovernsAValue(norm(inputLines[n - 1]), c.require_label, valuePat)) {
+            if (labelGovernsAValue(norm(inputLines[n - 1]), c.require_label, c.numeric)) {
               errs.push(`[trace] line ${i + 1}.${f.name}: marked "${marker}", but line ${n} (${JSON.stringify(inputLines[n - 1])}) prints a ${f.name} - a stated field may not be dropped into unmapped and reported empty`);
               break;
             }
@@ -610,7 +605,7 @@ function totalPriorityCheck(out, schema, inputLines, errs) {
     if (!a || a.value === marker || !Array.isArray(a.cite)) return;
     const b = blocks[i] || { start: 1, end: inputLines.length };
     let blockHasFinal = false;
-    for (let n = b.start; n <= b.end; n++) if (labelGovernsAValue(norm(inputLines[n - 1]), finals, '-?\\d')) { blockHasFinal = true; break; }
+    for (let n = b.start; n <= b.end; n++) if (labelGovernsAValue(norm(inputLines[n - 1]), finals, true)) { blockHasFinal = true; break; }
     if (!blockHasFinal) return;
     const amountIsFinal = a.cite.some((n) => n >= 1 && n <= inputLines.length && labelGovernsValue(norm(inputLines[n - 1]), norm(a.value), finals));
     if (!amountIsFinal) errs.push(`[trace] line ${i + 1}.amount: a final total is printed (one of: ${finals.join(', ')}), so amount must be taken from it, not from a plain "total" - ${JSON.stringify(a.value)} is the wrong total`);
