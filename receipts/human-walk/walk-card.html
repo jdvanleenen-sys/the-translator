@@ -1,0 +1,206 @@
+<title>Check it yourself — The Translator</title>
+<style>
+  :root{
+    --paper:#F5F1E8; --card:#FFFFFF; --ink:#23201A; --muted:#6B6355;
+    --line:#E4DDCC; --line-strong:#D3C9B2;
+    --ok:#2F7D4F; --ok-bg:#E7F1EA; --ok-line:#BFE0CC;
+    --warn:#9A6314; --warn-bg:#FBF0DA; --warn-line:#EAD3A0;
+    --shadow:0 1px 2px rgba(40,34,20,.06),0 6px 20px rgba(40,34,20,.07);
+    --sans:-apple-system,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+    --mono:"SFMono-Regular",Consolas,"Liberation Mono",Menlo,monospace;
+  }
+  @media (prefers-color-scheme:dark){
+    :root{
+      --paper:#17150F; --card:#221F17; --ink:#ECE6D6; --muted:#A79E89;
+      --line:#332E20; --line-strong:#453E29;
+      --ok:#78C293; --ok-bg:#18251C; --ok-line:#2C4633;
+      --warn:#E4AC55; --warn-bg:#2A2114; --warn-line:#4A3A1E;
+      --shadow:0 1px 2px rgba(0,0,0,.3),0 8px 26px rgba(0,0,0,.35);
+    }
+  }
+  :root[data-theme="light"]{
+    --paper:#F5F1E8; --card:#FFFFFF; --ink:#23201A; --muted:#6B6355;
+    --line:#E4DDCC; --line-strong:#D3C9B2;
+    --ok:#2F7D4F; --ok-bg:#E7F1EA; --ok-line:#BFE0CC;
+    --warn:#9A6314; --warn-bg:#FBF0DA; --warn-line:#EAD3A0;
+    --shadow:0 1px 2px rgba(40,34,20,.06),0 6px 20px rgba(40,34,20,.07);
+  }
+  :root[data-theme="dark"]{
+    --paper:#17150F; --card:#221F17; --ink:#ECE6D6; --muted:#A79E89;
+    --line:#332E20; --line-strong:#453E29;
+    --ok:#78C293; --ok-bg:#18251C; --ok-line:#2C4633;
+    --warn:#E4AC55; --warn-bg:#2A2114; --warn-line:#4A3A1E;
+    --shadow:0 1px 2px rgba(0,0,0,.3),0 8px 26px rgba(0,0,0,.35);
+  }
+  *{box-sizing:border-box}
+  body{background:var(--paper);color:var(--ink);font-family:var(--sans);line-height:1.55;
+    -webkit-font-smoothing:antialiased;margin:0}
+  .wrap{max-width:940px;margin:0 auto;padding:32px 20px 64px}
+  .eyebrow{font-size:12px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:var(--warn)}
+  h1{font-size:clamp(26px,4.2vw,38px);line-height:1.1;margin:.35rem 0 .5rem;font-weight:800;
+    letter-spacing:-.02em;text-wrap:balance}
+  .lede{font-size:clamp(16px,2.4vw,18px);color:var(--muted);max-width:64ch;margin:0}
+  .lede b{color:var(--ink);font-weight:600}
+  section{margin-top:34px}
+  .h2{font-size:13px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);
+    margin:0 0 12px}
+  .panels{display:grid;grid-template-columns:1fr 1fr;gap:18px}
+  @media (max-width:680px){.panels{grid-template-columns:1fr}}
+  .card{background:var(--card);border:1px solid var(--line);border-radius:14px;box-shadow:var(--shadow)}
+  .card-h{padding:14px 18px;border-bottom:1px solid var(--line);font-weight:700;font-size:14px;
+    display:flex;align-items:center;gap:8px}
+  .card-b{padding:14px 18px}
+  /* receipt */
+  .rcpt{font-family:var(--mono);font-size:14px;line-height:1.9}
+  .rl{display:flex;gap:12px;align-items:baseline;border-radius:6px;padding:1px 6px;margin:0 -6px}
+  .rl .n{color:var(--muted);width:1.4em;text-align:right;flex:none;font-size:12px;
+    font-variant-numeric:tabular-nums}
+  .rl.used{background:var(--ok-bg);box-shadow:inset 2px 0 0 var(--ok)}
+  .rl.unused{color:var(--muted)}
+  .rl .tag{margin-left:auto;font-family:var(--sans);font-size:10.5px;font-weight:700;
+    letter-spacing:.04em;text-transform:uppercase;padding:1px 7px;border-radius:100px;flex:none;align-self:center}
+  .rl.used .tag{color:var(--ok);background:var(--card);border:1px solid var(--ok-line)}
+  .rl.unused .tag{color:var(--muted);background:var(--card);border:1px solid var(--line-strong)}
+  /* output field list */
+  .field{display:flex;align-items:baseline;justify-content:space-between;gap:12px;
+    padding:9px 0;border-bottom:1px solid var(--line)}
+  .field:last-child{border-bottom:0}
+  .field .k{font-size:13px;color:var(--muted);font-weight:600;flex:none;width:82px}
+  .field .v{font-family:var(--mono);font-size:14px;font-weight:600;text-align:right;flex:1}
+  .chip{font-family:var(--sans);font-size:11px;font-weight:700;padding:1px 8px;border-radius:100px;
+    margin-left:8px;white-space:nowrap}
+  .chip.src{color:var(--ok);background:var(--ok-bg);border:1px solid var(--ok-line)}
+  .nis{color:var(--warn);font-family:var(--mono);font-weight:600}
+  /* steps */
+  .step{display:flex;gap:14px;padding:14px 16px;background:var(--card);border:1px solid var(--line);
+    border-radius:12px;margin-bottom:10px;box-shadow:var(--shadow)}
+  .step .box{width:26px;height:26px;border:2px solid var(--line-strong);border-radius:7px;flex:none;
+    margin-top:1px}
+  .step .body{flex:1}
+  .step .t{font-weight:700;margin:0 0 2px}
+  .step .d{margin:0;color:var(--muted);font-size:14.5px}
+  .step .d code{font-family:var(--mono);background:var(--paper);border:1px solid var(--line);
+    padding:.5px 5px;border-radius:5px;font-size:13px;color:var(--ink)}
+  .step .d .hit{color:var(--ok);font-weight:700}
+  .step .d .ref{color:var(--warn);font-weight:700}
+  .callout{background:var(--warn-bg);border:1px solid var(--warn-line);border-radius:14px;padding:18px 20px}
+  .callout .h2{color:var(--warn)}
+  .callout p{margin:0;font-size:15.5px}
+  .callout p b{color:var(--ink)}
+  .close{background:var(--card);border:1px solid var(--line);border-left:4px solid var(--ok);
+    border-radius:12px;padding:18px 20px;font-size:16px}
+  .close b{font-weight:700}
+  .sign{margin-top:22px;display:grid;grid-template-columns:1fr 1fr;gap:16px}
+  @media (max-width:520px){.sign{grid-template-columns:1fr}}
+  .sign .f{border-bottom:1.5px solid var(--line-strong);padding-bottom:4px}
+  .sign .f .lab{font-size:11px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
+  .foot{margin-top:30px;color:var(--muted);font-size:12.5px;border-top:1px solid var(--line);padding-top:14px}
+  .foot code{font-family:var(--mono)}
+</style>
+
+<div class="wrap">
+  <header>
+    <div class="eyebrow">A two-minute honesty check &middot; no technical knowledge needed</div>
+    <h1>Did the tool make anything up? Check it by hand.</h1>
+    <p class="lede">A computer program read the receipt on the left and filled in the form on the right.
+      Your job is simple: pick a few things the form claims and confirm each one is <b>really printed on
+      the receipt</b> — and that where the form says <b>&ldquo;not in source,&rdquo;</b> the receipt truly
+      doesn&rsquo;t say it. If that all holds, the tool didn&rsquo;t invent anything. You don&rsquo;t need
+      to trust it. You&rsquo;re about to verify it.</p>
+  </header>
+
+  <section>
+    <div class="panels">
+      <div class="card">
+        <div class="card-h">🧾 The receipt (exactly as the tool received it)</div>
+        <div class="card-b rcpt">
+          <div class="rl used"><span class="n">1</span><span>Blue Ridge Coffee Co</span><span class="tag">used</span></div>
+          <div class="rl used"><span class="n">2</span><span>Jan 3</span><span class="tag">used</span></div>
+          <div class="rl unused"><span class="n">3</span><span>1 Large Latte</span><span class="tag">shown, not used</span></div>
+          <div class="rl used"><span class="n">4</span><span>Total 6.50</span><span class="tag">used</span></div>
+          <div class="rl unused"><span class="n">5</span><span>Card ****1234</span><span class="tag">shown, not used</span></div>
+          <div class="rl unused"><span class="n">6</span><span>Earn 65 loyalty points</span><span class="tag">shown, not used</span></div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-h">📋 What the tool filled in</div>
+        <div class="card-b">
+          <div class="field"><span class="k">Store</span><span class="v">Blue Ridge Coffee Co<span class="chip src">from line 1</span></span></div>
+          <div class="field"><span class="k">Date</span><span class="v">Jan 3<span class="chip src">from line 2</span></span></div>
+          <div class="field"><span class="k">Total</span><span class="v">6.50<span class="chip src">from line 4</span></span></div>
+          <div class="field"><span class="k">Currency</span><span class="v nis">not in source</span></div>
+          <div class="field"><span class="k">Category</span><span class="v nis">not in source</span></div>
+          <div class="field"><span class="k">Tax</span><span class="v nis">not in source</span></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <div class="h2">Walk through it out loud &middot; tick each box as you confirm it</div>
+
+    <div class="step"><div class="box"></div><div class="body">
+      <p class="t">1. The store name</p>
+      <p class="d">The form says <code>Blue Ridge Coffee Co</code>. Find it on the receipt.
+        It&rsquo;s <span class="hit">line 1</span>. Same words? Tick the box.</p></div></div>
+
+    <div class="step"><div class="box"></div><div class="body">
+      <p class="t">2. The date</p>
+      <p class="d">The form says <code>Jan 3</code>. Find it &mdash; <span class="hit">line 2</span>.
+        Notice it did <b>not</b> add a year the receipt never printed.</p></div></div>
+
+    <div class="step"><div class="box"></div><div class="body">
+      <p class="t">3. The total</p>
+      <p class="d">The form says <code>6.50</code>. Find it &mdash; <span class="hit">line 4</span>,
+        <code>Total 6.50</code>. It didn&rsquo;t round it, change it, or add up the items itself.</p></div></div>
+
+    <div class="step"><div class="box"></div><div class="body">
+      <p class="t">4. The currency &mdash; the honest part</p>
+      <p class="d">The form says <span class="ref">not in source</span>. Look at the receipt: is there a
+        <code>$</code>, <code>USD</code>, or any currency next to the total? <b>No.</b> A dishonest tool
+        would guess &ldquo;$.&rdquo; This one refused. That&rsquo;s the whole point.</p></div></div>
+
+    <div class="step"><div class="box"></div><div class="body">
+      <p class="t">5. Category &amp; tax</p>
+      <p class="d">Both say <span class="ref">not in source</span>. The receipt prints no category and no
+        tax line, so the tool left them blank instead of inventing them.</p></div></div>
+
+    <div class="step"><div class="box"></div><div class="body">
+      <p class="t">6. Nothing was hidden</p>
+      <p class="d">The three lines the form didn&rsquo;t use &mdash; the latte, the card number, the
+        loyalty points &mdash; are still listed as <span class="hit">&ldquo;shown, not used.&rdquo;</span>
+        Nothing on the receipt was quietly dropped.</p></div></div>
+  </section>
+
+  <section>
+    <div class="callout">
+      <div class="h2">Why this matters</div>
+      <p>Every line on the form is either <b>pointing at a receipt line you can see with your own eyes</b>,
+        or it honestly says <b>&ldquo;not in source.&rdquo;</b> Nothing was guessed, computed, or made up.
+        The last tools people tried invented numbers and lost trust. You just checked this one by hand in
+        two minutes &mdash; no code, no faith required.</p>
+    </div>
+  </section>
+
+  <section>
+    <div class="close">
+      <b>Say it in your own words for the camera:</b> &ldquo;I&rsquo;m not connected to whoever built this.
+      I looked at the receipt and the form. Everything the form claims is really on the receipt, and where
+      it didn&rsquo;t know, it said so instead of guessing. It didn&rsquo;t make anything up.&rdquo;
+    </div>
+
+    <div class="sign">
+      <div class="f"><div class="lab">Your name (the walker)</div></div>
+      <div class="f"><div class="lab">Your connection to the builder (state it honestly)</div></div>
+      <div class="f"><div class="lab">Date</div></div>
+      <div class="f"><div class="lab">Verified by hand &mdash; nothing invented? (yes / no)</div></div>
+    </div>
+  </section>
+
+  <div class="foot">
+    The Translator &middot; receipt text &rarr; a fixed expense record, every value traced or
+    &ldquo;not in source.&rdquo; This example is the committed case <code>inputs/receipts-coffee.txt</code>;
+    the machine version of this same check is <code>node&nbsp;verify/check.mjs</code>.
+  </div>
+</div>
