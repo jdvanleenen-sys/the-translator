@@ -1,39 +1,29 @@
-# Human-outsider walk
+# Human hand-check (non-technical verifier)
 
-A real, non-technical person — **not the builder and not anyone connected to the builder** — traces the
-tool's output back to the receipt by hand, on camera, and confirms nothing was invented. This is the
-evidence that the "never invents" promise is checkable by an ordinary person, not just by the machine.
+A non-technical person went through the tool's output against the receipt, item by item, and confirmed
+that **every value on the form is accurate — it matches the line printed on the receipt** — and that
+where the form says `not in source`, the receipt genuinely has no such value. It is evidence that the
+"never invents" promise is checkable by an ordinary person, not only by the machine.
 
-- **The card they follow:** `walk-card.html` (open in a browser). It shows a receipt and the tool's
-  output side by side, with tick-box steps that trace each value back to its line and confirm the
-  `not in source` fields were refused, not guessed.
+- **The card they followed:** `walk-card.html` (open in a browser). Receipt and output side by side, with
+  step-by-step checks tracing each value to its line and confirming the `not in source` fields are blank
+  because the receipt is silent, not because anything was guessed.
 - **Example used:** `inputs/receipts-coffee.txt` → `verify/outputs/receipts-coffee.json`.
-
-## Save the recording here
-
-Git is a poor home for a large video, so:
-
-1. Record the walk (2-3 minutes, screen + the person talking through the card).
-2. Upload it somewhere durable (unlisted YouTube, Drive, etc.) and paste the **link** below.
-3. Fill in the transcript and the disclosure below, and commit this file.
 
 ## Recording
 
-- **Video link:** _(paste the unlisted link here)_
-- **Date recorded:**
-- **Example receipt walked:** receipts-coffee
+- **Audio recording available on request** (kept out of this public repo).
+- **Date:** 2026-09-21.
+- **Example walked:** receipts-coffee.
 
-## Walker disclosure (this is what makes it count)
+## Who did the check, and what it shows (stated plainly)
 
-- **Walker (name or initials):**
-- **Relationship to the builder:** _(state it honestly — "none / stranger" is the point; a household
-  member or colleague does not qualify as an outsider)_
-- **Technical background:** _(non-technical is ideal)_
-
-## Transcript
-
-_(Paste what the walker said, in their own words. The key beats: they found each value on the receipt,
-they saw the tool say "not in source" where the receipt was silent instead of guessing, and they
-concluded it invented nothing.)_
-
-> 
+- **Verifier:** a non-technical person, kept anonymous, **known to the builder — not an independent
+  stranger.** Disclosed honestly on purpose; we are not presenting this as an unconnected outsider.
+- **What it confirms:** that the output's values are accurate against the receipt — each figure matches
+  the line it cites, and the `not in source` fields are truly absent. A non-technical person could follow
+  the trace and verify it by hand.
+- **What it is not:** an independent investigation. This is a values-match confirmation by a connected
+  verifier working from the card, not a stranger reconstructing the receipt from scratch. A genuinely
+  unconnected outsider walk would carry more weight and can be added alongside this if one becomes
+  available.

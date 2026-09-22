@@ -1,1 +1,7 @@
 _batch*/
+
+# Human-walk recordings are available on request, not committed to the public repo
+receipts/human-walk/*.m4a
+receipts/human-walk/*.mp4
+receipts/human-walk/*.mov
+receipts/human-walk/*.wav
