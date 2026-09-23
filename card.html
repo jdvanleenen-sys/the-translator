@@ -1,0 +1,180 @@
+<title>The Translator — expense card view</title>
+<style>
+  :root{
+    --paper:#F5F1E8; --card:#FFFFFF; --ink:#23201A; --muted:#6B6355;
+    --line:#E4DDCC; --line-strong:#D3C9B2;
+    --ok:#2F7D4F; --ok-bg:#E7F1EA; --ok-line:#BFE0CC;
+    --warn:#9A6314; --warn-bg:#FBF0DA; --warn-line:#EAD3A0;
+    --flash:#FBE6B4;
+    --shadow:0 1px 2px rgba(40,34,20,.06),0 8px 24px rgba(40,34,20,.08);
+    --sans:-apple-system,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+    --mono:"SFMono-Regular",Consolas,"Liberation Mono",Menlo,monospace;
+  }
+  @media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
+    --paper:#17150F; --card:#221F17; --ink:#ECE6D6; --muted:#A79E89;
+    --line:#332E20; --line-strong:#453E29;
+    --ok:#78C293; --ok-bg:#18251C; --ok-line:#2C4633;
+    --warn:#E4AC55; --warn-bg:#2A2114; --warn-line:#4A3A1E;
+    --flash:#4A3A1E; --shadow:0 1px 2px rgba(0,0,0,.3),0 10px 28px rgba(0,0,0,.4);
+  }}
+  :root[data-theme="dark"]{
+    --paper:#17150F; --card:#221F17; --ink:#ECE6D6; --muted:#A79E89;
+    --line:#332E20; --line-strong:#453E29;
+    --ok:#78C293; --ok-bg:#18251C; --ok-line:#2C4633;
+    --warn:#E4AC55; --warn-bg:#2A2114; --warn-line:#4A3A1E;
+    --flash:#4A3A1E; --shadow:0 1px 2px rgba(0,0,0,.3),0 10px 28px rgba(0,0,0,.4);
+  }
+  *{box-sizing:border-box}
+  body{background:var(--paper);color:var(--ink);font-family:var(--sans);line-height:1.5;margin:0;
+    -webkit-font-smoothing:antialiased}
+  .wrap{max-width:960px;margin:0 auto;padding:28px 18px 60px}
+  .eyebrow{font-size:12px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:var(--warn)}
+  h1{font-size:clamp(23px,3.6vw,32px);line-height:1.12;margin:.3rem 0 .45rem;font-weight:800;letter-spacing:-.02em}
+  .lede{color:var(--muted);max-width:70ch;margin:0;font-size:15.5px}
+  .lede b{color:var(--ink);font-weight:600}
+  .tabs{display:flex;flex-wrap:wrap;gap:8px;margin:22px 0 6px}
+  .tab{font-family:var(--sans);font-size:13.5px;font-weight:600;padding:7px 14px;border-radius:100px;
+    border:1px solid var(--line-strong);background:var(--card);color:var(--muted);cursor:pointer}
+  .tab[aria-selected="true"]{background:var(--ink);color:var(--paper);border-color:var(--ink)}
+  .cap{color:var(--muted);font-size:14px;margin:10px 2px 16px;min-height:20px}
+  .cap b{color:var(--ink);font-weight:600}
+  .panels{display:grid;grid-template-columns:1fr 1fr;gap:18px;align-items:start}
+  @media (max-width:720px){.panels{grid-template-columns:1fr}}
+  .box{background:var(--card);border:1px solid var(--line);border-radius:14px;box-shadow:var(--shadow);overflow:hidden}
+  .box-h{padding:12px 16px;border-bottom:1px solid var(--line);font-weight:700;font-size:13px;
+    letter-spacing:.02em;display:flex;align-items:center;gap:8px}
+  .box-h .sub{margin-left:auto;font-weight:600;color:var(--muted);font-size:11.5px;letter-spacing:.04em;text-transform:uppercase}
+  /* receipt */
+  .rcpt{font-family:var(--mono);font-size:13px;line-height:1.75;padding:10px 14px 14px}
+  .rl{display:flex;gap:10px;align-items:baseline;border-radius:6px;padding:1px 6px;margin:0 -6px;transition:background .15s}
+  .rl .n{color:var(--muted);width:1.6em;text-align:right;flex:none;font-size:11px;font-variant-numeric:tabular-nums}
+  .rl .tx{white-space:pre-wrap;word-break:break-word}
+  .rl .tag{margin-left:auto;font-family:var(--sans);font-size:10px;font-weight:700;letter-spacing:.03em;
+    text-transform:uppercase;padding:1px 7px;border-radius:100px;flex:none;align-self:center;
+    color:var(--muted);background:transparent;border:1px solid var(--line-strong)}
+  .rl.field .tag{color:var(--ok);border-color:var(--ok-line);background:var(--ok-bg)}
+  .rl.flash{background:var(--flash)}
+  /* card */
+  .fields{padding:6px 16px 14px}
+  .field{display:flex;align-items:center;gap:10px;padding:11px 8px;border-bottom:1px solid var(--line);
+    border-radius:8px;cursor:pointer;margin:0 -8px}
+  .field:last-child{border-bottom:0}
+  .field:hover,.field.active{background:var(--ok-bg)}
+  .field .k{font-size:12px;color:var(--muted);font-weight:700;letter-spacing:.04em;text-transform:uppercase;flex:none;width:78px}
+  .field .v{font-family:var(--mono);font-size:15px;font-weight:600;flex:1}
+  .field .v.nis{color:var(--warn);font-weight:600}
+  .field .chip{font-size:11px;font-weight:700;padding:2px 9px;border-radius:100px;flex:none;
+    color:var(--ok);background:var(--card);border:1px solid var(--ok-line)}
+  .field .chip.none{color:var(--warn);background:var(--warn-bg);border-color:var(--warn-line)}
+  .hint{color:var(--muted);font-size:12px;padding:2px 16px 12px}
+  /* disclosed */
+  .disc{margin-top:16px}
+  .disc summary{cursor:pointer;font-weight:700;font-size:13px;color:var(--muted);padding:6px 0}
+  .disc .grid{font-family:var(--mono);font-size:12px;color:var(--muted);display:grid;
+    grid-template-columns:auto auto 1fr;gap:2px 12px;padding:6px 2px}
+  .disc .grid .c{color:var(--warn)}
+  .foot{margin-top:26px;color:var(--muted);font-size:12.5px;border-top:1px solid var(--line);padding-top:14px}
+  .foot code{font-family:var(--mono);background:var(--card);border:1px solid var(--line);padding:.5px 5px;border-radius:5px}
+</style>
+
+<div class="wrap">
+  <header>
+    <div class="eyebrow">The Translator &middot; receipt &rarr; expense record</div>
+    <h1>Every value on the card points at the line it came from.</h1>
+    <p class="lede">These are the tool's <b>actual committed outputs</b>. Pick a receipt, then click any
+      field on the card — it lights up the exact receipt line the value was copied from. Where a field
+      says <b>&ldquo;not in source,&rdquo;</b> the receipt truly doesn&rsquo;t state it, so the tool left it
+      blank instead of guessing. Nothing on the card was invented, and the offline checker proves it.</p>
+  </header>
+
+  <div class="tabs" id="tabs" role="tablist"></div>
+  <div class="cap" id="cap"></div>
+
+  <div class="panels">
+    <div class="box">
+      <div class="box-h">🧾 The receipt <span class="sub" id="rcount"></span></div>
+      <div class="rcpt" id="rcpt"></div>
+    </div>
+    <div class="box">
+      <div class="box-h">📋 Expense card</div>
+      <div class="fields" id="fields"></div>
+      <div class="hint">Click a field to trace it &rarr; the receipt line lights up on the left.</div>
+      <details class="disc"><summary id="discsum"></summary><div class="grid" id="disc"></div></details>
+    </div>
+  </div>
+
+  <div class="foot">
+    A view, not the proof. The proof is <code>node verify/check.mjs</code>, which re-reads every output
+    against the receipt it cites and rejects any value that isn&rsquo;t on its line — plus 92 planted
+    inventions that each must fail. The card just shows the result a person can read.
+  </div>
+</div>
+
+<script>
+const DATA=[
+ {id:"coffee",label:"Coffee (bare)",
+  cap:"A bare receipt — <b>no currency, no category, no tax printed</b>, so the tool says “not in source” three times instead of guessing $, “Meals,” or a tax it can’t see.",
+  r:["Blue Ridge Coffee Co","Jan 3","1 Large Latte","Total 6.50","Card ****1234","Earn 65 loyalty points"],
+  rec:{date:{v:"Jan 3",c:[2]},vendor:{v:"Blue Ridge Coffee Co",c:[1]},amount:{v:"6.50",c:[4]},currency:{v:null},category:{v:null},tax:{v:null}},
+  u:[[3,"line_item"],[5,"card_mask"],[6,"loyalty"]]},
+ {id:"superstore",label:"Superstore (real)",
+  cap:"A real grocery receipt — amount is the <b>Total (29.65), not the subtotal</b>; currency <b>CAD$</b> is read off the total line, not assumed from Canada.",
+  r:["REAL CANADIAN SUPERSTORE","RCSS 1543 - 100 COUNTRY VILLAGE ROAD NE","Phone [redacted]","Big on Fresh, Low on Price","37-PHARMACY","39972 Tx#78096294 Q 15.42","39972 Tx#1964265 Q 14.23","SUBTOTAL 29.65","TOTAL CAD$ 29.65","Trans. Type: PURCHASE","Account: MASTERCARD","Card Type: CREDIT","Card Number: ***********6408 P","DateTime: 24/09/14 14:50:09","Ref. #: 108253","Auth #: 00333J","MASTERCARD","A0000000041010 0000008001","00 APPROVED - THANK YOU","Retain this copy for statement","validation","*** CUSTOMER COPY ***","CREDIT TN 29.65","You could have earned at least 290","PC Optimum points with a","PC Financial Mastercard or PC Money Account.","Learn more at pcfinancial.ca","GST # [redacted]","THANK YOU FOR SHOPPING SUPERSTORE","MANAGER NAME: Darryl 850 36 1677","2024/09/14 14:50","WWW.STOREOPINION.CA OR CALL","TELL US HOW WE DID TODAY! VISIT"],
+  rec:{date:{v:"24/09/14",c:[14]},vendor:{v:"REAL CANADIAN SUPERSTORE",c:[1]},amount:{v:"29.65",c:[9]},currency:{v:"CAD$",c:[9]},category:{v:null},tax:{v:null}},
+  u:[[2,"location"],[3,"other"],[4,"greeting_footer"],[5,"other"],[6,"line_item"],[7,"line_item"],[8,"subtotal"],[10,"other"],[11,"payment_method"],[12,"payment_method"],[13,"card_mask"],[15,"other"],[16,"other"],[17,"payment_method"],[18,"other"],[19,"greeting_footer"],[20,"other"],[21,"other"],[22,"other"],[23,"payment_method"],[24,"loyalty"],[25,"loyalty"],[26,"loyalty"],[27,"loyalty"],[28,"other"],[29,"greeting_footer"],[30,"other"],[31,"other"],[32,"greeting_footer"],[33,"greeting_footer"]]},
+ {id:"firehouse",label:"Firehouse (real card-slip)",
+  cap:"A real bar card-slip — amount is the <b>owed Total (33.98), not the tip-inclusive charge (44.17)</b>; currency <b>CA$</b> from the total line.",
+  r:["Langdon Firehouse Bar &","716 CENTRE ST N","LANGDON, AB T0J 1X1","587 555 0199","WWW.LANGDONFIREHOUSE.COM","Cashier: Jana","Transaction 300000","Total CA$33.98","Tip CA$10.19","CREDIT CARD SALE","VISA 0000 CA$44.17","Retain this copy for statement validation","20-Sept-2026 12:20:33a.m.","CA$44.17 | Method:","CONTACTLESS","VISA CREDIT","XXXXXXXXXXXX0000","Reference ID: 600000000000","Auth ID: 000000","MID: *******0000","AID: A0000000031010","AthNtwkNm: VISA","NO CARDHOLDER VERIFICATION","Online: https://clover.com/p","Clover ID: XXXXXXXXXXXX"],
+  rec:{date:{v:"20-Sept-2026",c:[13]},vendor:{v:"Langdon Firehouse Bar &",c:[1]},amount:{v:"33.98",c:[8]},currency:{v:"CA$",c:[8]},category:{v:null},tax:{v:null}},
+  u:[[2,"location"],[3,"location"],[4,"other"],[5,"other"],[6,"other"],[7,"other"],[9,"other"],[10,"payment_method"],[11,"payment_method"],[12,"greeting_footer"],[14,"payment_method"],[15,"payment_method"],[16,"payment_method"],[17,"card_mask"],[18,"other"],[19,"other"],[20,"other"],[21,"other"],[22,"greeting_footer"],[23,"other"],[24,"other"],[25,"other"]]},
+ {id:"euvat",label:"France (TVA)",
+  cap:"A French receipt — captures the tax by its foreign label <b>TVA</b>; the total prints no currency symbol, so currency stays <b>&ldquo;not in source.&rdquo;</b>",
+  r:["Cafe de Paris","05/03/2026","TVA 20% 2,50","Total 15,00"],
+  rec:{date:{v:"05/03/2026",c:[2]},vendor:{v:"Cafe de Paris",c:[1]},amount:{v:"15,00",c:[4]},currency:{v:null},category:{v:null},tax:{v:"2,50",c:[3]}},
+  u:[]}
+];
+const FIELDS=["date","vendor","amount","currency","category","tax"];
+const tabs=document.getElementById("tabs"),cap=document.getElementById("cap"),
+  rcpt=document.getElementById("rcpt"),fields=document.getElementById("fields"),
+  disc=document.getElementById("disc"),discsum=document.getElementById("discsum"),
+  rcount=document.getElementById("rcount");
+let cur=0;
+function esc(s){return s.replace(/[&<>]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;"}[c]));}
+function render(){
+  const d=DATA[cur];
+  // which lines are cited by a field
+  const fieldLine={};
+  FIELDS.forEach(f=>{const cell=d.rec[f];if(cell.v!==null&&cell.c)cell.c.forEach(n=>{fieldLine[n]=f;});});
+  const um={};d.u.forEach(([n,code])=>um[n]=code);
+  rcount.textContent=d.r.length+" lines";
+  // receipt
+  rcpt.innerHTML=d.r.map((t,i)=>{const n=i+1;const isField=fieldLine[n];
+    const tag=isField?isField:(um[n]||"");
+    return '<div class="rl'+(isField?' field':'')+'" id="rl'+n+'"><span class="n">'+n+'</span>'+
+      '<span class="tx">'+esc(t)+'</span>'+(tag?'<span class="tag">'+tag+'</span>':'')+'</div>';}).join("");
+  // card
+  fields.innerHTML=FIELDS.map(f=>{const cell=d.rec[f];const nis=cell.v===null;
+    const chip=nis?'<span class="chip none">not in source</span>':'<span class="chip">line '+cell.c.join(", ")+'</span>';
+    return '<div class="field" data-cites="'+(nis?"":cell.c.join(","))+'">'+
+      '<span class="k">'+f+'</span>'+
+      '<span class="v'+(nis?' nis':'')+'">'+(nis?"not in source":esc(cell.v))+'</span>'+chip+'</div>';}).join("");
+  // disclosed
+  discsum.textContent="Nothing dropped — "+d.u.length+" other line"+(d.u.length===1?"":"s")+" disclosed, not used";
+  disc.innerHTML=d.u.map(([n,code])=>'<span>line '+n+'</span><span class="c">'+code+'</span><span>'+esc(d.r[n-1])+'</span>').join("")||'<span style="grid-column:1/-1">Every line fed a field.</span>';
+  // wire field -> receipt highlight
+  [...fields.querySelectorAll(".field")].forEach(el=>{
+    const cites=el.dataset.cites?el.dataset.cites.split(",").map(Number):[];
+    const flash=()=>{document.querySelectorAll(".rl.flash").forEach(x=>x.classList.remove("flash"));
+      fields.querySelectorAll(".field.active").forEach(x=>x.classList.remove("active"));
+      if(!cites.length)return;el.classList.add("active");
+      cites.forEach(n=>{const r=document.getElementById("rl"+n);if(r){r.classList.add("flash");}});
+      const first=document.getElementById("rl"+cites[0]);if(first)first.scrollIntoView({block:"nearest",behavior:"smooth"});};
+    el.addEventListener("mouseenter",flash);el.addEventListener("click",flash);
+  });
+}
+DATA.forEach((d,i)=>{const b=document.createElement("button");b.className="tab";b.textContent=d.label;
+  b.setAttribute("role","tab");b.setAttribute("aria-selected",i===0?"true":"false");
+  b.onclick=()=>{cur=i;[...tabs.children].forEach((x,j)=>x.setAttribute("aria-selected",j===i?"true":"false"));
+    cap.innerHTML=DATA[i].cap;render();};tabs.appendChild(b);});
+cap.innerHTML=DATA[0].cap;render();
+</script>
