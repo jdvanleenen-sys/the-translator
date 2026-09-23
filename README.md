@@ -1,5 +1,18 @@
 # The Translator — receipt text to a source-locked expense record
 
+## For judges — a 30-second proof
+
+    node verify/check.mjs --matrix
+
+    → 31/31 outputs traced clean · 92/92 planted inventions caught · READY
+
+No install (Node standard library only). Every value in every output points at the exact input line it
+was copied from, or says `not in source`; each planted-invention fixture fails through the specific gate
+it declares, so a decoy cannot pass by failing for the wrong reason. Full cold walk:
+**[`PROOF.md`](PROOF.md)**.
+
+---
+
 A folder-based AI translator with an executable no-invention test. Feed it the text of one or more
 receipts; it returns a fixed-shape expense-report record, one line per receipt, the same way every
 time. Every value either quotes the exact input line it came from or says `not in source` — nothing is
