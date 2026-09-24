@@ -11,8 +11,9 @@ was copied from, or says `not in source`; each planted-invention fixture fails t
 it declares, so a decoy cannot pass by failing for the wrong reason. Full cold walk:
 **[`PROOF.md`](PROOF.md)**.
 
-Prefer to *see* it? Open **[`card.html`](card.html)** in a browser — each output rendered as a readable
-expense card; click any field to light up the exact receipt line it was copied from.
+Prefer to *see* it? **[Open the live card view →](https://jdvanleenen-sys.github.io/the-translator/card.html)**
+(or `card.html` in the repo) — each real output rendered as a readable expense card; click any field to
+light up the exact receipt line it was copied from.
 
 ---
 
