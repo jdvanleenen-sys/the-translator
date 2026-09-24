@@ -911,3 +911,36 @@ vendor header. The committed pseudonymized Mobil used the unaccented form, which
 suite green.
 
 Text-in guarantee unchanged. 24 outputs, 92 fixtures; canonical `node verify/check.mjs` green.
+
+## v38 - money-shape drop guard + honest docs (independent post-submission review)
+
+An independent cross-brain review (fresh clone at 1e25a9f) confirmed the entry runs green, meets every
+requirement, and lets NO fabricated value through - the core "never invent" holds. It found two real
+defects in the "right kind of line" direction, both traced to one root cause: the drop/ambiguity guards
+required a required label next to a NUMBER, but never required the number to look like money.
+
+- FALSE POSITIVE (the serious one): a line like `GST 815432199` (a registration number, no `#`) made the
+  tax drop-guard force `tax` to be filled, so a CORRECT `tax: "not in source"` was rejected. Same for a
+  count: `Total 3 Items` forced `amount`, rejecting a correct `not in source`.
+- LEAK: the accept path would also take `3` (an item count) or `4` (`Gst 4` = four guests) as amount/tax
+  if a model produced it - a real value in the wrong field (not a fabrication; the value is on the line).
+
+Fix (safe, guards-only): added `looksLikeMoney` (a decimal/grouping separator between digits) and applied
+it in the GUARDS only - `governedValues` (amount candidate set) and `labelGovernsAValue` (via a `moneyOnly`
+flag used by the tax/amount drop-guard). This only makes the guards MORE permissive (they no longer force
+a total/tax from a count or an ID), so it cannot newly reject a correct output; the accept path is
+unchanged, so genuine whole-number values are still traced and no-decimal-currency handling is untouched.
+Verified: `GST 815432199`/`Total 3 Items` with a correct `not in source` now PASS, while a real dropped
+`Total 40.00`/`GST 2.43` still FAIL (guard intact). Locked by `outputs/idnum-not-tax.json` and
+`outputs/count-not-total.json`. The residual accept-leak (a real count/ID taken as amount/tax if a model
+emits it) is disclosed honestly in the README rather than closed by a risky accept-path decimal
+requirement that would false-reject whole-dollar totals - the wrong trade the day before the deadline.
+
+Docs corrected for the review's overclaims: the README no longer says "worst case a refusal, never a wrong
+value" (a look-alike real value CAN land under a matching-but-wrong label - stated plainly); "each real
+output" -> "four real committed outputs" in the card; the human hand-check is described as existing and
+honestly labeled (values-match, verifier known to the builder); the stale "23 outputs" count is now
+drift-proof (`--matrix` for the live count); and the card's Firehouse reason codes for lines 22/23 were
+un-swapped to match the committed output.
+
+33 valid outputs, 92 fixtures. Canonical `node verify/check.mjs` green; fresh-clone green.

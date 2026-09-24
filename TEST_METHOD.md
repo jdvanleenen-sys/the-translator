@@ -63,6 +63,7 @@ currency-on-the-total, the meaning-inverting label-collision class, numeric-loca
 graceful decline on malformed output) and grew the kept-red fixtures from the original 8 to 92 — each via
 a dated commit, never an edit to the frozen section above, so commit order still shows the method was not
 shaped to the outcome. The full round-by-round record — every root cause, the fix, the fixture that locks
-it, and the convergence check — is in `RESULTS.md`. Current state: 23 outputs (including two real
-photographed receipts) and 92 fixtures, all green; a fresh `git clone` runs `node verify/check.mjs` to
+it, and the convergence check — is in `RESULTS.md`. Current state: all outputs (including real
+photographed receipts) trace clean and every fixture fails through its gate — run
+`node verify/check.mjs --matrix` for the live count. A fresh `git clone` runs `node verify/check.mjs` to
 exit 0, and CI runs it on every push.

@@ -12,8 +12,8 @@ it declares, so a decoy cannot pass by failing for the wrong reason. Full cold w
 **[`PROOF.md`](PROOF.md)**.
 
 Prefer to *see* it? **[Open the live card view →](https://jdvanleenen-sys.github.io/the-translator/card.html)**
-(or `card.html` in the repo) — each real output rendered as a readable expense card; click any field to
-light up the exact receipt line it was copied from.
+(or `card.html` in the repo) — four real committed outputs rendered as readable expense cards; click any
+field to light up the exact receipt line it was copied from.
 
 ---
 
@@ -118,8 +118,9 @@ order, reason codes, per-field constraints), `field-definitions.md`, and `format
   cites. That the model *itself* obeys the rules is shown by live runs on unseen adversarial receipts
   across models (Haiku, Sonnet, Opus) — currency-declared-in-prose, cross-line totals, subtotal-vs-total,
   ambiguous totals, foreign VAT, a card-expiry-vs-date trap — each traced clean by the same checker
-  (`verify/outputs/model-run-*.json`). A recorded human walk is a planned addition under
-  `receipts/human-walk/`.
+  (`verify/outputs/model-run-*.json`). A recorded human hand-check by a non-technical verifier is in
+  `receipts/human-walk/` (a values-match check, honestly labeled — the verifier is known to the builder,
+  not an independent stranger).
 - **Cross-line labels.** A total whose label is on one line and value on the next (`AMOUNT DUE` /
   `47.83`) is reported `not in source`, not stitched — a fidelity-safe refusal, never an invention.
 - **Vendor header assumption.** `vendor` must equal the block's first line verbatim, which blocks a
@@ -128,16 +129,21 @@ order, reason codes, per-field constraints), `field-definitions.md`, and `format
 - **`not in source` on a shared line.** A field marked `not in source` whose value sits on a line a
   *different* field already cites is not caught mechanically. The own-line case is caught by coverage,
   and the currency case is caught; the general case for other fields is read by eye.
-- **Ambiguous multi-keyword lines resolve safely — worst case a refusal, never a wrong value.**
-  Line-kind detection is keyword-based, so it can't disambiguate a line carrying two competing kinds or
-  pick among several of one kind. A line with a total word and a tax word (`Total incl. tax 105.00`) is
-  rejected by positional binding; two conflicting final totals of different value are rare and
-  self-contradictory. A currency stated only on a remote declaration (`All prices in JPY`), on a payment
-  line, or in prose is reported `not in source`, never attributed — the checker binds currency to the
-  code on the total itself. Not a limit: a plain `Total` beside a `Total Due`/`Grand Total` is resolved
-  by the final-owed-total priority rule; assembling a kind across two lines is closed by the single-line
-  rule; the clear decoys (`Total Savings`, `Total Distance`, `Previous Balance`, an `Auth Ref` or
-  `Check-in` date, a taxi fare as tax) are all rejected.
+- **Look-alike labelled lines (stated honestly).** A value must sit under a required label, of the right
+  kind, and — for amount and tax — look like money (carry a decimal), so a guest count next to `Gst`, an
+  item count in `Total 3 Items`, or a registration number next to `GST` is neither taken as a total/tax
+  nor forced into one when the field is correctly left `not in source`. What the checker *cannot* do is
+  tell a real number that merely sits under a matching label from the one that belongs there: it treats
+  `4` the same whether it is a $4 tax or `Gst 4` meaning four guests. So the guarantees are precise — no
+  **fabrication** (nothing appears that isn't in the input) and no **forced** field (a stated total/tax
+  can't be silently dropped, and a count/ID won't force one) — but "always the semantically perfect
+  field" is not among them; a copied real value can land under a matching-but-wrong label. Genuinely
+  ambiguous lines still resolve by refusing: a total word and a tax word on one line
+  (`Total incl. tax 105.00`) is rejected by positional binding; a currency stated only remotely or in
+  prose (`All prices in JPY`) is `not in source`. Not a limit: a plain `Total` beside a
+  `Total Due`/`Grand Total` (final-owed priority); assembling a kind across two lines (single-line rule);
+  the clear decoys (`Total Savings`, `Total Distance`, `Previous Balance`, an `Auth Ref` or `Check-in`
+  date, a taxi fare as tax) are all rejected.
 
 ## What it does not do
 

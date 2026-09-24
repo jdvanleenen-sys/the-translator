@@ -1,0 +1,18 @@
+{
+  "conversion": "expense-report",
+  "source_file": "verify/fixtures/sample-receipt-countonly.txt",
+  "lines": [
+    {
+      "line_no": 1,
+      "date": {"value":"Mar 5","cite":[2]},
+      "vendor": {"value":"Corner Store","cite":[1]},
+      "amount": {"value":"not in source"},
+      "currency": {"value":"not in source"},
+      "category": {"value":"not in source"},
+      "tax": {"value":"not in source"}
+    }
+  ],
+  "unmapped_input_lines": [
+    {"line":3,"code":"other","note":"Total 3 Items"}
+  ]
+}

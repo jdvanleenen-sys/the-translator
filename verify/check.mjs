@@ -97,6 +97,11 @@ function occursOnLine(lineNorm, valNorm, boundaryRe) {
 // A monetary value is digits with optional leading minus (a refund), grouping, and decimal - never a
 // word like "Due", never empty.
 const isNumericValue = (v) => /^-?\d[\d.,]*$/.test(norm(v).replace(/[\s']/g, '')); // strip thousands separators (space, Swiss apostrophe) before the shape test
+// A value "looks like money" when a decimal/grouping separator sits between digits ("6.85", "11,50",
+// "1234,56") - a bare integer ("4", "3", a long registration/ID number) does not. Used ONLY by the
+// drop and ambiguity GUARDS, so a matching label next to a guest count, an item count, or an ID does
+// not force or fabricate a total/tax. The accept path is unchanged, so a genuine value is still traced.
+const looksLikeMoney = (v) => /\d[.,]\d/.test(v);
 
 // Does a label word appear on the line as a WHOLE word (bounded by start/end or a non-alphanumeric)?
 // Word-boundary matching, not substring: "total" must not match inside "subtotal", "tax" must not
@@ -523,11 +528,12 @@ function currencySourceCheck(out, schema, inputLines, errs) {
 // Both derive from the ACCEPT path (labelGovernsValue -> stripLabelTail), not a parallel regex, so the
 // guards can never drift from what the accept path binds across the label-to-value tail (currency
 // codes/symbols, rates, modifiers, parentheticals). This closes the accept-vs-guard asymmetry at root.
-function labelGovernsAValue(lineNorm, labels, numeric) {
+function labelGovernsAValue(lineNorm, labels, numeric, moneyOnly = false) {
   if (numeric) lineNorm = joinDigitGroups(lineNorm); // align with the accept path on space-grouped numbers
   const scan = numeric ? /-?\d[\d.,]*/g : /[a-z0-9]+/g;
   for (const m of lineNorm.matchAll(scan)) {
     if (numeric && lineNorm.slice(m.index + m[0].length).replace(/^\s*/, '').startsWith('%')) continue; // a rate, not a value
+    if (moneyOnly && !looksLikeMoney(m[0])) continue; // a guard for amount/tax: only a money-shaped number counts (not a count or an ID)
     const seg = stripLabelTail(lineNorm.slice(0, m.index));
     if (labels.some((kw) => kw && kw.trim() && new RegExp('^[^a-z0-9]*' + esc(kw) + '$').test(seg))) return true;
   }
@@ -539,6 +545,7 @@ function governedValues(lineNorm, labels) {
   for (const m of lineNorm.matchAll(/-?\d[\d.,]*/g)) {
     const num = m[0];
     if (lineNorm.slice(m.index + num.length).replace(/^\s*/, '').startsWith('%')) continue; // a rate, not an amount
+    if (!looksLikeMoney(num)) continue; // a total candidate must look like money, not a "3 items"/ID count
     if (labelGovernsValue(lineNorm, num, labels)) vals.push(num);
   }
   return vals;
@@ -635,7 +642,7 @@ function fieldDropCheck(out, schema, inputLines, errs) {
           }
         } else {
           for (let n = b.start; n <= b.end; n++) {
-            if (labelGovernsAValue(norm(inputLines[n - 1]), c.require_label, c.numeric)) {
+            if (labelGovernsAValue(norm(inputLines[n - 1]), c.require_label, c.numeric, c.numeric)) {
               errs.push(`[trace] line ${i + 1}.${f.name}: marked "${marker}", but line ${n} (${JSON.stringify(inputLines[n - 1])}) prints a ${f.name} - a stated field may not be dropped into unmapped and reported empty`);
               break;
             }
