@@ -63,5 +63,7 @@ ever passed, `node verify/check.mjs` would go red.
 ---
 
 That is the whole entry: a fixed shape, every value traced to the input, and an executable test that
-rejects every unsupported claim. If a reader cannot check it, it does not count — so every claim here is
-one command away from checking.
+rejects any value not printed on the line it cites — nothing is fabricated. (Its guarantee is
+no-fabrication, not that a real value is always in the semantically perfect field; the honest limits are
+listed in `README.md`.) If a reader cannot check it, it does not count — so every claim here is one
+command away from checking.

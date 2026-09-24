@@ -4,7 +4,7 @@
 
     node verify/check.mjs --matrix
 
-    → 31/31 outputs traced clean · 92/92 planted inventions caught · READY
+    → 34/34 outputs traced clean · 92/92 planted inventions caught · READY
 
 No install (Node standard library only). Every value in every output points at the exact input line it
 was copied from, or says `not in source`; each planted-invention fixture fails through the specific gate
@@ -71,8 +71,9 @@ four gates:
   total-labeled line (never a subtotal/tax/fare), tax on a tax line, category on a category-labeled
   line, a date-shaped date. Beyond kind, the label must **govern** the value — sit immediately to its
   left — so `Total Distance 12.40` is not a total, and a subtotal can't lend the word "total" to another
-  number. Labels match on word boundaries (`subtotal` ≠ `total`) and are allowlists, not decoy
-  denylists. `vendor` = the receipt header verbatim; `currency` = the code adjacent to the amount on the
+  number. Labels match on word boundaries (`subtotal` ≠ `total`); the required labels are an allowlist of
+  the real total/tax/date names, and meaning-inverting modifiers before a label (`sub`/`item`/`pre`/… — a
+  short, non-exhaustive denylist) are neutralized. `vendor` = the receipt header verbatim; `currency` = the code adjacent to the amount on the
   total line; `date` = bare or governed by a date label, never a check-in/expiry/auth date.
   `source_file` must resolve inside the repo.
 - **coverage** — every non-blank input line is either cited by a field or listed in
@@ -129,18 +130,21 @@ order, reason codes, per-field constraints), `field-definitions.md`, and `format
 - **`not in source` on a shared line.** A field marked `not in source` whose value sits on a line a
   *different* field already cites is not caught mechanically. The own-line case is caught by coverage,
   and the currency case is caught; the general case for other fields is read by eye.
-- **Look-alike labelled lines (stated honestly).** A value must sit under a required label, of the right
-  kind, and — for amount and tax — look like money (carry a decimal), so a guest count next to `Gst`, an
-  item count in `Total 3 Items`, or a registration number next to `GST` is neither taken as a total/tax
-  nor forced into one when the field is correctly left `not in source`. What the checker *cannot* do is
-  tell a real number that merely sits under a matching label from the one that belongs there: it treats
-  `4` the same whether it is a $4 tax or `Gst 4` meaning four guests. So the guarantees are precise — no
-  **fabrication** (nothing appears that isn't in the input) and no **forced** field (a stated total/tax
-  can't be silently dropped, and a count/ID won't force one) — but "always the semantically perfect
-  field" is not among them; a copied real value can land under a matching-but-wrong label. Genuinely
-  ambiguous lines still resolve by refusing: a total word and a tax word on one line
-  (`Total incl. tax 105.00`) is rejected by positional binding; a currency stated only remotely or in
-  prose (`All prices in JPY`) is `not in source`. Not a limit: a plain `Total` beside a
+- **Look-alike labelled lines (stated honestly).** The checker's hard guarantee is narrow and exact: no
+  **fabrication** — every value in the output is printed somewhere in the input, on the line it cites.
+  What it does *not* guarantee is that a real value always lands in the semantically perfect field. The
+  drop/ambiguity **guards** require a money-shape (a decimal) before forcing a total/tax, so a guest count
+  next to `Gst`, an item count in `Total 3 Items`, or a registration number next to `GST` will not *force*
+  a field or be flagged ambiguous — a correct `not in source` is accepted. But the **accept** path binds
+  any label-adjacent value, so if a model *emits* `tax: "4"` from `Gst 4` (guests) or `amount: "3"` from
+  `Total 3 Items`, the checker takes it: it cannot tell `4`-the-$4-tax from `4`-the-guest-count, and it
+  does not validate that a `currency` token is really a currency. Two more, disclosed plainly: a
+  *whole-number* total or tax with **no decimal** (`Total 1500`, `Tax 136`) can be silently dropped,
+  because the money-shape guard keys on the decimal; and a modifier before `total` that isn't in the small
+  denylist (`Discount Total`, `Food Total`) is still read as a total. Genuinely ambiguous lines resolve by
+  refusing: a total word and a tax word on one line (`Total incl. tax 105.00`) is rejected by positional
+  binding; a currency stated only remotely or in prose (`All prices in JPY`) is `not in source`. Not a
+  limit: a plain `Total` beside a
   `Total Due`/`Grand Total` (final-owed priority); assembling a kind across two lines (single-line rule);
   the clear decoys (`Total Savings`, `Total Distance`, `Previous Balance`, an `Auth Ref` or `Check-in`
   date, a taxi fare as tax) are all rejected.

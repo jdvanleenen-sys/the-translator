@@ -1,0 +1,19 @@
+{
+  "conversion": "expense-report",
+  "source_file": "verify/fixtures/sample-receipt-paid.txt",
+  "lines": [
+    {
+      "line_no": 1,
+      "date": {"value":"Mar 5","cite":[2]},
+      "vendor": {"value":"The Bistro","cite":[1]},
+      "amount": {"value":"420.00","cite":[3]},
+      "currency": {"value":"not in source"},
+      "category": {"value":"not in source"},
+      "tax": {"value":"not in source"}
+    }
+  ],
+  "unmapped_input_lines": [
+    {"line":4,"code":"payment_method","note":"Visa 420.00"},
+    {"line":5,"code":"other","note":"Balance Due 0.00"}
+  ]
+}

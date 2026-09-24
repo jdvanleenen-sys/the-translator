@@ -944,3 +944,29 @@ drift-proof (`--matrix` for the live count); and the card's Firehouse reason cod
 un-swapped to match the committed output.
 
 33 valid outputs, 92 fixtures. Canonical `node verify/check.mjs` green; fresh-clone green.
+
+## v39 - paid-off-bill false positive + honest docs (2nd independent review)
+
+A second independent review (fresh clone at 319f1b4) again confirmed: green, all requirements met, NO
+fabrication leak. It found one common functional false positive and several disclosed-limit gaps, plus
+doc claims to tighten.
+
+Fixed (functional, common receipt): a paid-off bill printing `Balance Due 0.00` beside a real
+`Total 420.00` forced `amount` to `0.00` (final-owed priority), rejecting the correct `420.00`. A zero
+total is now excluded from the amount candidate set and from the final-owed priority (keyed on "has a
+nonzero digit"), so the real `Total` is accepted; the non-zero cash-rounding priority
+(`Total 22.94` vs `Total Due 22.95` -> `22.95`) still holds. Locked by `outputs/paid-bill.json`.
+
+Docs made honest (the review's overclaims): the README stale hero count `31/31` -> `34/34`; the
+look-alike bullet now states the guarantee narrowly (no fabrication; the guards won't FORCE a total/tax
+from a count/ID, but the ACCEPT path binds any label-adjacent value, so a model that emits a count/ID/
+non-currency-word is taken; a whole-number no-decimal total/tax can be dropped; a modifier before `total`
+outside the small denylist is still read as a total); the allowlist/denylist line clarified (labels are an
+allowlist, meaning-inverting modifiers a denylist); PROOF.md's "rejects every unsupported claim" -> "rejects
+any value not printed on its cited line" with a pointer to the honest limits.
+
+Deliberately NOT changed (regression risk > reward the day before deadline; none is the disqualifier):
+the accept-path leaks (count/ID/word-as-currency taken if a model emits it - a real model won't),
+whole-number drops, and trailing-minus refunds. Disclosed as limits instead.
+
+34 valid outputs, 92 fixtures. Canonical `node verify/check.mjs` green; fresh-clone green.

@@ -556,8 +556,10 @@ function amountCandidateSet(inputLines, b, c) {
   const finals = new Set(), plain = new Set();
   for (let n = b.start; n <= b.end; n++) {
     const ln = norm(inputLines[n - 1]);
-    for (const v of governedValues(ln, c.final_total_labels)) finals.add(v);
-    for (const v of governedValues(ln, c.require_label)) plain.add(v);
+    // A zero total (a paid-off "Balance Due 0.00" / "Total 0.00") is not the transaction total, so it is
+    // not a candidate - it neither forces the amount nor makes a real total look ambiguous.
+    for (const v of governedValues(ln, c.final_total_labels)) if (/[1-9]/.test(v)) finals.add(v);
+    for (const v of governedValues(ln, c.require_label)) if (/[1-9]/.test(v)) plain.add(v);
   }
   return finals.size > 0 ? finals : plain;
 }
@@ -679,7 +681,9 @@ function totalPriorityCheck(out, schema, inputLines, errs) {
     if (!a || a.value === marker || !Array.isArray(a.cite)) return;
     const b = blocks[i] || { start: 1, end: inputLines.length };
     let blockHasFinal = false;
-    for (let n = b.start; n <= b.end; n++) if (labelGovernsAValue(norm(inputLines[n - 1]), finals, true)) { blockHasFinal = true; break; }
+    // A final-owed total forces the amount only when it is NON-ZERO: a paid-off bill printing
+    // "Balance Due 0.00" beside a real "Total 420.00" must not force amount to 0.00.
+    for (let n = b.start; n <= b.end; n++) if (governedValues(norm(inputLines[n - 1]), finals).some((v) => /[1-9]/.test(v))) { blockHasFinal = true; break; }
     if (!blockHasFinal) return;
     const amountIsFinal = a.cite.some((n) => n >= 1 && n <= inputLines.length && labelGovernsValue(norm(inputLines[n - 1]), norm(a.value), finals));
     if (!amountIsFinal) errs.push(`[trace] line ${i + 1}.amount: a final total is printed (one of: ${finals.join(', ')}), so amount must be taken from it, not from a plain "total" - ${JSON.stringify(a.value)} is the wrong total`);
