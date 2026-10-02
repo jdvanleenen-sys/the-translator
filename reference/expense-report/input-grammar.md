@@ -56,8 +56,9 @@ reason to drop it (coverage still requires every line be cited or unmapped).
 
 - **Amount** is the transaction total from a total-labelled line (`Total` and international total words:
   `Totale`, `Totaal`, `Gesamt`/`Gesamtbetrag`, `Importe`, `Summa`/`Suma`, `Toplam`). If a **final-owed** total is printed
-  (`Total Due`, `Amount Due`, `Balance Due`, `Grand Total`, `Amount/Total Payable/Paid`), the amount
-  must come from it, not from a plain `Total` (a cash-rounding receipt with `Total 22.94` and
+  (`Total Due`, `Amount Due`, `Balance Due`, `Grand Total`, `Amount/Total Payable`), the amount
+  must come from it, not from a plain `Total` (a tender line like `Amount Paid` is never a total - it
+  goes to `unmapped_input_lines`) (a cash-rounding receipt with `Total 22.94` and
   `Total Due 22.95` yields `22.95`). If the receipt names **more than one distinct total** and none is
   a single final-owed total, the amount is **`not in source`** - the receipt does not identify one, and
   choosing is a guess.

@@ -115,8 +115,8 @@ bare `---` separators are exempt and need no entry.
 After you draft the record, re-read it against the receipt line by line, then emit only what survives:
 
 1. For every filled field, confirm the value appears on the exact line it cites, as a complete token,
-   and is the right KIND (total from a total-labeled line, tax from a tax line, currency adjacent or
-   declared, a date-shaped transaction date, vendor = the block header verbatim). If you cannot confirm
+   and is the right KIND (total from a total-labeled line, tax from a tax line, currency adjacent to
+   the amount, a date-shaped transaction date, vendor = the block header verbatim). If you cannot confirm
    it on the cited line, change the field to `not in source`.
 2. Confirm every non-blank input line is either cited by a field or listed in `unmapped_input_lines`.
 3. If any value was computed, summed, normalized, corrected, or inferred, replace it with `not in source`.
